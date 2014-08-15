@@ -15,7 +15,7 @@
 
 include make.in
 
-BIN = sim
+BIN = gsim
 SRC_PATH = ./src
 OBJ_PATH = .
 
