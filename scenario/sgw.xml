@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+
+<scenario name="UE Attach Procedure, SGW S5/s8 interface">
+  <recv request="csreq">
+  </recv>
+
+  <send response="csrsp">
+   <ie type="fteid" instance="0">
+     <param type="iftype" value="11"> </param>
+     <param type="teid" value="1"> </param>
+     <param type="ipv4" value="10.0.2.16"> </param>
+   </ie>
+   <ie type="bcontext" instance="0" count="1">
+      <ie type="ebi" instance="0" value="5"> </ie>
+      <ie type="fteid" instance="0" value="0x86000000020a000210"> </ie>
+   </ie>
+   <ie type="bcontext" instance="0" count="1">
+      <ie type="ebi" instance="0" value="6"> </ie>
+      <ie type="fteid" instance="0">
+        <param type="iftype" value="11"> </param>
+        <param type="teid" value="1"> </param>
+        <param type="ipv4" value="192.168.1.1"> </param>
+      </ie>
+   </ie>
+  </send>
+
+  <recv request="mbreq">
+  </recv>
+
+  <send response="mbrsp">
+   <ie type="bcontext" instance="0" count="1">
+      <ie type="ebi" instance="0" value="5"> </ie>
+      <ie type="fteid" instance="0" value="0x86000000020a000210"> </ie>
+   </ie>
+   <ie type="bcontext" instance="0" count="1">
+      <ie type="ebi" instance="0" value="6"> </ie>
+      <ie type="fteid" instance="0">
+        <param type="iftype" value="11"> </param>
+        <param type="teid" value="1"> </param>
+        <param type="ipv4" value="192.168.1.1"> </param>
+      </ie>
+   </ie>
+  </send>
+</scenario>
+
