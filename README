@@ -1,2 +1,37 @@
-LTE GTP Simulator
+===============================================================================
+1. LTE GTP Simulator
 -------------------------------------------------------------------------------
+LTE GTP Simulator simulates a LTE GTPv2-C signalling interface. The idea is to
+represent a signalling exchange between two LTE core network nodes as a 
+'scenario' in xml file. The scenario file contains messages exchanged between
+two LTE core network nodes. Each message and its contents are represented
+in xml format.
+
+
+-------------------------------------------------------------------------------
+2. Building LTE GTP Simulator
+-------------------------------------------------------------------------------
+run the 'make' command after downloading the source code from the base
+directory
+
+
+-------------------------------------------------------------------------------
+3. Simulator Options
+-------------------------------------------------------------------------------
+run the command 'sim --help'
+
+
+-------------------------------------------------------------------------------
+4. Running the Simulator
+-------------------------------------------------------------------------------
+Running a Gtp-Server (GTP node receiving the first message):
+
+sim --node=sgw --call-rate=1 --scn-file=sgw.xml --local-port=2123 --local-ip=10.0.3.15
+
+
+Running a Gtp-Client (GTP node initiating the scenario):
+
+sim --node=mme --call-rate=1 --scn-file=mme.xml --local-port=2123 
+   --local-ip=10.0.2.15 --remote-ip=10.0.3.15
+
+===============================================================================
