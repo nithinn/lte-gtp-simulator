@@ -22,7 +22,9 @@
 
 PUBLIC VOID displayHelp()
 {
+   std::cout << std::endl;
    std::cout << "Usage: gsim [options] <scenario_file>";
+   std::cout << std::endl;
    std::cout << std::endl;
    std::cout << "--help:" << "     ";
    std::cout << "Display all sim options:";

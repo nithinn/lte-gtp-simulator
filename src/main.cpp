@@ -19,6 +19,7 @@
 #include "types.hpp"
 #include "logger.hpp"
 #include "error.hpp"
+#include "help.hpp"
 #include "sim_cfg.hpp"
 #include "task.hpp"
 #include "sim.hpp"
@@ -41,7 +42,7 @@ int main(int argc, char** argv)
    }
    catch (ErrCodeEn e)
    {
-      LOG_ERROR("Invalid Command Line options");
+      displayHelp();
       return e;
    }
 

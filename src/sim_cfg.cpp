@@ -535,7 +535,7 @@ CmdLineOptEn Config::getOptType(const string &opt)
  *
  * @throw ErrCodeEn
  */
-VOID Config::setConfig (S32 numArgs, S8** cmdLineArgs) throw (ErrCodeEn)
+VOID Config::setConfig(S32 numArgs, S8** cmdLineArgs) throw (ErrCodeEn)
 {
     CmdLineParam    arg;
     S32             argCnt = 1;
