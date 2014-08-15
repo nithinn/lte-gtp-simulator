@@ -44,7 +44,6 @@ CmdLineParam gCfgOptioTable[OPT_MAX] =
     {OPT_DISP_OPT,      "disp-target", ""},
     {OPT_ERR_FILE,      "error-file", ""},
     {OPT_LOG_FILE,      "log-file", ""},
-    {OPT_SCN_FILE,      "scn-file", ""},
     {OPT_LOG_LEVEL,     "log-level", ""},
     {OPT_TRACE_MSG,     "trace-msg", ""}
 };
@@ -281,17 +280,20 @@ VOID Config::setErrorFile(string filename) throw (ErrCodeEn)
     }
 }
 
-VOID Config::setScenarioFile(string filename) throw (ErrCodeEn)
+VOID Config::setScenarioFile(S8* filename) throw (ErrCodeEn)
 {
-    if (filename.size() == 0)
-    {
-        LOG_FATAL("Invalid Scenario file");
-        throw ERR_INV_CMD_LINE_PARAM;
-    }
-    else
-    {
-        pCfg->scnFile = filename;
-    }
+   if (NULL == filename || STRLEN(filename) == 0)
+   {
+      LOG_FATAL("Invalid Scenario file");
+      throw ERR_INV_CMD_LINE_PARAM;
+   }
+   
+   if (0 == STRNCMP(filename, "--", 2))
+   {
+      throw ERR_INV_CMD_LINE_PARAM;
+   }
+
+   pCfg->scnFile.assign(filename);
 }
 
 VOID Config::setLogFile(string filename) throw (ErrCodeEn)
@@ -448,12 +450,6 @@ VOID Config::setParameter(CmdLineParam *pParam) throw (ErrCodeEn)
                 break;
             }
 
-            case OPT_SCN_FILE:
-            {
-                this->setScenarioFile(pParam->value);
-                break;
-            }
-
             case OPT_NODE:
             {
                break;
@@ -537,34 +533,42 @@ CmdLineOptEn Config::getOptType(const string &opt)
  */
 VOID Config::setConfig(S32 numArgs, S8** cmdLineArgs) throw (ErrCodeEn)
 {
-    CmdLineParam    arg;
-    S32             argCnt = 1;
-    string          argStr;
+   CmdLineParam    arg;
+   S32             argCnt = 1;
+   string          argStr;
 
-    if (numArgs < 2)
-    {
-        throw ERR_INV_CMD_LINE_PARAM;
-    }
-    else
-    {
-        try
-        {
-            while (argCnt < numArgs)
+   if (numArgs < 2)
+   {
+      throw ERR_INV_CMD_LINE_PARAM;
+   }
+   else
+   {
+      try
+      {
+         while (argCnt < numArgs)
+         {
+            if (argCnt == (numArgs - 1))
             {
-                argStr = cmdLineArgs[argCnt];
-
-                getArgDetails(argStr, &arg);
-                setParameter(&arg);
-
-                argCnt++;
+               /* the last argument should be scenario file */
+               setScenarioFile(cmdLineArgs[argCnt]);
             }
-        }
-        catch (ErrCodeEn errCode)
-        {
-            LOG_FATAL("Parsing Command Line options failed");
-            throw ERR_INV_CMD_LINE_PARAM;
-        }
-    }
+            else
+            {
+               argStr = cmdLineArgs[argCnt];
+
+               getArgDetails(argStr, &arg);
+               setParameter(&arg);
+            }
+
+            argCnt++;
+         }
+      }
+      catch (ErrCodeEn errCode)
+      {
+         LOG_FATAL("Parsing Command Line options failed");
+         throw ERR_INV_CMD_LINE_PARAM;
+      }
+   }
 }
 
 const IpAddr* Config::getRemoteIpAddr()

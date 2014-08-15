@@ -56,6 +56,7 @@ typedef U32                TransConnId;
 #define STRNCPY         strncpy
 #define STRLEN          strlen
 #define STRCMP          strcmp
+#define STRNCMP         strncmp
 #define STRCASECMP      strcasecmp
 #define STRFIND         strstr
 

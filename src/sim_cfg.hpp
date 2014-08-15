@@ -47,7 +47,6 @@ typedef enum
     OPT_DISP_OPT,
     OPT_ERR_FILE,
     OPT_LOG_FILE,
-    OPT_SCN_FILE,
     OPT_LOG_LEVEL,
     OPT_TRACE_MSG,
     OPT_MAX
@@ -90,7 +89,7 @@ class Config
       VOID setDisplayRefreshTimer(U32 n);
       VOID setDisplayTarget(DisplayTargetEn target);
       VOID setErrorFile(string filename) throw (ErrCodeEn);
-      VOID setScenarioFile(string filename) throw (ErrCodeEn);
+      VOID setScenarioFile(S8* filename) throw (ErrCodeEn);
       VOID setLogFile(string filename) throw (ErrCodeEn);
       VOID setDisplayTargetFile(string filename) throw (ErrCodeEn);
       VOID setCallRate(U32 n);
