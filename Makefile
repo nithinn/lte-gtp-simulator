@@ -36,35 +36,13 @@ SRC=\
 	$(SRC_PATH)/pugixml.cpp \
 	$(SRC_PATH)/xml_parser.cpp \
 	$(SRC_PATH)/sim_cfg.cpp \
-	$(SRC_PATH)/traffic_task.cpp \
+	$(SRC_PATH)/traffic.cpp \
 	$(SRC_PATH)/session.cpp \
 	$(SRC_PATH)/task.cpp \
 	$(SRC_PATH)/display.cpp \
 	$(SRC_PATH)/sim.cpp \
 	$(SRC_PATH)/tunnel.cpp \
 	$(SRC_PATH)/main.cpp
-
-#OBJ=\
-	$(OBJ_PATH)/logger.o \
-	$(OBJ_PATH)/timer.o \
-	$(OBJ_PATH)/keyboard.o \
-	$(OBJ_PATH)/thread.o \
-	$(OBJ_PATH)/socket.o \
-	$(OBJ_PATH)/gtp_stats.o \
-	$(OBJ_PATH)/gtp_ie.o \
-	$(OBJ_PATH)/gtp_msg.o \
-	$(OBJ_PATH)/gtp_util.o \
-	$(OBJ_PATH)/message.o \
-	$(OBJ_PATH)/scenario.o \
-	$(OBJ_PATH)/sim_cfg.o \
-	$(OBJ_PATH)/xml_parser.o \
-	$(OBJ_PATH)/pugixml.o \
-	$(OBJ_PATH)/traffic_task.o \
-	$(OBJ_PATH)/session.o \
-	$(OBJ_PATH)/display.o \
-	$(OBJ_PATH)/task.o \
-	$(OBJ_PATH)/sim.o \
-	$(OBJ_PATH)/main.o
 
 OBJ=$(SRC:.cpp=.o)
 all: $(SRC) $(BIN)
