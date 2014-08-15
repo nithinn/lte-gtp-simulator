@@ -41,6 +41,7 @@ SRC=\
 	$(SRC_PATH)/task.cpp \
 	$(SRC_PATH)/display.cpp \
 	$(SRC_PATH)/sim.cpp \
+	$(SRC_PATH)/help.cpp \
 	$(SRC_PATH)/tunnel.cpp \
 	$(SRC_PATH)/main.cpp
 
