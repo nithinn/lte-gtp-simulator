@@ -16,7 +16,11 @@
 
 #include <iostream>
 
-VOID displayHelp()
+#include "types.hpp"
+#include "logger.hpp"
+#include "help.hpp"
+
+PUBLIC VOID displayHelp()
 {
    std::cout << "Usage: gsim [options] <scenario_file>";
    std::cout << std::endl;

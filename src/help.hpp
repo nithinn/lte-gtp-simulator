@@ -17,6 +17,6 @@
 #ifndef __HELP_HPP__
 #define __HELP_HPP__
 
-EXTERN VOID displayHelp(VOID);
+EXTERN VOID displayHelp();
    
 #endif
