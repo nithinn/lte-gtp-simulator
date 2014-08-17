@@ -274,9 +274,9 @@ RETVAL UeSession::procSend()
 
       LOG_DEBUG("Sending GTPC Message [%s]", gtpGetMsgName(msgType));
       sendMsg(pNwData->connId, &pNwData->peerEp, &pNwData->gtpcMsgBuf);
+      m_nwDataArr[m_currTaskIndx] = pNwData;
       if (GTP_MSG_CAT_INITIAL == msgCat)
       {
-         m_nwDataArr[m_currTaskIndx] = pNwData;
          m_lastReqIndx = m_currTaskIndx;
          GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
       }
@@ -407,7 +407,7 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
 
    pGtpMsg->decode();
    GtpcPdn  *pPdn = NULL;
-   if ((GTPC_MSG_CS_REQ == rcvdMsgType) || (GTPC_MSG_FR_REQ == rcvdMsgType))
+   if (GTPC_MSG_CS_REQ == rcvdMsgType)
    {
       LOG_DEBUG("Creating PDN Connection");
       Stats::incStats(GSIM_STAT_NUM_SESSIONS_CREATED);
@@ -586,17 +586,20 @@ GtpMsg      *pGtpMsg
 {
    LOG_ENTERFN();
 
-   U32 bearerCnt = pGtpMsg->getIeCount(GTP_IE_BEARER_CNTXT, 0);
-   for (U32 i = 1; i <= bearerCnt; i++)
+   if (pGtpMsg->type() == GTPC_MSG_CS_REQ)
    {
-      GtpIe *pIe = pGtpMsg->getIe(GTP_IE_BEARER_CNTXT, 0, i);
-      GtpBearerContext *pBearerCntxt = dynamic_cast<GtpBearerContext *>(pIe);
+      U32 bearerCnt = pGtpMsg->getIeCount(GTP_IE_BEARER_CNTXT, 0);
+      for (U32 i = 1; i <= bearerCnt; i++)
+      {
+         GtpIe *pIe = pGtpMsg->getIe(GTP_IE_BEARER_CNTXT, 0, i);
+         GtpBearerContext *pBearerCntxt = dynamic_cast<GtpBearerContext *>(pIe);
 
-      GtpEbi_t ebi = pBearerCntxt->getEbi();
+         GtpEbi_t ebi = pBearerCntxt->getEbi();
 
-      GtpBearer *pBearer = new GtpBearer(pPdn, ebi);
-      GSIM_SET_BEARER_MASK(pPdn->bearerMask, ebi);
-      m_bearerLst.push_back(pBearer);
+         GtpBearer *pBearer = new GtpBearer(pPdn, ebi);
+         GSIM_SET_BEARER_MASK(pPdn->bearerMask, ebi);
+         m_bearerLst.push_back(pBearer);
+      }
    }
 
    LOG_EXITVOID();
@@ -623,8 +626,7 @@ const IPEndPoint  *pPeerEp
    pPdn->pCTun->m_peerEp.port = pPeerEp->port;
    pPdn->pCTun->m_peerEp.ipAddr = pPeerEp->ipAddr;
 
-   if (pGtpMsg->type() == GTPC_MSG_CS_REQ || \
-       pGtpMsg->type() == GTPC_MSG_FR_REQ)
+   if (pGtpMsg->type() == GTPC_MSG_CS_REQ)
    {
       U32 bearerCnt = pGtpMsg->getIeCount(GTP_IE_BEARER_CNTXT, 0);
       for (U32 i = 1; i <= bearerCnt; i++)
@@ -635,6 +637,7 @@ const IPEndPoint  *pPeerEp
          GtpEbi_t ebi = pBearerCntxt->getEbi();
 
          GtpBearer *pBearer = new GtpBearer(pPdn, ebi);
+         GSIM_SET_BEARER_MASK(pPdn->bearerMask, ebi);
          pBearer->setDfltBearer(TRUE);
          m_bearerLst.push_back(pBearer);
       }
@@ -749,7 +752,7 @@ GtpBearer::~GtpBearer()
    delete m_pUTun;
 }
 
-PUBLIC VOID deleteAllUeSessions()
+PUBLIC VOID cleanupUeSessions()
 {
    UeSessionMapItr ueItr = s_ueSessionMap.begin();
 

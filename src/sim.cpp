@@ -40,7 +40,7 @@ using std::vector;
 #include "scenario.hpp"
 #include "sim.hpp"
 
-EXTERN VOID deleteAllUeSessions();
+EXTERN VOID cleanupUeSessions();
 class Simulator*  Simulator::pSim = NULL;
 
 Simulator* Simulator::getInstance()
@@ -84,11 +84,6 @@ VOID Simulator::run()
    m_pScn = Scenario::getInstance();
    m_pScn->init(Config::getInstance()->getScnFile());
 
-   if (SCN_TYPE_INITIATING == m_pScn->getScnType())
-   {
-      pTTask = new TrafficTask;
-   }
-
    // Initialing the Display task to display session statistics on terminal
    Display *pDisp = Display::getInstance();
    pDisp->init();
@@ -105,11 +100,16 @@ VOID Simulator::run()
    Keyboard *pKb = Keyboard::getInstance();
    pKb->init();
 
+   if (SCN_TYPE_INITIATING == m_pScn->getScnType())
+   {
+      pTTask = new TrafficTask;
+   }
+
    LOG_DEBUG("Generating Signalling traffic");
    genSignallingTraffic();
 
    delete pTTask;
-   //deleteAllUeSessions();
+   cleanupUeSessions();
    TaskMgr::deleteAllTasks();
    pDisp->abort();
    pKb->abort();

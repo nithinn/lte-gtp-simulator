@@ -187,7 +187,7 @@ class UeSession: public Task
 };
 
 EXTERN UeSession* getUeSession(const U8* pImsi);
-EXTERN VOID       deleteAllUeSessions();
+EXTERN VOID       cleanupUeSessions();
 EXTERN GtpcTun*   getS11S4CTun(UeSession *pUeSession);
 
 #endif
