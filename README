@@ -7,6 +7,7 @@ represent a signalling exchange between two LTE core network nodes as a
 two LTE core network nodes. Each message and its contents are represented
 in xml format.
 
+The project is currently 'Work In Progress' state.
 
 -------------------------------------------------------------------------------
 2. Building LTE GTP Simulator
