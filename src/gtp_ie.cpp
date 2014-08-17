@@ -55,6 +55,12 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
          return new GtpFteid;
       case GTP_IE_EBI:
          return new GtpEbi;
+      case GTP_IE_MEI:
+         return new GtpMei;
+      case GTP_IE_RAT_TYPE:
+         return new GtpRatType;
+      case GTP_IE_SERVING_NW:
+         return new GtpServingNw;
       default:
          return NULL;
    }
@@ -714,6 +720,188 @@ U32               occr
    }
 
    LOG_EXITFN(pIeBufPtr);
+}
+
+
+/**
+ * @brief
+ *    Encodes mei from a 15/16 digit buffer to GTPv2-c format
+ *
+ * @param pVal
+ *    string containing mei digits
+ *
+ * @return
+ *    ROK if mei is encoded successfully
+ *    RFAILED otherwise
+ */
+RETVAL GtpMei::encode(const U8 *pVal)
+{
+   LOG_ENTERFN(); 
+
+   U32      meiStrLen = 0;
+   U32      indx         = 0;
+   U32      len          = 0;
+
+   meiStrLen = strlen((S8 *)pVal);
+   if (meiStrLen > GTP_MEI_MAX_DIGITS)
+   {
+      LOG_ERROR("Invalid no.of MEI digits [%d]", meiStrLen);
+      LOG_EXITFN(RFAILED);
+   }
+
+   /* Enocde even number of digits into hex buffer */
+   for (indx = 0; indx < (meiStrLen - 1); indx += 2)
+   {
+      m_val[len++] = GSIM_CHAR_TO_DIGIT(pVal[indx]) | \
+            GSIM_CHAR_TO_DIGIT(pVal[indx + 1]) << 4;
+   }
+
+   /* Encode the last digit into hex buffer */
+   if (GSIM_IS_ODD(meiStrLen))
+   {
+      m_val[len] = GSIM_CHAR_TO_DIGIT(pVal[meiStrLen - 1]) | 0xf0;
+      len++;
+   }
+
+   this->hdr.len = len;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpMei::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   MEMCPY(m_val, pBuf->pVal, pBuf->len);
+
+   LOG_EXITFN(ROK);
+}
+
+/**
+ * @brief 
+ *
+ * @param pBuf
+ *    Buffer containing hex representation of msisidn
+ *
+ * @return
+ *    ROK if mei is encoded successfully
+ *    RFAILED otherwise
+ */
+RETVAL GtpMei::encode(XmlBuffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_MEI_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   {
+      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid MEI Hex Buffer Length [%d]",\
+            pBuf->buf.len);
+      ret = RFAILED;
+   }
+
+   delete pBuf;
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief
+ *    Enocdes the MEI into U8 buffer
+ *
+ * @param pBuf
+ * @param pLen
+ *
+ * @return 
+ */
+RETVAL GtpMei::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+
+   LOG_EXITFN(ROK);
+}
+
+
+/**
+ * @brief encodes RAT type from type of rat represented in integer string
+ *
+ * @param pVal
+ *
+ * @return 
+ */
+RETVAL GtpRatType::encode(const U8 *pVal)
+{
+   LOG_ENTERFN();
+   
+   m_ratType = (GtpRatType_E)gtpConvStrToU32((const S8*)pVal, 1);
+   this->hdr.len = 1;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpRatType::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   GTP_DEC_RAT_TYPE(pBuf->pVal, m_ratType);
+   this->hdr.len = 1;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpRatType::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+
+   GTP_ENC_RAT_TYPE(pTmpBuf, m_ratType);
+   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
+
+   LOG_EXITFN(ROK);
+}
+
+
+RETVAL GtpServingNw::encode(const U8 *pVal)
+{
+   LOG_ENTERFN();
+   
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpServingNw::encode(XmlBuffer *pBuf)
+{
+   LOG_ENTERFN();
+   
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpServingNw::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpServingNw::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   this->hdr.len = pBuf->len;
+
+   LOG_EXITFN(ROK);
 }
 
 

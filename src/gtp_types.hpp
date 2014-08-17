@@ -346,6 +346,18 @@ typedef struct
    GtpECellId_t   eCellId;    /* E-UTRAN Cell Id */
 } GtpEcgi_t;
 
+typedef enum
+{
+   GTP_RAT_TYPE_RESERVED,
+   GTP_RAT_TYPE_UTRAN,
+   GTP_RAT_TYPE_GERAN,
+   GTP_RAT_TYPE_WLAN,
+   GTP_RAT_TYPE_GAN,
+   GTP_RAT_TYPE_HSPA_EVO,
+   GTP_RAT_TYPE_EUTRAN,
+   GTP_RAT_TYPE_MAX
+} GtpRatType_E;
+
 struct XmlBuffer
 {
 #define           XML_BUFFER_PARAM_NAME_LEN        64

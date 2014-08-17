@@ -324,6 +324,13 @@ RETVAL UeSession::procRecv()
          {
             LOG_ERROR("Processing Incoming Response Message, Error [%d]", ret);
          }
+
+         /* only message to be sent will be stored in m_nwDataArr
+          * received response messages is deleted after processing
+          */
+         GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
+         delete m_pRcvdNwData;
+         m_pRcvdNwData = NULL;
       }
       
       GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_GTPC_MSG_RCVD);
@@ -336,9 +343,10 @@ RETVAL UeSession::procRecv()
       if (m_retryCnt >= m_n3req)
       {
          LOG_DEBUG("Maximum Retries reached");
-         m_pScn->m_msgVec[m_lastReqIndx]->m_numTimeOut++;
+
          m_lastReqIndx = 0;
          GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
+         m_pScn->m_msgVec[m_lastReqIndx]->m_numTimeOut++;
          Stats::incStats(GSIM_STAT_NUM_SESSIONS_FAIL);
          ret = ERR_MAX_RETRY_EXCEEDED;
       }
@@ -430,15 +438,11 @@ PUBLIC RETVAL UeSession::procIncRspMsg(GtpMsg *pGtpMsg)
    if (rcvdMsgType != pExpctdGtpMsg->type())
    {
       LOG_DEBUG("Unexpected Response Message Received");
-      delete m_pRcvdNwData;
-      m_pRcvdNwData = NULL;
       m_pCurrTask->m_numUnexp++;
       LOG_EXITFN(ERR_UNEXPECTED_GTPC_MSG_RCVD);
    }
 
    LOG_DEBUG("Response Message Received");
-   m_nwDataArr[m_currTaskIndx] = m_pRcvdNwData;
-   GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
    m_pCurrTask->m_numRcv++;
 
    /* decode the response message and store the bearer and tunnel

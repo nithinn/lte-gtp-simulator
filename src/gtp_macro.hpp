@@ -201,3 +201,15 @@
 
 #define GTP_CHK_T_BIT_PRESENT(_buf)   ((_buf)[0] & GTP_MSG_T_BIT_PRES)
 #define GTP_CHK_P_BIT_PRESENT(_buf)   ((_buf)[0] & GTP_MSG_P_BIT_PRES)
+
+#define GTP_DEC_RAT_TYPE(_buf, _ebi)               \
+{                                                  \
+   U8 _e = 0;                                      \
+   GSIM_DEC_U8((_buf + GTP_IE_HDR_LEN), _e);       \
+   _ebi = (GtpRatType_E)_e;                        \
+}
+
+#define GTP_ENC_RAT_TYPE(_buf, _ebi)               \
+{                                                  \
+   GSIM_ENC_U8(_buf, _ebi);                        \
+}

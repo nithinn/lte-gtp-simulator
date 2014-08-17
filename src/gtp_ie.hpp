@@ -41,13 +41,15 @@ class GtpImsi : public GtpIe
       }
 
       RETVAL encode(const U8 *pVal);
-      RETVAL decode(const Buffer *pBuf);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
       VOID   setImsi(GtpImsiKey*);
       BOOL   isGroupedIe() {return FALSE;}
+
       const U8* imsi() {return m_val;}
 };
 
@@ -68,11 +70,12 @@ class GtpMsisdn : public GtpIe
       }
 
       RETVAL encode(const U8 *pVal);
-      RETVAL decode(const Buffer *pBuf);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -108,11 +111,12 @@ class GtpUli : public GtpIe
       }
 
       RETVAL encode(const U8 *pVal) {return ROK;}
-      RETVAL decode(const Buffer *pBuf);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -136,11 +140,12 @@ class GtpBearerContext : public GtpIe
       ~GtpBearerContext();
 
       RETVAL encode(const U8 *pVal) {return ROK;}
-      RETVAL decode(const Buffer *pBuf);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst);
       RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return TRUE;}
       GtpEbi_t getEbi();
       VOID   setGtpuTeid(GtpTeid_t, GtpInstance_t);
@@ -174,11 +179,12 @@ class GtpFteid : public GtpIe
       }
 
       RETVAL encode(const U8 *pVal) {return ROK;}
-      RETVAL decode(const Buffer *pBuf);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
       RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
       VOID   setTeid(GtpTeid_t teid);
       VOID   setIpAddr(const IpAddr *pIp);
       BOOL   isGroupedIe() {return FALSE;}
@@ -200,13 +206,91 @@ class GtpEbi : public GtpIe
       }
 
       RETVAL encode(const U8 *pVal);
-      RETVAL decode(const Buffer *pBuf);
       RETVAL encode(XmlBuffer *pBuf) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
       RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
+class GtpMei : public GtpIe
+{
+#define GTP_MEI_MAX_LEN          8
+#define GTP_MEI_MAX_DIGITS       16
+   private:
+      U8       m_val[GTP_MEI_MAX_LEN];
+
+   public:
+      GtpMei()
+      {
+         hdr.ieType = GTP_IE_MEI;
+         hdr.instance = 0;
+         hdr.len = 0;
+         MEMSET(m_val, 0, GTP_MEI_MAX_LEN);
+      }
+
+      RETVAL encode(const U8 *pVal);
+      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
+
+class GtpRatType : public GtpIe
+{
+   private:
+      GtpRatType_E      m_ratType;
+
+   public:
+      GtpRatType()
+      {
+         hdr.ieType = GTP_IE_RAT_TYPE;
+         hdr.instance = 0;
+         hdr.len = 0;
+         m_ratType = GTP_RAT_TYPE_RESERVED;
+      }
+
+      RETVAL encode(const U8 *pVal);
+      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
+      RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
+
+class GtpServingNw : public GtpIe
+{
+#define GTP_SERVING_NW_MAX_LEN      6
+
+   private:
+      U8             m_val[GTP_SERVING_NW_MAX_LEN];
+      GtpPlmnId_t    m_plmnId;
+
+   public:
+      GtpServingNw()
+      {
+         hdr.ieType = GTP_IE_SERVING_NW;
+         hdr.instance = 0;
+         hdr.len = 0;
+         MEMSET(&m_plmnId, 0, sizeof(GtpPlmnId_t));
+         MEMSET(m_val, 0, GTP_SERVING_NW_MAX_LEN);
+      }
+
+      RETVAL encode(const U8 *pVal);
+      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
 
 #endif
