@@ -296,7 +296,7 @@ RETVAL XmlParser::procIe(xml_node *pXmlIe, GtpIeLst *pIeLst)
          }
          else
          {
-            ret = pIe->encode((U8 *)pVal);
+            ret = pIe->encode(pVal);
          }
       }
 

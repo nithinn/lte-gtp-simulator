@@ -40,7 +40,7 @@ class GtpImsi : public GtpIe
          MEMSET(m_val, 0, GTP_IMSI_MAX_LEN);
       }
 
-      RETVAL encode(const U8 *pVal);
+      RETVAL encode(const S8 *pVal);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
@@ -69,7 +69,7 @@ class GtpMsisdn : public GtpIe
          MEMSET(m_val, 0, GTP_MSISDN_MAX_LEN);
       }
 
-      RETVAL encode(const U8 *pVal);
+      RETVAL encode(const S8 *pVal);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
@@ -110,7 +110,7 @@ class GtpUli : public GtpIe
          MEMSET(m_val, 0, GTP_ULI_MAX_LEN);
       }
 
-      RETVAL encode(const U8 *pVal) {return ROK;}
+      RETVAL encode(const S8 *pVal) {return ROK;}
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
@@ -139,7 +139,7 @@ class GtpBearerContext : public GtpIe
 
       ~GtpBearerContext();
 
-      RETVAL encode(const U8 *pVal) {return ROK;}
+      RETVAL encode(const S8 *pVal) {return ROK;}
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst);
@@ -178,7 +178,7 @@ class GtpFteid : public GtpIe
          MEMSET(m_val, 0, GTP_FTEID_MAX_LEN);
       }
 
-      RETVAL encode(const U8 *pVal) {return ROK;}
+      RETVAL encode(const S8 *pVal) {return ROK;}
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
@@ -205,7 +205,7 @@ class GtpEbi : public GtpIe
          m_ebi = 0;
       }
 
-      RETVAL encode(const U8 *pVal);
+      RETVAL encode(const S8 *pVal);
       RETVAL encode(XmlBuffer *pBuf) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
@@ -231,7 +231,7 @@ class GtpMei : public GtpIe
          MEMSET(m_val, 0, GTP_MEI_MAX_LEN);
       }
 
-      RETVAL encode(const U8 *pVal);
+      RETVAL encode(const S8 *pVal);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
@@ -255,7 +255,7 @@ class GtpRatType : public GtpIe
          m_ratType = GTP_RAT_TYPE_RESERVED;
       }
 
-      RETVAL encode(const U8 *pVal);
+      RETVAL encode(const S8 *pVal);
       RETVAL encode(XmlBuffer *pBuf) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
@@ -283,7 +283,7 @@ class GtpServingNw : public GtpIe
          MEMSET(m_val, 0, GTP_SERVING_NW_MAX_LEN);
       }
 
-      RETVAL encode(const U8 *pVal);
+      RETVAL encode(const S8 *pVal);
       RETVAL encode(XmlBuffer *pBuf);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}

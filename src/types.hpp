@@ -59,6 +59,7 @@ typedef U32                TransConnId;
 #define STRNCMP         strncmp
 #define STRCASECMP      strcasecmp
 #define STRFIND         strstr
+#define ASSERT          assert
 
 typedef enum
 {

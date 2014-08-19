@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <list>
 #include <arpa/inet.h>
+#include <assert.h>
 
 #include "types.hpp"
 #include "logger.hpp"
@@ -1017,4 +1018,35 @@ PUBLIC U8* getImsiBufPtr(Buffer *pGtpcBuf)
    }
 
    LOG_EXITFN(pImsi);
+}
+
+/**
+ * @brief encodes PLMN ID into buffer based on encoding PLMN ID encoding
+ *        in 23.003
+ *
+ * @param pPlmnId
+ * @param pBuf
+ *
+ * @return 
+ */
+PUBLIC VOID gtpUtlEncPlmnId(GtpPlmnId_t *pPlmnId, U8* pBuf)
+{
+   LOG_ENTERFN();
+
+   ASSERT(NULL != pBuf);
+
+   pBuf[0] = (pPlmnId->mcc[1] << 4) | pPlmnId->mcc[0];    
+
+   if (pPlmnId->numMncDigits == 5)                                         
+   {                                                              
+      pBuf[1] = (0xf0 | pPlmnId->mcc[2]);                 
+   }                                                              
+   else                                                           
+   {                                                              
+      pBuf[1] = ((pPlmnId->mnc[3] << 4) | pPlmnId->mcc[2]);
+   }                                                              
+
+   pBuf[2] = ((pPlmnId->mnc[1] << 4) | pPlmnId->mnc[0]);   
+
+   LOG_EXITVOID();
 }

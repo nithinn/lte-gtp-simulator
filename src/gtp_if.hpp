@@ -29,7 +29,7 @@ class GtpIe
       GtpIeHdr    hdr;
 
    public:
-      virtual RETVAL encode(const U8 *pVal) = 0;
+      virtual RETVAL encode(const S8 *pVal) = 0;
       virtual RETVAL decode(const Buffer* pBuf) = 0;
       virtual RETVAL encode(XmlBuffer* pBuf) = 0;
       virtual RETVAL encode(XmlBufferLst *pBuf) = 0;

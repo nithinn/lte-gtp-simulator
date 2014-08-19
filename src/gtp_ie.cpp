@@ -77,7 +77,7 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
  *    ROK if imsi is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpImsi::encode(const U8 *pVal)
+RETVAL GtpImsi::encode(const S8 *pVal)
 {
    U32      imsiStrLen = 0;
    U32      indx       = 0;
@@ -85,7 +85,7 @@ RETVAL GtpImsi::encode(const U8 *pVal)
 
    LOG_ENTERFN(); 
 
-   imsiStrLen = strlen((S8 *)pVal);
+   imsiStrLen = STRLEN(pVal);
    if (imsiStrLen > GTP_IMSI_MAX_DIGITS)
    {
       LOG_ERROR("Invalid no.of IMSI digits [%d]", imsiStrLen);
@@ -189,7 +189,7 @@ VOID GtpImsi::setImsi(GtpImsiKey *pImsi)
  *    ROK if msisdn is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpMsisdn::encode(const U8 *pVal)
+RETVAL GtpMsisdn::encode(const S8 *pVal)
 {
    LOG_ENTERFN(); 
 
@@ -197,7 +197,7 @@ RETVAL GtpMsisdn::encode(const U8 *pVal)
    U32      indx         = 0;
    U32      len          = 0;
 
-   msisdnStrLen = strlen((S8 *)pVal);
+   msisdnStrLen = STRLEN(pVal);
    if (msisdnStrLen > GTP_MSISDN_MAX_DIGITS)
    {
       LOG_ERROR("Invalid no.of MSISDN digits [%d]", msisdnStrLen);
@@ -640,12 +640,12 @@ VOID GtpFteid::setIpAddr(const IpAddr *pIp)
    LOG_EXITVOID();
 }
 
-RETVAL GtpEbi::encode(const U8 *pVal)
+RETVAL GtpEbi::encode(const S8 *pVal)
 {
    LOG_ENTERFN();
    
-   m_ebi = (U8)gtpConvStrToU32((const S8*)pVal, 1);
-   this->hdr.len = 1;
+   m_ebi = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   this->hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
 }
@@ -734,7 +734,7 @@ U32               occr
  *    ROK if mei is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpMei::encode(const U8 *pVal)
+RETVAL GtpMei::encode(const S8 *pVal)
 {
    LOG_ENTERFN(); 
 
@@ -742,7 +742,7 @@ RETVAL GtpMei::encode(const U8 *pVal)
    U32      indx         = 0;
    U32      len          = 0;
 
-   meiStrLen = strlen((S8 *)pVal);
+   meiStrLen = STRLEN(pVal);
    if (meiStrLen > GTP_MEI_MAX_DIGITS)
    {
       LOG_ERROR("Invalid no.of MEI digits [%d]", meiStrLen);
@@ -834,12 +834,12 @@ RETVAL GtpMei::encode(U8 *pBuf, U32 *pLen)
  *
  * @return 
  */
-RETVAL GtpRatType::encode(const U8 *pVal)
+RETVAL GtpRatType::encode(const S8 *pVal)
 {
    LOG_ENTERFN();
    
-   m_ratType = (GtpRatType_E)gtpConvStrToU32((const S8*)pVal, 1);
-   this->hdr.len = 1;
+   m_ratType = (GtpRatType_E)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   this->hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
 }
@@ -870,10 +870,38 @@ RETVAL GtpRatType::encode(U8 *pBuf, U32 *pLen)
 }
 
 
-RETVAL GtpServingNw::encode(const U8 *pVal)
+RETVAL GtpServingNw::encode(const S8 *pVal)
 {
    LOG_ENTERFN();
    
+   if (NULL == pVal || (0 == STRLEN(pVal)))
+   {
+      LOG_ERROR("NULL function parameter")
+   }
+
+   if (STRLEN(pVal) > GTP_SERVING_NW_MAX_LEN)
+   {
+      LOG_ERROR("Invalid Serving Network")
+   }
+
+   m_plmnId.mcc[0] = GSIM_CHAR_TO_DIGIT(pVal[0]);
+   m_plmnId.mcc[1] = GSIM_CHAR_TO_DIGIT(pVal[1]);
+   m_plmnId.mcc[2] = GSIM_CHAR_TO_DIGIT(pVal[2]);
+
+   m_plmnId.mnc[0] = GSIM_CHAR_TO_DIGIT(pVal[3]);
+   m_plmnId.mnc[1] = GSIM_CHAR_TO_DIGIT(pVal[4]);
+
+   if (STRLEN(pVal) == GTP_SERVING_NW_MAX_LEN)
+   {
+      m_plmnId.mnc[2] = GSIM_CHAR_TO_DIGIT(pVal[5]);
+      m_plmnId.numMncDigits = 3; 
+   }
+   else
+   {
+      m_plmnId.numMncDigits = 2;
+   }
+
+   gtpUtlEncPlmnId(&m_plmnId, m_val);
 
    LOG_EXITFN(ROK);
 }
@@ -882,15 +910,28 @@ RETVAL GtpServingNw::encode(XmlBuffer *pBuf)
 {
    LOG_ENTERFN();
    
+   RETVAL  ret = ROK;
 
-   LOG_EXITFN(ROK);
+   if (GTP_SERVING_NW_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   {
+      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid Serving Network Hex Buffer Length [%d]",\
+            pBuf->buf.len);
+      ret = RFAILED;
+   }
+
+   delete pBuf;
+   LOG_EXITFN(ret);
 }
 
 RETVAL GtpServingNw::encode(U8 *pBuf, U32 *pLen)
 {
    LOG_ENTERFN();
 
-   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
+   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
 
    LOG_EXITFN(ROK);
 }
@@ -899,6 +940,7 @@ RETVAL GtpServingNw::decode(const Buffer *pBuf)
 {
    LOG_ENTERFN();
 
+   MEMCPY(m_val, pBuf->pVal, pBuf->len);
    this->hdr.len = pBuf->len;
 
    LOG_EXITFN(ROK);
