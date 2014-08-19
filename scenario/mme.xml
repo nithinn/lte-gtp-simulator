@@ -12,6 +12,7 @@
       <param type="cgi" value="0x991199"> </param> 
       <param type="rai" value="0x441144"> </param>
    </ie>
+   <ie type="serving_network" instance "0" value="112233"> </ie>
    <ie type="fteid" instance="0" value="0x86000000020a000210"> </ie>
    <ie type="bcontext" instance="0" count="1">
       <ie type="ebi" instance="0" value="5"> </ie>
