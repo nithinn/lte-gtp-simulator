@@ -267,10 +267,11 @@ class GtpRatType : public GtpIe
 
 class GtpServingNw : public GtpIe
 {
-#define GTP_SERVING_NW_MAX_LEN      6
+#define GTP_SERVING_NW_MAX_STR_LEN      6
+#define GTP_SERVING_NW_MAX_BUF_LEN      3
 
    private:
-      U8             m_val[GTP_SERVING_NW_MAX_LEN];
+      U8             m_val[GTP_SERVING_NW_MAX_BUF_LEN];
       GtpPlmnId_t    m_plmnId;
 
    public:
@@ -280,11 +281,37 @@ class GtpServingNw : public GtpIe
          hdr.instance = 0;
          hdr.len = 0;
          MEMSET(&m_plmnId, 0, sizeof(GtpPlmnId_t));
-         MEMSET(m_val, 0, GTP_SERVING_NW_MAX_LEN);
+         MEMSET(m_val, 0, GTP_SERVING_NW_MAX_BUF_LEN);
       }
 
       RETVAL encode(const S8 *pVal);
       RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
+
+class GtpApn : public GtpIe
+{
+#define GTP_APN_MAX_LEN      128
+
+   private:
+      U8             m_val[GTP_APN_MAX_LEN];
+
+   public:
+      GtpApn()
+      {
+         hdr.ieType = GTP_IE_APN;
+         hdr.instance = 0;
+         hdr.len = 0;
+         MEMSET(m_val, 0, GTP_APN_MAX_LEN);
+      }
+
+      RETVAL encode(const S8 *pVal);
+      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);

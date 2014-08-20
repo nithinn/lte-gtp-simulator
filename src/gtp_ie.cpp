@@ -61,6 +61,8 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
          return new GtpRatType;
       case GTP_IE_SERVING_NW:
          return new GtpServingNw;
+      case GTP_IE_APN:
+         return new GtpApn;
       default:
          return NULL;
    }
@@ -879,7 +881,7 @@ RETVAL GtpServingNw::encode(const S8 *pVal)
       LOG_ERROR("NULL function parameter")
    }
 
-   if (STRLEN(pVal) > GTP_SERVING_NW_MAX_LEN)
+   if (STRLEN(pVal) > GTP_SERVING_NW_MAX_STR_LEN)
    {
       LOG_ERROR("Invalid Serving Network")
    }
@@ -891,7 +893,7 @@ RETVAL GtpServingNw::encode(const S8 *pVal)
    m_plmnId.mnc[0] = GSIM_CHAR_TO_DIGIT(pVal[3]);
    m_plmnId.mnc[1] = GSIM_CHAR_TO_DIGIT(pVal[4]);
 
-   if (STRLEN(pVal) == GTP_SERVING_NW_MAX_LEN)
+   if (STRLEN(pVal) == GTP_SERVING_NW_MAX_STR_LEN)
    {
       m_plmnId.mnc[2] = GSIM_CHAR_TO_DIGIT(pVal[5]);
       m_plmnId.numMncDigits = 3; 
@@ -902,6 +904,7 @@ RETVAL GtpServingNw::encode(const S8 *pVal)
    }
 
    gtpUtlEncPlmnId(&m_plmnId, m_val);
+   hdr.len = GTP_SERVING_NW_MAX_BUF_LEN;
 
    LOG_EXITFN(ROK);
 }
@@ -912,7 +915,7 @@ RETVAL GtpServingNw::encode(XmlBuffer *pBuf)
    
    RETVAL  ret = ROK;
 
-   if (GTP_SERVING_NW_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_SERVING_NW_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
    {
       this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
    }
@@ -937,6 +940,45 @@ RETVAL GtpServingNw::encode(U8 *pBuf, U32 *pLen)
 }
 
 RETVAL GtpServingNw::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   MEMCPY(m_val, pBuf->pVal, pBuf->len);
+   this->hdr.len = pBuf->len;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpApn::encode(const S8 *pVal)
+{
+   LOG_ENTERFN();
+   
+   if (NULL == pVal || (0 == STRLEN(pVal)))
+   {
+      LOG_ERROR("NULL function parameter")
+   }
+
+   if (STRLEN(pVal) > GTP_APN_MAX_LEN)
+   {
+      LOG_ERROR("Invalid APN length")
+   }
+
+   hdr.len = STRLEN(pVal);
+   MEMCPY(m_val, pVal, hdr.len);
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpApn::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpApn::decode(const Buffer *pBuf)
 {
    LOG_ENTERFN();
 
