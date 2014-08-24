@@ -21,7 +21,7 @@ DEBUG_FLAG= -g3
 
 CFLAGS= $(DEBUG_FLAG) $(WARNIG_FLAGS)
 
-CC=g++
+CC= g++
 
 RM= rm -f
 
