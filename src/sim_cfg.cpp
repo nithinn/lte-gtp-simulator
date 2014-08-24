@@ -33,7 +33,8 @@ CmdLineParam gCfgOptioTable[OPT_MAX] =
     {OPT_INV,           "", ""},
     {OPT_NODE,          "node", ""},
     {OPT_NUM_CALLS,     "num-sessions", ""},
-    {OPT_CALL_RATE,     "call-rate", ""},
+    {OPT_CALL_RATE,     "session-rate", ""},
+    {OPT_RATE_PERIOD,   "rate-period", ""},
     {OPT_LOC_IP_ADDR,   "local-ip", ""},   
     {OPT_REM_IP_ADDR,   "remote-ip", ""},   
     {OPT_LOC_PORT,      "local-port", ""},
@@ -119,6 +120,11 @@ VOID Config::setNoOfCalls(U32 n)
 VOID Config::setCallRate(U32 n)
 {
     pCfg->m_ssnRate = n;
+}
+
+VOID Config::setRatePeriod(U32 n)
+{
+   pCfg->m_ssnRatePeriod = n;
 }
 
 VOID Config::setLocalIpAddr(string ip) throw (ErrCodeEn)
@@ -373,112 +379,118 @@ RETVAL Config::saveIp(string &ipStr, IpAddr *pIp)
 
 VOID Config::setParameter(CmdLineParam *pParam) throw (ErrCodeEn)
 {
-    try
-    {
-        switch (pParam->type)
-        {
-            case OPT_NUM_CALLS:
-            {
-                this->setNoOfCalls((U32)atoi(pParam->value.c_str()));
-                break;
-            }
+   try
+   {
+      switch (pParam->type)
+      {
+         case OPT_NUM_CALLS:
+         {
+            this->setNoOfCalls((U32)atoi(pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_CALL_RATE:
-            {
-                this->setCallRate((U32)atoi(pParam->value.c_str()));
-                break;
-            }
+         case OPT_CALL_RATE:
+         {
+            this->setCallRate((U32)atoi(pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_LOC_IP_ADDR:
-            {
-                this->setLocalIpAddr(pParam->value);
-                break;
-            }
+         case OPT_RATE_PERIOD:
+         {
+            this->setRatePeriod((U32)atoi(pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_REM_IP_ADDR:
-            {
-                this->setRemoteIpAddr(pParam->value);
-                break;
-            }
+         case OPT_LOC_IP_ADDR:
+         {
+            this->setLocalIpAddr(pParam->value);
+            break;
+         }
 
-            case OPT_LOC_PORT:
-            {
-                this->setLocalGtpcPort((U16)atoi(pParam->value.c_str()));
-                break;
-            }
+         case OPT_REM_IP_ADDR:
+         {
+            this->setRemoteIpAddr(pParam->value);
+            break;
+         }
 
-            case OPT_REM_PORT:
-            {
-                this->setRemoteGtpcPort((U16)atoi(pParam->value.c_str()));
-                break;
-            }
+         case OPT_LOC_PORT:
+         {
+            this->setLocalGtpcPort((U16)atoi(pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_T3_TIMER:
-            {
-                this->setT3TimerSeconds((U32)atoi(pParam->value.c_str()));
-                break;
-            }
+         case OPT_REM_PORT:
+         {
+            this->setRemoteGtpcPort((U16)atoi(pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_N3_REQ:
-            {
-                this->setN3Requests((U32)atoi(pParam->value.c_str()));
-                break;
-            }
+         case OPT_T3_TIMER:
+         {
+            this->setT3TimerSeconds((U32)atoi(pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_DISP_TIMER:
-            {
-                this->setDisplayRefreshTimer((U32)atoi(pParam->value.c_str()));
-                break;
-            }
+         case OPT_N3_REQ:
+         {
+            this->setN3Requests((U32)atoi(pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_DISP_OPT:
-            {
-                this->setDisplayTarget((DisplayTargetEn)atoi(\
-                        pParam->value.c_str()));
-                break;
-            }
+         case OPT_DISP_TIMER:
+         {
+            this->setDisplayRefreshTimer((U32)atoi(pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_ERR_FILE:
-            {
-                this->setErrorFile(pParam->value);
-                break;
-            }
+         case OPT_DISP_OPT:
+         {
+            this->setDisplayTarget((DisplayTargetEn)atoi(\
+                     pParam->value.c_str()));
+            break;
+         }
 
-            case OPT_LOG_FILE:
-            {
-                this->setLogFile(pParam->value);
-                break;
-            }
+         case OPT_ERR_FILE:
+         {
+            this->setErrorFile(pParam->value);
+            break;
+         }
 
-            case OPT_NODE:
-            {
-               break;
-            }
+         case OPT_LOG_FILE:
+         {
+            this->setLogFile(pParam->value);
+            break;
+         }
 
-            case OPT_LOG_LEVEL:
-            {
-               this->setLogLevel(pParam->value);
-               break;
-            }
+         case OPT_NODE:
+         {
+            break;
+         }
 
-            case OPT_TRACE_MSG:
-            {
-               this->setTraceMsg(TRUE);
-            }
+         case OPT_LOG_LEVEL:
+         {
+            this->setLogLevel(pParam->value);
+            break;
+         }
 
-            default:
-            {
-                LOG_FATAL("Unhandled Command Line Option "\
-                     "type [%d]", pParam->type);
-                throw ERR_INV_CMD_LINE_PARAM;
-                break;
-            }
-        }
-    }
-    catch (ErrCodeEn err)
-    {
-        throw err;
-    }
+         case OPT_TRACE_MSG:
+         {
+            this->setTraceMsg(TRUE);
+         }
+
+         default:
+         {
+            LOG_FATAL("Unhandled Command Line Option "\
+                  "type [%d]", pParam->type);
+            throw ERR_INV_CMD_LINE_PARAM;
+            break;
+         }
+      }
+   }
+   catch (ErrCodeEn err)
+   {
+      throw err;
+   }
 }
 
 VOID Config::getArgDetails(string &arg, CmdLineParam *pParam) 

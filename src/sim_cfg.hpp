@@ -37,6 +37,7 @@ typedef enum
     OPT_NODE,
     OPT_NUM_CALLS,
     OPT_CALL_RATE,
+    OPT_RATE_PERIOD,
     OPT_LOC_IP_ADDR,
     OPT_REM_IP_ADDR,
     OPT_LOC_PORT,
@@ -93,6 +94,7 @@ class Config
       VOID setLogFile(string filename) throw (ErrCodeEn);
       VOID setDisplayTargetFile(string filename) throw (ErrCodeEn);
       VOID setCallRate(U32 n);
+      VOID setRatePeriod(U32 n);
       VOID setLogLevel(string logLvl);
       VOID setTraceMsg(BOOL);
       VOID setTraceMsgFile(string);

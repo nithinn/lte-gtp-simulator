@@ -213,3 +213,9 @@
 {                                                  \
    GSIM_ENC_U8(_buf, _ebi);                        \
 }
+
+#define GTP_ENC_APN_AMBR(_buf, _apnambr)           \
+{                                                  \
+   GSIM_ENC_U32(_buf, _apnambr);                   \
+}
+

@@ -320,4 +320,33 @@ class GtpApn : public GtpIe
       BOOL   isGroupedIe() {return FALSE;}
 };
 
+class GtpAmbr : public GtpIe
+{
+#define GTP_AMBR_MAX_BUF_LEN        8
+   private:
+      GtpApnAmbr_t   ul;
+      GtpApnAmbr_t   dl;
+      U8             m_val[GTP_AMBR_MAX_BUF_LEN];
+
+   public:
+      GtpAmbr()
+      {
+         hdr.ieType   = GTP_IE_AMBR;
+         hdr.instance = 0;
+         hdr.len      = 0;
+         ul           = 0;
+         dl           = 0;
+         MEMSET(m_val, 0, GTP_AMBR_MAX_BUF_LEN);
+      }
+
+      RETVAL encode(const S8 *pVal) {return ROK;}
+      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(XmlBufferLst *pBuf);
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
+
 #endif

@@ -63,6 +63,8 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
          return new GtpServingNw;
       case GTP_IE_APN:
          return new GtpApn;
+      case GTP_IE_AMBR:
+         return new GtpAmbr;
       default:
          return NULL;
    }
@@ -602,8 +604,7 @@ RETVAL GtpFteid::encode(XmlBufferLst *pBufLst)
       }
       else
       {
-         LOG_ERROR("Invalid ULI Parameter type [%s]",\
-               pXmlBuf->paramName);
+         LOG_ERROR("Invalid ULI Parameter type [%s]", pXmlBuf->paramName);
       }
 
       delete *b;
@@ -988,4 +989,81 @@ RETVAL GtpApn::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
+RETVAL GtpAmbr::encode(XmlBuffer *pBuf)
+{
+   LOG_ENTERFN();
 
+   RETVAL   ret = ROK;
+   if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   {
+      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid IMSI Hex Buffer Length [%d]", pBuf->buf.len);
+      ret = RFAILED;
+   }
+
+   delete pBuf;
+   LOG_EXITFN(ret);
+}
+
+
+RETVAL GtpAmbr::encode(XmlBufferLst *pBufLst)
+{
+   LOG_ENTERFN();
+
+   if (pBufLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
+   {
+      XmlBuffer   *pXmlBuf = *b;
+
+     if (STRCASECMP(pXmlBuf->paramName, "ul") == 0)
+      {
+         GtpApnAmbr_t ambrul = (GtpApnAmbr_t)gtpConvStrToU32(\
+               (const S8*)pXmlBuf->buf.pVal, pXmlBuf->buf.len);
+         GTP_ENC_APN_AMBR(m_val, ambrul);
+         this->hdr.len += 4;
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "dl") == 0)
+      {
+         GtpApnAmbr_t ambrdl = (GtpApnAmbr_t)gtpConvStrToU32(\
+               (const S8*)pXmlBuf->buf.pVal, pXmlBuf->buf.len);
+         GTP_ENC_APN_AMBR((m_val + 4), ambrdl);
+         this->hdr.len += 4;
+      }
+      else
+      {
+         LOG_ERROR("Invalid AMBR Parameter type [%s]", pXmlBuf->paramName);
+      }
+
+      delete *b;
+   }
+
+   delete pBufLst;
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpAmbr::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpAmbr::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   MEMCPY(m_val, pBuf->pVal, pBuf->len);
+   this->hdr.len = pBuf->len;
+
+   LOG_EXITFN(ROK);
+}

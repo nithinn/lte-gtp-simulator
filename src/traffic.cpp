@@ -54,7 +54,9 @@ BOOL TrafficTask::run()
    BOOL     abortTraffiTask = FALSE;
    LOG_DEBUG("Running TrafficTask, Session Rate [%d]", m_rate);
 
-   m_lastRunTime = getMilliSeconds();
+   Time_t currTime = getMilliSeconds();
+   LOG_DEBUG("TTTTT [%d]", currTime - m_lastRunTime);
+   m_lastRunTime = currTime;
    Counter numSession = Stats::getStats(GSIM_STAT_NUM_SESSIONS_CREATED);
    for (U32 i = 0; i < m_rate; i++)
    {

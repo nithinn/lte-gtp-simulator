@@ -346,6 +346,8 @@ typedef struct
    GtpECellId_t   eCellId;    /* E-UTRAN Cell Id */
 } GtpEcgi_t;
 
+typedef U32 GtpApnAmbr_t;
+
 typedef enum
 {
    GTP_RAT_TYPE_RESERVED,
