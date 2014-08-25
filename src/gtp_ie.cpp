@@ -65,6 +65,8 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
          return new GtpApn;
       case GTP_IE_AMBR:
          return new GtpAmbr;
+      case GTP_IE_INDICATION:
+         return new GtpIndication;
       default:
          return NULL;
    }
@@ -1000,7 +1002,7 @@ RETVAL GtpAmbr::encode(XmlBuffer *pBuf)
    }
    else
    {
-      LOG_ERROR("Invalid IMSI Hex Buffer Length [%d]", pBuf->buf.len);
+      LOG_ERROR("Invalid Ambr Hex Buffer Length [%d]", pBuf->buf.len);
       ret = RFAILED;
    }
 
@@ -1039,7 +1041,7 @@ RETVAL GtpAmbr::encode(XmlBufferLst *pBufLst)
       }
       else
       {
-         LOG_ERROR("Invalid AMBR Parameter type [%s]", pXmlBuf->paramName);
+         LOG_ERROR("Invalid Ambr Parameter type [%s]", pXmlBuf->paramName);
       }
 
       delete *b;
@@ -1058,6 +1060,99 @@ RETVAL GtpAmbr::encode(U8 *pBuf, U32 *pLen)
    LOG_EXITFN(ROK);
 }
 
+RETVAL GtpIndication::encode(XmlBufferLst *pBufLst)
+{
+   LOG_ENTERFN();
+
+   if (pBufLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+
+   for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
+   {
+      XmlBuffer   *pXmlBuf = *b;
+
+      if (STRCASECMP(pXmlBuf->paramName, "daf") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_DAF_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "dtf") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_DTF_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "dfi") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_DFI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "oi") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_OI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "isrsi") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_ISRSI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "israi") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_ISRAI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "sgwci") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_SGWCI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "sqci") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_SQCI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "uimsi") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_UIMSI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "cfsi") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_CFSI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "p") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_P_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "pt") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_PT_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "si") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_SI_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "msv") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_MSV_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "israu") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_ISRAU_PRES);
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "ccrsi") == 0)
+      {
+         GSIM_SET_MASK(bitmask, GTP_INDICATION_CCRSI_PRES);
+      }
+      else
+      {
+         LOG_ERROR("Invalid indication Parameter type [%s]",\
+               pXmlBuf->paramName);
+      }
+
+      delete *b;
+   }
+
+   delete pBufLst;
+   LOG_EXITFN(ROK);
+}
+
+
 RETVAL GtpAmbr::decode(const Buffer *pBuf)
 {
    LOG_ENTERFN();
@@ -1067,3 +1162,44 @@ RETVAL GtpAmbr::decode(const Buffer *pBuf)
 
    LOG_EXITFN(ROK);
 }
+
+
+RETVAL GtpIndication::encode(XmlBuffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_INDICATION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   {
+      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid Indicaiton IE Hex Buffer Length [%d]", pBuf->buf.len);
+      ret = RFAILED;
+   }
+
+   delete pBuf;
+   LOG_EXITFN(ret);
+}
+
+
+RETVAL GtpIndication::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpIndication::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   MEMCPY(m_val, pBuf->pVal, pBuf->len);
+   this->hdr.len = pBuf->len;
+
+   LOG_EXITFN(ROK);
+}
+

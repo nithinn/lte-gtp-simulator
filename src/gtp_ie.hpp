@@ -349,4 +349,48 @@ class GtpAmbr : public GtpIe
       BOOL   isGroupedIe() {return FALSE;}
 };
 
+
+class GtpIndication : public GtpIe
+{
+#define GTP_INDICATION_MAX_BUF_LEN        3
+
+#define GTP_INDICATION_DAF_PRES           (1 << 0)
+#define GTP_INDICATION_DTF_PRES           (1 << 1)
+#define GTP_INDICATION_DFI_PRES           (1 << 2)
+#define GTP_INDICATION_OI_PRES            (1 << 3)
+#define GTP_INDICATION_ISRSI_PRES         (1 << 4)
+#define GTP_INDICATION_ISRAI_PRES         (1 << 5)
+#define GTP_INDICATION_SGWCI_PRES         (1 << 6)
+#define GTP_INDICATION_SQCI_PRES          (1 << 7)
+#define GTP_INDICATION_UIMSI_PRES         (1 << 8)
+#define GTP_INDICATION_CFSI_PRES          (1 << 9)
+#define GTP_INDICATION_P_PRES             (1 << 10)
+#define GTP_INDICATION_PT_PRES            (1 << 11)
+#define GTP_INDICATION_SI_PRES            (1 << 12)
+#define GTP_INDICATION_MSV_PRES           (1 << 13)
+#define GTP_INDICATION_ISRAU_PRES         (1 << 14)
+#define GTP_INDICATION_CCRSI_PRES         (1 << 15)
+
+   private:
+      U32      bitmask;
+      U8       m_val[GTP_INDICATION_MAX_BUF_LEN];
+
+   public:
+      GtpIndication()
+      {
+         hdr.ieType   = GTP_IE_INDICATION;
+         hdr.instance = 0;
+         hdr.len      = 0;
+         MEMSET(m_val, 0, GTP_INDICATION_MAX_BUF_LEN);
+      }
+
+      RETVAL encode(const S8 *pVal) {return ROK;}
+      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(XmlBufferLst *pBuf);
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
 #endif
