@@ -379,6 +379,14 @@ typedef enum
    GTPC_MSG_DIR_OUT
 } GtpcMsgDir_E;
 
+typedef enum
+{
+   GTP_PDN_TYPE_IPV4,
+   GTP_PDN_TYPE_IPV6,
+   GTP_PDN_TYPE_IPV4V6,
+   GTP_PDN_TYPE_MAX
+} GtpPdnType_E;
+
 #define XML_BUFFER_CPY(_xmlBuf, _src, _sz)                     \
 do                                                             \
 {                                                              \

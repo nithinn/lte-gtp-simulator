@@ -223,3 +223,8 @@
 {                                                  \
    GSIM_ENC_U8(_buf, _sel);                        \
 }
+
+#define GTP_ENC_PDN_TYPE(_buf, _pt)                \
+{                                                  \
+   GSIM_ENC_U8(_buf, _pt);                         \
+}

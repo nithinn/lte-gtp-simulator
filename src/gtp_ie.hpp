@@ -426,4 +426,29 @@ class GtpSelectionMode : public GtpIe
 };
 
 
+class GtpPdnType : public GtpIe
+{
+#define GTP_PDN_TYPE_MAX_BUF_LEN    1
+   private:
+      GtpPdnType_E   m_pdnType;
+
+   public:
+      GtpPdnType()
+      {
+         hdr.ieType = GTP_IE_PDN_TYPE;
+         hdr.instance = 0;
+         hdr.len = 0;
+         m_pdnType = GTP_PDN_TYPE_IPV4;
+      }
+
+      RETVAL encode(const S8 *pVal);
+      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
+      RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
+
 #endif

@@ -69,6 +69,8 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
          return new GtpIndication;
       case GTP_IE_SELECTION_MODE:
          return new GtpSelectionMode;
+      case GTP_IE_PDN_TYPE:
+         return new GtpPdnType;
       default:
          return NULL;
    }
@@ -1239,3 +1241,62 @@ RETVAL GtpSelectionMode::decode(const Buffer *pBuf)
 
    LOG_EXITFN(ROK);
 }
+
+RETVAL GtpPdnType::encode(const S8 *pVal)
+{
+   LOG_ENTERFN();
+
+   if (NULL == pVal || STRLEN(pVal) == 0)
+   {
+      LOG_DEBUG("Pdn Type string is NULL or 0 size");
+      return RFAILED;
+   }
+
+   if (STRCASECMP(pVal, "ipv4"))
+   {
+      m_pdnType = GTP_PDN_TYPE_IPV4;
+   }
+   else if (STRCASECMP(pVal, "ipv6"))
+   {
+      m_pdnType = GTP_PDN_TYPE_IPV6;
+   }
+   else if (STRCASECMP(pVal, "ipv4v6"))
+   {
+      m_pdnType = GTP_PDN_TYPE_IPV4V6;
+   }
+   else
+   {
+      LOG_DEBUG("Invalid PDN Type [%s]", pVal);
+      LOG_EXITFN(RFAILED);
+   }
+
+   this->hdr.len = GTP_PDN_TYPE_MAX_BUF_LEN;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpPdnType::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   m_pdnType = (GtpPdnType_E)(pBuf->pVal[0] & 0x0007);
+   this->hdr.len = GTP_SEL_MODE_BUF_MAX_LEN;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpPdnType::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+
+   GTP_ENC_PDN_TYPE(pTmpBuf, m_pdnType);
+   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
+
+   LOG_EXITFN(ROK);
+}
+
