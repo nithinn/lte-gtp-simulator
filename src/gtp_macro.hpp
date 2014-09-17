@@ -219,3 +219,7 @@
    GSIM_ENC_U32(_buf, _apnambr);                   \
 }
 
+#define GTP_ENC_SEL_MODE(_buf, _sel)               \
+{                                                  \
+   GSIM_ENC_U8(_buf, _sel);                        \
+}

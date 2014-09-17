@@ -67,6 +67,8 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
          return new GtpAmbr;
       case GTP_IE_INDICATION:
          return new GtpIndication;
+      case GTP_IE_SELECTION_MODE:
+         return new GtpSelectionMode;
       default:
          return NULL;
    }
@@ -1203,3 +1205,37 @@ RETVAL GtpIndication::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
+RETVAL GtpSelectionMode::encode(const S8 *pVal)
+{
+   LOG_ENTERFN();
+
+   m_selMode = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   this->hdr.len = STRLEN(pVal);
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpSelectionMode::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+
+   GTP_ENC_SEL_MODE(pTmpBuf, m_selMode);
+   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpSelectionMode::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   m_selMode = pBuf->pVal[0];
+   this->hdr.len = GTP_SEL_MODE_BUF_MAX_LEN;
+
+   LOG_EXITFN(ROK);
+}

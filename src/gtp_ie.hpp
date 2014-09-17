@@ -393,4 +393,37 @@ class GtpIndication : public GtpIe
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
+
+
+class GtpSelectionMode : public GtpIe
+{
+#define GTP_SEL_MODE_BUF_MAX_LEN       1
+
+#define GTP_SEL_MODE_MS_OR_NW_APN      0
+#define GTP_SEL_MODE_MS_APN            1
+#define GTP_SEL_MODE_NW_APN            2
+#define GTP_SEL_MODE_FUTURE            3
+   private:
+      U8       m_selMode;
+
+   public:
+      GtpSelectionMode()
+      {
+         hdr.ieType   = GTP_IE_SELECTION_MODE;
+         hdr.instance = 0;
+         hdr.len      = 0;
+         m_selMode = 0;
+      }
+
+      RETVAL encode(const S8 *pVal);
+      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
+      RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
+
+
 #endif
