@@ -392,7 +392,7 @@ do                                                             \
 {                                                              \
    (_xmlBuf)->buf.len = _sz;                                   \
    (_xmlBuf)->buf.pVal = new U8 [_sz];                         \
-   memcpy((VOID *)(_xmlBuf)->buf.pVal, (VOID *)(_src), _sz);   \
+   memcpy((VOID *)(_xmlBuf)->buf.pVal, (const VOID *)(_src), _sz);   \
 } while (0)
 
 #endif /* _GTP_TYPES_HPP_ */

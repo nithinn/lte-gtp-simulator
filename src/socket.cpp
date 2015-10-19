@@ -548,7 +548,7 @@ GSimSocket::GSimSocket(SockType_E   sockType)
 {
    if (SOCK_TYPE_STDIN == sockType)
    {
-      S32 ret = (fileno(stdin), F_SETFL,\
+      S32 ret = fcntl(fileno(stdin), F_SETFL,\
             (fcntl(fileno(stdin), F_GETFL) | O_NONBLOCK));
       if (ret < 0)
       {
