@@ -20,7 +20,21 @@
    <ie type="serving_network" instance="0" value="112233"> </ie>
    <ie type="apn" instance="0" value="mnc.112.mcc.223.gprs"> </ie>
    <ie type="rat_type" instance="0" value="1"> </ie>
+   <ie type="pdn_type" instance="0" value="ipv4"> </ie>
+   <ie type="paa" instance="0" value="0x0100010101"> </ie>
+   <!--
    <ie type="fteid" instance="0" value="0x86000000020a000210"> </ie>
+   -->
+   <ie type="fteid" instance="0">
+     <param type="iftype" value="10"> </param>
+     <param type="teid" value="1"> </param>
+     <param type="ipv4" value="192.168.1.1"> </param>
+   </ie>
+   <ie type="fteid" instance="1">
+     <param type="iftype" value="7"> </param>
+     <param type="teid" value="0"> </param>
+     <param type="ipv4" value="10.0.3.15"> </param>
+   </ie>
    <ie type="bcontext" instance="0" count="1">
       <ie type="ebi" instance="0" value="5"> </ie>
       <ie type="fteid" instance="0" value="0x86000000020a000210"> </ie>
