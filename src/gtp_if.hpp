@@ -20,8 +20,6 @@
 class   GtpIe;
 typedef std::list<GtpIe *>       GtpIeLst;
 typedef GtpIeLst::iterator       GtpIeLstItr;
-typedef std::list<XmlBuffer *>   XmlBufferLst;
-typedef XmlBufferLst::iterator   XmlBufferLstItr;
 
 class GtpIe
 {
@@ -40,7 +38,9 @@ class GtpIe
       GtpInstance_t  instance() {return hdr.instance;}
       virtual ~GtpIe() {};
 
+      // the factory method returns Gtp IE instance
       static GtpIe*  createGtpIe(GtpIeType_E ieType, GtpInstance_t instance);
+
       U8*            getIeBufPtr(U8*, GtpLength_t, GtpIeType_E, GtpInstance_t,\
                                  U32);
 };

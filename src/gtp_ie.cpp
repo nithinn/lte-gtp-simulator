@@ -44,33 +44,35 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
    switch (ieType)
    {
       case GTP_IE_IMSI:
-         return new GtpImsi;
+         return new GtpImsi(instance);
       case GTP_IE_MSISDN:
-         return new GtpMsisdn;
+         return new GtpMsisdn(instance);
       case GTP_IE_ULI:
-         return new GtpUli;
+         return new GtpUli(instance);
       case GTP_IE_BEARER_CNTXT:
-         return new GtpBearerContext;
+         return new GtpBearerContext(instance);
       case GTP_IE_FTEID:
-         return new GtpFteid;
+         return new GtpFteid(instance);
       case GTP_IE_EBI:
-         return new GtpEbi;
+         return new GtpEbi(instance);
       case GTP_IE_MEI:
-         return new GtpMei;
+         return new GtpMei(instance);
       case GTP_IE_RAT_TYPE:
-         return new GtpRatType;
+         return new GtpRatType(instance);
       case GTP_IE_SERVING_NW:
-         return new GtpServingNw;
+         return new GtpServingNw(instance);
       case GTP_IE_APN:
-         return new GtpApn;
+         return new GtpApn(instance);
       case GTP_IE_AMBR:
-         return new GtpAmbr;
+         return new GtpAmbr(instance);
       case GTP_IE_INDICATION:
-         return new GtpIndication;
+         return new GtpIndication(instance);
       case GTP_IE_SELECTION_MODE:
-         return new GtpSelectionMode;
+         return new GtpSelectionMode(instance);
       case GTP_IE_PDN_TYPE:
-         return new GtpPdnType;
+         return new GtpPdnType(instance);
+      case GTP_IE_PAA:
+         return new GtpPaa(instance);
       default:
          return NULL;
    }
@@ -571,7 +573,7 @@ RETVAL GtpFteid::encode(XmlBufferLst *pBufLst)
    {
       XmlBuffer   *pXmlBuf = *b;
 
-     if (STRCASECMP(pXmlBuf->paramName, "iftype") == 0)
+      if (STRCASECMP(pXmlBuf->paramName, "iftype") == 0)
       {
          GtpIfType_E ifType = gtpConvStrToIfType((const S8*)pXmlBuf->buf.pVal,\
                pXmlBuf->buf.len);
@@ -1300,3 +1302,108 @@ RETVAL GtpPdnType::encode(U8 *pBuf, U32 *pLen)
    LOG_EXITFN(ROK);
 }
 
+
+RETVAL GtpPaa::decode(const Buffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   MEMCPY(m_val, pBuf->pVal, pBuf->len);
+   this->hdr.len = pBuf->len;
+
+   LOG_EXITFN(ROK);
+}
+
+RETVAL GtpPaa::encode(XmlBuffer *pBuf)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_PAA_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   {
+      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid PAA Buffer Length [%d]", pBuf->buf.len);
+      ret = RFAILED;
+   }
+
+   delete pBuf;
+   LOG_EXITFN(ret);
+}
+
+
+RETVAL GtpPaa::encode(XmlBufferLst *pBufLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL ret = ROK;
+
+   if (pBufLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
+   {
+      XmlBuffer   *pXmlBuf = *b;
+
+      if (STRCASECMP(pXmlBuf->paramName, "pdn_type") == 0)
+      {
+         if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv4"))
+         {
+            GTP_ENC_PDN_TYPE(m_val, GTP_PDN_TYPE_IPV4);
+         }
+         else if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv6"))
+         {
+            GTP_ENC_PDN_TYPE(m_val, GTP_PDN_TYPE_IPV6);
+         }
+         else if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv4v6"))
+         {
+            GTP_ENC_PDN_TYPE(m_val, GTP_PDN_TYPE_IPV4V6);
+         }
+         else
+         {
+            LOG_DEBUG("Invalid PDN Type [%s]", pXmlBuf->buf.pVal);
+            ret = RFAILED;
+            break;
+         }
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "ipv4") == 0)
+      {
+         IpAddr ipAddr = convIpStrToIpAddr((const S8 *)pXmlBuf->buf.pVal,\
+               pXmlBuf->buf.len);
+         GTP_ENC_IPV4_ADDR((m_val + 1), ipAddr.u.ipv4Addr.addr);
+         this->hdr.len += IPV4_ADDR_MAX_LEN;
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "ipv6") == 0)
+      {
+         IpAddr ipAddr = convIpStrToIpAddr((const S8 *)pXmlBuf->buf.pVal,\
+               pXmlBuf->buf.len);
+         GTP_ENC_IPV6_ADDR((m_val + 1), ipAddr.u.ipv6Addr.addr);
+         this->hdr.len += IPV6_ADDR_MAX_LEN;
+      }
+      else if (STRCASECMP(pXmlBuf->paramName, "ipv4v6") == 0)
+      {
+      }
+      else
+      {
+         LOG_ERROR("PAA Parameter type [%s]", pXmlBuf->paramName);
+      }
+
+      delete *b;
+   }
+
+   delete pBufLst;
+   LOG_EXITFN(ret);
+}
+
+RETVAL GtpPaa::encode(U8 *pBuf, U32 *pLen)
+{
+   LOG_ENTERFN();
+
+   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+
+   LOG_EXITFN(ROK);
+}

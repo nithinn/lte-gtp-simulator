@@ -360,17 +360,24 @@ typedef enum
    GTP_RAT_TYPE_MAX
 } GtpRatType_E;
 
+struct XmlBuffer;
+typedef std::list<XmlBuffer *>   XmlBufferLst;
+typedef XmlBufferLst::iterator   XmlBufferLstItr;
+
 struct XmlBuffer
 {
 #define           XML_BUFFER_PARAM_NAME_LEN        64
    S8             paramName[XML_BUFFER_PARAM_NAME_LEN];
    Buffer         buf;
 
+   XmlBufferLst   bufLst;
+
    ~XmlBuffer()
    {
       delete[] buf.pVal;
    }
 };
+
 
 typedef enum
 {
@@ -381,6 +388,7 @@ typedef enum
 
 typedef enum
 {
+   GTP_PDN_TYPE_INVALID,
    GTP_PDN_TYPE_IPV4,
    GTP_PDN_TYPE_IPV6,
    GTP_PDN_TYPE_IPV4V6,

@@ -212,6 +212,7 @@ VOID Config::setT3TimerSeconds(U32 val)
 
 VOID Config::setN3Requests(U32 n)
 {
+#if 0
     if (0 == n)
     {
         LOG_FATAL("Invalid N3 Requests value");
@@ -219,8 +220,10 @@ VOID Config::setN3Requests(U32 n)
     }
     else
     {
-        pCfg->n3Req = n;
     }
+#else
+        pCfg->n3Req = n;
+#endif
 }
 
 U32 Config::getN3Requests()

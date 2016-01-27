@@ -32,10 +32,10 @@ class GtpImsi : public GtpIe
       U8          m_val[GTP_IMSI_MAX_LEN];
 
    public:
-      GtpImsi()
+      GtpImsi(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_IMSI;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          MEMSET(m_val, 0, GTP_IMSI_MAX_LEN);
       }
@@ -61,10 +61,10 @@ class GtpMsisdn : public GtpIe
       U8       m_val[GTP_MSISDN_MAX_LEN];
 
    public:
-      GtpMsisdn()
+      GtpMsisdn(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_MSISDN;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          MEMSET(m_val, 0, GTP_MSISDN_MAX_LEN);
       }
@@ -101,10 +101,10 @@ class GtpUli : public GtpIe
       U8          m_val[GTP_ULI_MAX_LEN];
 
    public:
-      GtpUli()
+      GtpUli(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_ULI;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          m_pres = 0;
          MEMSET(m_val, 0, GTP_ULI_MAX_LEN);
@@ -129,10 +129,10 @@ class GtpBearerContext : public GtpIe
       U8             *m_pVal;
 
    public:
-      GtpBearerContext()
+      GtpBearerContext(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_BEARER_CNTXT;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          m_pVal = NULL;
       }
@@ -165,10 +165,10 @@ class GtpFteid : public GtpIe
       U8                   m_val[GTP_FTEID_MAX_LEN];
 
    public:
-      GtpFteid()
+      GtpFteid(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_FTEID;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          m_pres = 0;
          m_teid = 0;
@@ -197,10 +197,10 @@ class GtpEbi : public GtpIe
       U8          m_ebi;
 
    public:
-      GtpEbi()
+      GtpEbi(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_EBI;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          m_ebi = 0;
       }
@@ -223,10 +223,10 @@ class GtpMei : public GtpIe
       U8       m_val[GTP_MEI_MAX_LEN];
 
    public:
-      GtpMei()
+      GtpMei(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_MEI;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          MEMSET(m_val, 0, GTP_MEI_MAX_LEN);
       }
@@ -247,10 +247,10 @@ class GtpRatType : public GtpIe
       GtpRatType_E      m_ratType;
 
    public:
-      GtpRatType()
+      GtpRatType(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_RAT_TYPE;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          m_ratType = GTP_RAT_TYPE_RESERVED;
       }
@@ -275,10 +275,10 @@ class GtpServingNw : public GtpIe
       GtpPlmnId_t    m_plmnId;
 
    public:
-      GtpServingNw()
+      GtpServingNw(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_SERVING_NW;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          MEMSET(&m_plmnId, 0, sizeof(GtpPlmnId_t));
          MEMSET(m_val, 0, GTP_SERVING_NW_MAX_BUF_LEN);
@@ -302,10 +302,10 @@ class GtpApn : public GtpIe
       U8             m_val[GTP_APN_MAX_LEN];
 
    public:
-      GtpApn()
+      GtpApn(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_APN;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          MEMSET(m_val, 0, GTP_APN_MAX_LEN);
       }
@@ -329,10 +329,10 @@ class GtpAmbr : public GtpIe
       U8             m_val[GTP_AMBR_MAX_BUF_LEN];
 
    public:
-      GtpAmbr()
+      GtpAmbr(GtpInstance_t inst)
       {
          hdr.ieType   = GTP_IE_AMBR;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len      = 0;
          ul           = 0;
          dl           = 0;
@@ -376,10 +376,10 @@ class GtpIndication : public GtpIe
       U8       m_val[GTP_INDICATION_MAX_BUF_LEN];
 
    public:
-      GtpIndication()
+      GtpIndication(GtpInstance_t inst)
       {
          hdr.ieType   = GTP_IE_INDICATION;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len      = 0;
          MEMSET(m_val, 0, GTP_INDICATION_MAX_BUF_LEN);
       }
@@ -407,10 +407,10 @@ class GtpSelectionMode : public GtpIe
       U8       m_selMode;
 
    public:
-      GtpSelectionMode()
+      GtpSelectionMode(GtpInstance_t inst)
       {
          hdr.ieType   = GTP_IE_SELECTION_MODE;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len      = 0;
          m_selMode = 0;
       }
@@ -433,10 +433,10 @@ class GtpPdnType : public GtpIe
       GtpPdnType_E   m_pdnType;
 
    public:
-      GtpPdnType()
+      GtpPdnType(GtpInstance_t inst)
       {
          hdr.ieType = GTP_IE_PDN_TYPE;
-         hdr.instance = 0;
+         hdr.instance = inst;
          hdr.len = 0;
          m_pdnType = GTP_PDN_TYPE_IPV4;
       }
@@ -451,4 +451,30 @@ class GtpPdnType : public GtpIe
       BOOL   isGroupedIe() {return FALSE;}
 };
 
+
+class GtpPaa : public GtpIe
+{
+#define GTP_PAA_MAX_BUF_LEN    22
+   private:
+      GtpPdnType_E   m_pdnType;
+      U8             m_val[GTP_PAA_MAX_BUF_LEN];
+
+   public:
+      GtpPaa(GtpInstance_t inst)
+      {
+         hdr.ieType = GTP_IE_PAA;
+         hdr.instance = inst;
+         hdr.len = 0;
+         m_pdnType = GTP_PDN_TYPE_IPV4;
+      }
+
+      RETVAL encode(const S8 *pVal) {return ROK;}
+      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(XmlBufferLst *pBuf);
+      RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
+      RETVAL encode(U8 *pBuf, U32 *pLen);
+
+      RETVAL decode(const Buffer *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
 #endif
