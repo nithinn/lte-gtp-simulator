@@ -18,6 +18,9 @@
 #include <stdlib.h>
 #include <list>
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "types.hpp"
 #include "logger.hpp"
 #include "error.hpp"
