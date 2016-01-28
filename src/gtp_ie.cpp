@@ -89,7 +89,7 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
  *    ROK if imsi is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpImsi::encode(const S8 *pVal)
+RETVAL GtpImsi::buildIe(const S8 *pVal)
 {
    U32      imsiStrLen = 0;
    U32      indx       = 0;
@@ -142,7 +142,7 @@ RETVAL GtpImsi::decode(const Buffer *pBuf)
  *    ROK if imsi is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpImsi::encode(const HexString *value)
+RETVAL GtpImsi::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
@@ -200,7 +200,7 @@ VOID GtpImsi::setImsi(GtpImsiKey *pImsi)
  *    ROK if msisdn is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpMsisdn::encode(const S8 *pVal)
+RETVAL GtpMsisdn::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN(); 
 
@@ -253,7 +253,7 @@ RETVAL GtpMsisdn::decode(const Buffer *pBuf)
  *    ROK if msisdn is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpMsisdn::encode(const HexString *value)
+RETVAL GtpMsisdn::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
@@ -312,7 +312,7 @@ RETVAL GtpUli::decode(const Buffer *pBuf)
  *    ROK if uli is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpUli::encode(const HexString *value)
+RETVAL GtpUli::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
@@ -331,7 +331,7 @@ RETVAL GtpUli::encode(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpUli::encode(XmlBufferLst *pBufLst)
+RETVAL GtpUli::buildIe(XmlBufferLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -467,7 +467,7 @@ GtpEbi_t GtpBearerContext::getEbi()
    LOG_EXITFN(ebi);
 }
 
-RETVAL GtpBearerContext::encode(const HexString *value)
+RETVAL GtpBearerContext::buildIe(const HexString *value)
 {
    RETVAL  ret = ROK;
 
@@ -487,7 +487,7 @@ RETVAL GtpBearerContext::encode(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpBearerContext::encode(const GtpIeLst *pIeLst)
+RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
 {
    LOG_ENTERFN();
 
@@ -535,7 +535,7 @@ RETVAL GtpFteid::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpFteid::encode(const HexString *value)
+RETVAL GtpFteid::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
@@ -554,7 +554,7 @@ RETVAL GtpFteid::encode(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpFteid::encode(XmlBufferLst *pBufLst)
+RETVAL GtpFteid::buildIe(XmlBufferLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -646,7 +646,7 @@ VOID GtpFteid::setIpAddr(const IpAddr *pIp)
    LOG_EXITVOID();
 }
 
-RETVAL GtpEbi::encode(const S8 *pVal)
+RETVAL GtpEbi::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
    
@@ -740,7 +740,7 @@ U32               occr
  *    ROK if mei is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpMei::encode(const S8 *pVal)
+RETVAL GtpMei::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN(); 
 
@@ -793,7 +793,7 @@ RETVAL GtpMei::decode(const Buffer *pBuf)
  *    ROK if mei is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpMei::encode(const HexString *value)
+RETVAL GtpMei::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
@@ -839,7 +839,7 @@ RETVAL GtpMei::encode(U8 *pBuf, U32 *pLen)
  *
  * @return 
  */
-RETVAL GtpRatType::encode(const S8 *pVal)
+RETVAL GtpRatType::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
    
@@ -875,7 +875,7 @@ RETVAL GtpRatType::encode(U8 *pBuf, U32 *pLen)
 }
 
 
-RETVAL GtpServingNw::encode(const S8 *pVal)
+RETVAL GtpServingNw::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
    
@@ -912,7 +912,7 @@ RETVAL GtpServingNw::encode(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpServingNw::encode(const HexString *value)
+RETVAL GtpServingNw::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
    
@@ -951,7 +951,7 @@ RETVAL GtpServingNw::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpApn::encode(const S8 *pVal)
+RETVAL GtpApn::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
    
@@ -990,7 +990,7 @@ RETVAL GtpApn::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpAmbr::encode(const HexString *value)
+RETVAL GtpAmbr::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
@@ -1009,7 +1009,7 @@ RETVAL GtpAmbr::encode(const HexString *value)
 }
 
 
-RETVAL GtpAmbr::encode(XmlBufferLst *pBufLst)
+RETVAL GtpAmbr::buildIe(XmlBufferLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -1058,7 +1058,7 @@ RETVAL GtpAmbr::encode(U8 *pBuf, U32 *pLen)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpIndication::encode(XmlBufferLst *pBufLst)
+RETVAL GtpIndication::buildIe(XmlBufferLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -1162,7 +1162,7 @@ RETVAL GtpAmbr::decode(const Buffer *pBuf)
 }
 
 
-RETVAL GtpIndication::encode(const HexString *value)
+RETVAL GtpIndication::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
@@ -1200,7 +1200,7 @@ RETVAL GtpIndication::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpSelectionMode::encode(const S8 *pVal)
+RETVAL GtpSelectionMode::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
 
@@ -1235,7 +1235,7 @@ RETVAL GtpSelectionMode::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpPdnType::encode(const S8 *pVal)
+RETVAL GtpPdnType::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
 
@@ -1304,7 +1304,7 @@ RETVAL GtpPaa::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpPaa::encode(const HexString *value)
+RETVAL GtpPaa::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
@@ -1323,7 +1323,7 @@ RETVAL GtpPaa::encode(const HexString *value)
 }
 
 
-RETVAL GtpPaa::encode(XmlBufferLst *pBufLst)
+RETVAL GtpPaa::buildIe(XmlBufferLst *pBufLst)
 {
    LOG_ENTERFN();
 

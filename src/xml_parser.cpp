@@ -123,8 +123,8 @@ MsgTask* XmlParser::procSend(xml_node *pSend)
 {
    LOG_ENTERFN();
 
-   GtpIeLst         ieLst;
-   MsgTask           *pMsgTask = NULL;
+   GtpIeLst ieLst;
+   MsgTask  *pMsgTask = NULL;
 
    try
    {
@@ -291,11 +291,11 @@ RETVAL XmlParser::procIe(xml_node *pXmlIe, GtpIeLst *pIeLst)
          {
             /* skipping '0x' part of the hex buffer */
             HexString hexStr = (value + 2);
-            ret = pIe->encode(&hexStr);
+            ret = pIe->buildIe(&hexStr);
          }
          else
          {
-            ret = pIe->encode(value);
+            ret = pIe->buildIe(value);
          }
       }
 
@@ -366,11 +366,12 @@ RETVAL XmlParser::procValidate(xml_node *pValidate)
  */
 RETVAL XmlParser::procComplexIe(GtpIe *pIe, xml_node *pXmlIe)
 {
-   S16            ret = ROK;
-   XmlBufferLst   *pBufLst = new XmlBufferLst;
+   S16            ret      = ROK;
+   XmlBufferLst   *pBufLst = NULL;
 
    LOG_ENTERFN();
 
+   pBufLst = new XmlBufferLst;
    for (xml_node node = pXmlIe->first_child(); node;\
          node = node.next_sibling())
    {
@@ -392,7 +393,7 @@ RETVAL XmlParser::procComplexIe(GtpIe *pIe, xml_node *pXmlIe)
       pBufLst->push_back(pParam);
    }
 
-   pIe->encode(pBufLst);
+   pIe->buildIe(pBufLst);
 
    LOG_EXITFN(ret);
 }
@@ -418,7 +419,7 @@ RETVAL XmlParser::procGroupedIe(GtpIe *pIe, xml_node *pXmlIe)
       }
    }
 
-   pIe->encode(&ieLst);
+   pIe->buildIe(&ieLst);
 
    LOG_EXITFN(ret);
 }
