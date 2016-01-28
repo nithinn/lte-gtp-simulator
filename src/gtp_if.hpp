@@ -34,7 +34,7 @@ class GtpIe
       virtual RETVAL buildIe(const HexString *value) = 0;
 
       /* builds ie from list of buffers, used for complex IEs (e.g. ULI) */
-      virtual RETVAL buildIe(XmlBufferLst *pBuf) = 0;
+      virtual RETVAL buildIe(IeParamLst *pBuf) = 0;
 
       /* builds is from a list of IEs, Grouped IEs */
       virtual RETVAL buildIe(const GtpIeLst *pIeLst) = 0;

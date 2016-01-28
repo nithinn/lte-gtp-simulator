@@ -367,17 +367,17 @@ RETVAL XmlParser::procValidate(xml_node *pValidate)
 RETVAL XmlParser::procComplexIe(GtpIe *pIe, xml_node *pXmlIe)
 {
    S16            ret      = ROK;
-   XmlBufferLst   *pBufLst = NULL;
+   IeParamLst   *pBufLst = NULL;
 
    LOG_ENTERFN();
 
-   pBufLst = new XmlBufferLst;
+   pBufLst = new IeParamLst;
    for (xml_node node = pXmlIe->first_child(); node;\
          node = node.next_sibling())
    {
       const S8* pVal = node.attribute("value").value();
 
-      XmlBuffer   *pParam = new XmlBuffer;
+      IeParam   *pParam = new IeParam;
       STRCPY(pParam->paramName, node.attribute("type").value());
 
       if (XML_HEX_VAL(pVal))

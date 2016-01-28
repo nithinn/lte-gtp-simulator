@@ -360,21 +360,21 @@ typedef enum
    GTP_RAT_TYPE_MAX
 } GtpRatType_E;
 
-struct XmlBuffer
+struct IeParam
 {
 #define           XML_BUFFER_PARAM_NAME_LEN        64
    S8             paramName[XML_BUFFER_PARAM_NAME_LEN];
    Buffer         buf;
 
-   ~XmlBuffer()
+   ~IeParam()
    {
       delete[] buf.pVal;
    }
 };
 
-struct XmlBuffer;
-typedef std::list<XmlBuffer*>    XmlBufferLst;
-typedef XmlBufferLst::iterator   XmlBufferLstItr;
+struct IeParam;
+typedef std::list<IeParam*>      IeParamLst;
+typedef IeParamLst::iterator     IeParamLstItr;
 
 typedef enum
 {

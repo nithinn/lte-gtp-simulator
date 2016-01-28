@@ -349,7 +349,7 @@ RETVAL GtpUli::buildIe(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpUli::buildIe(XmlBufferLst *pBufLst)
+RETVAL GtpUli::buildIe(IeParamLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -363,9 +363,9 @@ RETVAL GtpUli::buildIe(XmlBufferLst *pBufLst)
 
    U8    pres = 0;
    U8    *pBuf = m_val + 1;   /* skip the first byte for ULI parameter flags */
-   for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
+   for (IeParamLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
    {
-      XmlBuffer   *pXmlBuf = *b;
+      IeParam   *pXmlBuf = *b;
 
       if (STRCASECMP(pXmlBuf->paramName, "cgi") == 0)
       {
@@ -577,7 +577,7 @@ RETVAL GtpFteid::buildIe(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpFteid::buildIe(XmlBufferLst *pBufLst)
+RETVAL GtpFteid::buildIe(IeParamLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -587,9 +587,9 @@ RETVAL GtpFteid::buildIe(XmlBufferLst *pBufLst)
       LOG_EXITFN(RFAILED);
    }
 
-   for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
+   for (IeParamLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
    {
-      XmlBuffer   *pXmlBuf = *b;
+      IeParam   *pXmlBuf = *b;
 
       if (STRCASECMP(pXmlBuf->paramName, "iftype") == 0)
       {
@@ -1080,7 +1080,7 @@ RETVAL GtpAmbr::buildIe(const HexString *value)
 }
 
 
-RETVAL GtpAmbr::buildIe(XmlBufferLst *pBufLst)
+RETVAL GtpAmbr::buildIe(IeParamLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -1090,9 +1090,9 @@ RETVAL GtpAmbr::buildIe(XmlBufferLst *pBufLst)
       LOG_EXITFN(RFAILED);
    }
 
-   for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
+   for (IeParamLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
    {
-      XmlBuffer   *pXmlBuf = *b;
+      IeParam   *pXmlBuf = *b;
 
      if (STRCASECMP(pXmlBuf->paramName, "ul") == 0)
       {
@@ -1133,7 +1133,7 @@ GtpLength_t GtpAmbr::encode(U8 *pBuf)
    LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
-RETVAL GtpIndication::buildIe(XmlBufferLst *pBufLst)
+RETVAL GtpIndication::buildIe(IeParamLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -1144,9 +1144,9 @@ RETVAL GtpIndication::buildIe(XmlBufferLst *pBufLst)
    }
 
    U32 bitmask = 0;
-   for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
+   for (IeParamLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
    {
-      XmlBuffer   *pXmlBuf = *b;
+      IeParam   *pXmlBuf = *b;
 
       if (STRCASECMP(pXmlBuf->paramName, "daf") == 0)
       {
@@ -1417,7 +1417,7 @@ RETVAL GtpPaa::buildIe(const HexString *value)
 }
 
 
-RETVAL GtpPaa::buildIe(XmlBufferLst *pBufLst)
+RETVAL GtpPaa::buildIe(IeParamLst *pBufLst)
 {
    LOG_ENTERFN();
 
@@ -1429,9 +1429,9 @@ RETVAL GtpPaa::buildIe(XmlBufferLst *pBufLst)
       LOG_EXITFN(RFAILED);
    }
 
-   for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
+   for (IeParamLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
    {
-      XmlBuffer   *pXmlBuf = *b;
+      IeParam   *pXmlBuf = *b;
 
       if (STRCASECMP(pXmlBuf->paramName, "pdn_type") == 0)
       {
