@@ -159,7 +159,6 @@ RETVAL GtpMsg::encode(U8 *pBuf, U32 *pLen)
    LOG_ENTERFN();
 
    U8       *pTmpBuf = pBuf;
-   U32      len = 0;
    RETVAL   ret = ROK;
 
    /* Message header will be encoded once all the ies are encoded.
@@ -180,12 +179,11 @@ RETVAL GtpMsg::encode(U8 *pBuf, U32 *pLen)
    /* encode all the IEs */
    for (GtpIeLst::iterator ie = m_ieLst.begin(); ie != m_ieLst.end(); ie++)
    {
-      ret = (*ie)->encode(pTmpBuf, &len);
+      U32 len = (*ie)->encode(pTmpBuf);
       if (ROK == ret)
       {
          pTmpBuf += len;
          *pLen += len;
-         len = 0;
       }
       else
       {

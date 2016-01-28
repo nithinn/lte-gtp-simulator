@@ -44,7 +44,7 @@ class GtpImsi : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       VOID   setImsi(GtpImsiKey*);
@@ -73,7 +73,7 @@ class GtpMsisdn : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -114,7 +114,7 @@ class GtpUli : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -143,7 +143,7 @@ class GtpBearerContext : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst);
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return TRUE;}
@@ -182,7 +182,7 @@ class GtpFteid : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       VOID   setTeid(GtpTeid_t teid);
@@ -209,7 +209,7 @@ class GtpEbi : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -235,7 +235,7 @@ class GtpMei : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -259,7 +259,7 @@ class GtpRatType : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -288,7 +288,7 @@ class GtpServingNw : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -314,7 +314,7 @@ class GtpApn : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -343,7 +343,7 @@ class GtpAmbr : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -388,7 +388,7 @@ class GtpIndication : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -419,7 +419,7 @@ class GtpSelectionMode : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -445,7 +445,7 @@ class GtpPdnType : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(XmlBufferLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
@@ -472,7 +472,7 @@ class GtpPaa : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(XmlBufferLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      RETVAL encode(U8 *pBuf, U32 *pLen);
+      GtpLength_t encode(U8 *pBuf);
 
       RETVAL decode(const Buffer *pBuf);
       BOOL   isGroupedIe() {return FALSE;}

@@ -169,13 +169,17 @@ RETVAL GtpImsi::buildIe(const HexString *value)
  *
  * @return 
  */
-RETVAL GtpImsi::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpImsi::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 
@@ -239,6 +243,7 @@ RETVAL GtpMsisdn::decode(const Buffer *pBuf)
    LOG_ENTERFN();
 
    MEMCPY(m_val, pBuf->pVal, pBuf->len);
+   this->hdr.len = pBuf->len;
 
    LOG_EXITFN(ROK);
 }
@@ -282,13 +287,17 @@ RETVAL GtpMsisdn::buildIe(const HexString *value)
  *
  * @return 
  */
-RETVAL GtpMsisdn::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpMsisdn::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 
@@ -393,13 +402,17 @@ RETVAL GtpUli::buildIe(XmlBufferLst *pBufLst)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpUli::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpUli::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 GtpBearerContext::~GtpBearerContext()
@@ -492,7 +505,6 @@ RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
    LOG_ENTERFN();
 
    RETVAL                     ret = ROK;
-   U32                        len = 0;
    U8                         buf[GTP_BEARER_CNTXT_MAX_LEN];
    U8                         *pBuf = &buf[0];
    GtpIeLst::const_iterator  ie;
@@ -501,10 +513,9 @@ RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
    MEMSET(buf, 0, GTP_BEARER_CNTXT_MAX_LEN); 
    for (ie = pIeLst->begin(); ie != pIeLst->end(); ie++)
    {
-      (*ie)->encode(pBuf, &len);
+      U32 len = (*ie)->encode(pBuf);
       pBuf += len;
       this->hdr.len += len;
-      len = 0;
 
       delete *ie;
    }
@@ -515,13 +526,17 @@ RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpBearerContext::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpBearerContext::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_pVal, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_pVal, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 RETVAL GtpFteid::decode(const Buffer *pBuf)
@@ -617,13 +632,17 @@ RETVAL GtpFteid::buildIe(XmlBufferLst *pBufLst)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpFteid::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpFteid::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 VOID GtpFteid::setTeid(GtpTeid_t teid)
@@ -666,7 +685,7 @@ RETVAL GtpEbi::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpEbi::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpEbi::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
@@ -676,9 +695,7 @@ RETVAL GtpEbi::encode(U8 *pBuf, U32 *pLen)
    pTmpBuf += GTP_IE_HDR_LEN;
 
    GTP_ENC_EBI(pTmpBuf, m_ebi);
-   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
-
-   LOG_EXITFN(ROK);
+   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
 
 /**
@@ -779,6 +796,7 @@ RETVAL GtpMei::decode(const Buffer *pBuf)
    LOG_ENTERFN();
 
    MEMCPY(m_val, pBuf->pVal, pBuf->len);
+   this->hdr.len = pBuf->len;
 
    LOG_EXITFN(ROK);
 }
@@ -822,13 +840,17 @@ RETVAL GtpMei::buildIe(const HexString *value)
  *
  * @return 
  */
-RETVAL GtpMei::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpMei::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 
@@ -859,7 +881,7 @@ RETVAL GtpRatType::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpRatType::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpRatType::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
@@ -869,9 +891,8 @@ RETVAL GtpRatType::encode(U8 *pBuf, U32 *pLen)
    pTmpBuf += GTP_IE_HDR_LEN;
 
    GTP_ENC_RAT_TYPE(pTmpBuf, m_ratType);
-   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
 
-   LOG_EXITFN(ROK);
+   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
 
 
@@ -932,13 +953,17 @@ RETVAL GtpServingNw::buildIe(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpServingNw::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpServingNw::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 RETVAL GtpServingNw::decode(const Buffer *pBuf)
@@ -971,13 +996,17 @@ RETVAL GtpApn::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpApn::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpApn::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 RETVAL GtpApn::decode(const Buffer *pBuf)
@@ -1049,13 +1078,17 @@ RETVAL GtpAmbr::buildIe(XmlBufferLst *pBufLst)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpAmbr::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpAmbr::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 RETVAL GtpIndication::buildIe(XmlBufferLst *pBufLst)
@@ -1181,13 +1214,17 @@ RETVAL GtpIndication::buildIe(const HexString *value)
 }
 
 
-RETVAL GtpIndication::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpIndication::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 RETVAL GtpIndication::decode(const Buffer *pBuf)
@@ -1210,7 +1247,7 @@ RETVAL GtpSelectionMode::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpSelectionMode::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpSelectionMode::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
@@ -1220,9 +1257,8 @@ RETVAL GtpSelectionMode::encode(U8 *pBuf, U32 *pLen)
    pTmpBuf += GTP_IE_HDR_LEN;
 
    GTP_ENC_SEL_MODE(pTmpBuf, m_selMode);
-   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
 
-   LOG_EXITFN(ROK);
+   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
 
 RETVAL GtpSelectionMode::decode(const Buffer *pBuf)
@@ -1278,7 +1314,7 @@ RETVAL GtpPdnType::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpPdnType::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpPdnType::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
@@ -1286,11 +1322,9 @@ RETVAL GtpPdnType::encode(U8 *pBuf, U32 *pLen)
 
    GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
    pTmpBuf += GTP_IE_HDR_LEN;
-
    GTP_ENC_PDN_TYPE(pTmpBuf, m_pdnType);
-   *pLen = this->hdr.len + GTP_IE_HDR_LEN;
 
-   LOG_EXITFN(ROK);
+   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
 
 
@@ -1389,11 +1423,15 @@ RETVAL GtpPaa::buildIe(XmlBufferLst *pBufLst)
    LOG_EXITFN(ret);
 }
 
-RETVAL GtpPaa::encode(U8 *pBuf, U32 *pLen)
+GtpLength_t GtpPaa::encode(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   gtpEncIeUsingHexBuf(m_val, &this->hdr, pBuf, pLen);
+   U8 *pTmpBuf = pBuf;
 
-   LOG_EXITFN(ROK);
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }

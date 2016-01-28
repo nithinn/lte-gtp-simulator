@@ -39,10 +39,13 @@ class GtpIe
       /* builds is from a list of IEs, Grouped IEs */
       virtual RETVAL buildIe(const GtpIeLst *pIeLst) = 0;
 
-      /* encodes IE header and Contents into a byte buffer pointed by pBuf */
-      virtual RETVAL encode(U8 *pBuf, U32 *pLen) = 0;
+      /* encodes IE header and Contents into a byte buffer pointed by pBuf
+       * returns the length of encoded buffer
+       */
+      virtual GtpLength_t  encode(U8 *pBuf) = 0;
 
-      virtual RETVAL decode(const Buffer* pBuf) = 0;
+      virtual RETVAL       decode(const Buffer *pBuf) = 0;
+
       virtual BOOL   isGroupedIe() = 0;
       GtpIeType_E    type() {return hdr.ieType;}
       GtpInstance_t  instance() {return hdr.instance;}
