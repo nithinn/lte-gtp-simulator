@@ -67,4 +67,12 @@
    _buf[3] = (U8)((0x000000ff & _v));              \
 }
 
+/* Encodes least significant 3 bytes of unsigned int into byte buffer */
+#define GSIM_ENC_3B(_buf, _v)                      \
+{                                                  \
+   _buf[0] = (U8)((0x00ff0000 & _v) >> 16);        \
+   _buf[1] = (U8)((0x0000ff00 & _v) >> 8);         \
+   _buf[2] = (U8)((0x000000ff & _v));              \
+}
+
 #endif

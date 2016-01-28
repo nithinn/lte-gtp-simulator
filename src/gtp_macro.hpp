@@ -118,10 +118,10 @@
 #define GTP_DEC_TEID(_buf, _teid)                  \
 {                                                  \
    _teid = 0;                                      \
-   _teid |= ((U32)(_buf[0])) << 24;                \
-   _teid |= ((U32)(_buf[1])) << 16;                \
-   _teid |= ((U32)(_buf[2])) << 8;                 \
-   _teid |= ((U32)(_buf[3]));                      \
+   _teid |= ((U32)((_buf)[0])) << 24;                \
+   _teid |= ((U32)((_buf)[1])) << 16;                \
+   _teid |= ((U32)((_buf)[2])) << 8;                 \
+   _teid |= ((U32)((_buf)[3]));                      \
 }
 
 #define GTP_ENC_SEQN(_buf, _seqN)                  \

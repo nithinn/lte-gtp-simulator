@@ -361,6 +361,7 @@ RETVAL GtpUli::buildIe(XmlBufferLst *pBufLst)
       LOG_EXITFN(RFAILED);
    }
 
+   U8    pres = 0;
    U8    *pBuf = m_val + 1;   /* skip the first byte for ULI parameter flags */
    for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
    {
@@ -368,27 +369,27 @@ RETVAL GtpUli::buildIe(XmlBufferLst *pBufLst)
 
       if (STRCASECMP(pXmlBuf->paramName, "cgi") == 0)
       {
-         GSIM_SET_MASK(m_pres, GTP_ULI_CGI_PRESENT);
+         GSIM_SET_MASK(pres, GTP_ULI_CGI_PRESENT);
       }
       else if (STRCASECMP(pXmlBuf->paramName, "sai") == 0)
       {
-         GSIM_SET_MASK(m_pres, GTP_ULI_SAI_PRESENT);
+         GSIM_SET_MASK(pres, GTP_ULI_SAI_PRESENT);
       }
       else if (STRCASECMP(pXmlBuf->paramName, "rai") == 0)
       {
-         GSIM_SET_MASK(m_pres, GTP_ULI_RAI_PRESENT);
+         GSIM_SET_MASK(pres, GTP_ULI_RAI_PRESENT);
       }
       else if (STRCASECMP(pXmlBuf->paramName, "tai") == 0)
       {
-         GSIM_SET_MASK(m_pres, GTP_ULI_TAI_PRESENT);
+         GSIM_SET_MASK(pres, GTP_ULI_TAI_PRESENT);
       }
       else if (STRCASECMP(pXmlBuf->paramName, "ecgi") == 0)
       {
-         GSIM_SET_MASK(m_pres, GTP_ULI_ECGI_PRESENT);
+         GSIM_SET_MASK(pres, GTP_ULI_ECGI_PRESENT);
       }
       else if (STRCASECMP(pXmlBuf->paramName, "lai") == 0)
       {
-         GSIM_SET_MASK(m_pres, GTP_ULI_LAI_PRESENT);
+         GSIM_SET_MASK(pres, GTP_ULI_LAI_PRESENT);
       }
       else
       {
@@ -404,7 +405,7 @@ RETVAL GtpUli::buildIe(XmlBufferLst *pBufLst)
    }
 
    /* encoding 1 byte of ULI flags */
-   GSIM_ENC_U8(m_val, m_pres);
+   GSIM_ENC_U8(m_val, pres);
    this->hdr.len += 1;
 
    delete pBufLst;
@@ -424,16 +425,6 @@ GtpLength_t GtpUli::encode(U8 *pBuf)
    LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
-GtpBearerContext::~GtpBearerContext()
-{
-   for (GtpIeLstItr itr = m_ieLst.begin(); itr != m_ieLst.end(); itr++)
-   {
-      delete *itr;
-   }
-
-   delete[] m_pVal;
-}
-
 GtpLength_t GtpBearerContext::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
@@ -441,8 +432,7 @@ GtpLength_t GtpBearerContext::decode(const U8 *pBuf)
    U32 ieLen = 0;
 
    GTP_GET_IE_LEN(pBuf, ieLen);
-   m_pVal = new U8[ieLen];
-   MEMCPY(m_pVal, pBuf + GTP_IE_HDR_LEN, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
    this->hdr.len = ieLen;
 
    LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
@@ -453,7 +443,7 @@ VOID GtpBearerContext::setGtpuTeid(GtpTeid_t teid, GtpInstance_t inst)
    LOG_ENTERFN();
 
    GtpIeHdr    ieHdr;
-   U8          *pBuf = m_pVal;
+   U8          *pBuf = m_val;
    GtpLength_t ieLen = this->hdr.len;
 
    while (ieLen)
@@ -479,7 +469,7 @@ GtpEbi_t GtpBearerContext::getEbi()
 
    GtpEbi_t ebi = 0;
 
-   U8 *pBuf = getIeBufPtr(m_pVal, this->hdr.len, GTP_IE_EBI, 0, 1);
+   U8 *pBuf = getIeBufPtr(m_val, this->hdr.len, GTP_IE_EBI, 0, 1);
    if (NULL != pBuf)
    {
       GTP_DEC_EBI(pBuf, ebi);
@@ -500,9 +490,14 @@ RETVAL GtpBearerContext::buildIe(const HexString *value)
 
    try
    {
-      U32 hexBufLen = GSIM_CEIL_DIVISION(value->size(), 2);
-      m_pVal = new U8 [hexBufLen];
-      this->hdr.len = gtpConvStrToHex(value, m_pVal);
+      if (GTP_BEARER_CNTXT_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+      {
+         this->hdr.len = gtpConvStrToHex(value, m_val);
+      }
+      else
+      {
+         ret = RFAILED;
+      }
    }
    catch (exception &e)
    {
@@ -532,8 +527,7 @@ RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
       delete *ie;
    }
 
-   m_pVal = new U8 [this->hdr.len];
-   MEMCPY(m_pVal, buf, this->hdr.len);
+   MEMCPY(m_val, buf, this->hdr.len);
 
    LOG_EXITFN(ret);
 }
@@ -546,7 +540,7 @@ GtpLength_t GtpBearerContext::encode(U8 *pBuf)
 
    GTP_ENC_IE_HDR(pTmpBuf, &hdr);
    pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_pVal, hdr.len);
+   MEMCPY(pTmpBuf, m_val, hdr.len);
 
    LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
@@ -679,11 +673,28 @@ VOID GtpFteid::setIpAddr(const IpAddr *pIp)
    LOG_EXITVOID();
 }
 
+/**
+ * @brief
+ *    Decodes FTEID value and returns the teid
+ *
+ * @return
+ *    teid value
+ */
+GtpTeid_t GtpFteid::getTeid()
+{
+   LOG_ENTERFN();
+
+   GtpTeid_t   id = 0;
+   GTP_DEC_TEID(m_val + 1, id);
+
+   LOG_EXITFN(id);
+}
+
 RETVAL GtpEbi::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
    
-   m_ebi = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
    this->hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
@@ -711,7 +722,7 @@ GtpLength_t GtpEbi::encode(U8 *pBuf)
    GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
    pTmpBuf += GTP_IE_HDR_LEN;
 
-   GTP_ENC_EBI(pTmpBuf, m_ebi);
+   GTP_ENC_EBI(pTmpBuf, m_val);
    LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
 
@@ -885,7 +896,7 @@ RETVAL GtpRatType::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
    
-   m_ratType = (GtpRatType_E)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
    this->hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
@@ -912,7 +923,7 @@ GtpLength_t GtpRatType::encode(U8 *pBuf)
    GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
    pTmpBuf += GTP_IE_HDR_LEN;
 
-   GTP_ENC_RAT_TYPE(pTmpBuf, m_ratType);
+   GTP_ENC_RAT_TYPE(pTmpBuf, m_val);
 
    LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
@@ -932,24 +943,27 @@ RETVAL GtpServingNw::buildIe(const S8 *pVal)
       LOG_ERROR("Invalid Serving Network")
    }
 
-   m_plmnId.mcc[0] = GSIM_CHAR_TO_DIGIT(pVal[0]);
-   m_plmnId.mcc[1] = GSIM_CHAR_TO_DIGIT(pVal[1]);
-   m_plmnId.mcc[2] = GSIM_CHAR_TO_DIGIT(pVal[2]);
+   GtpPlmnId_t plmnId;
+   MEMSET(&plmnId, 0, sizeof(GtpPlmnId_t));
 
-   m_plmnId.mnc[0] = GSIM_CHAR_TO_DIGIT(pVal[3]);
-   m_plmnId.mnc[1] = GSIM_CHAR_TO_DIGIT(pVal[4]);
+   plmnId.mcc[0] = GSIM_CHAR_TO_DIGIT(pVal[0]);
+   plmnId.mcc[1] = GSIM_CHAR_TO_DIGIT(pVal[1]);
+   plmnId.mcc[2] = GSIM_CHAR_TO_DIGIT(pVal[2]);
+
+   plmnId.mnc[0] = GSIM_CHAR_TO_DIGIT(pVal[3]);
+   plmnId.mnc[1] = GSIM_CHAR_TO_DIGIT(pVal[4]);
 
    if (STRLEN(pVal) == GTP_SERVING_NW_MAX_STR_LEN)
    {
-      m_plmnId.mnc[2] = GSIM_CHAR_TO_DIGIT(pVal[5]);
-      m_plmnId.numMncDigits = 3; 
+      plmnId.mnc[2] = GSIM_CHAR_TO_DIGIT(pVal[5]);
+      plmnId.numMncDigits = 3; 
    }
    else
    {
-      m_plmnId.numMncDigits = 2;
+      plmnId.numMncDigits = 2;
    }
 
-   gtpUtlEncPlmnId(&m_plmnId, m_val);
+   gtpUtlEncPlmnId(&plmnId, m_val);
    hdr.len = GTP_SERVING_NW_MAX_BUF_LEN;
 
    LOG_EXITFN(ROK);
@@ -1129,7 +1143,7 @@ RETVAL GtpIndication::buildIe(XmlBufferLst *pBufLst)
       LOG_EXITFN(RFAILED);
    }
 
-
+   U32 bitmask = 0;
    for (XmlBufferLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
    {
       XmlBuffer   *pXmlBuf = *b;
@@ -1207,6 +1221,9 @@ RETVAL GtpIndication::buildIe(XmlBufferLst *pBufLst)
       delete *b;
    }
 
+   GSIM_ENC_3B(m_val, bitmask);
+   this->hdr.len += GTP_INDICATION_MAX_BUF_LEN;
+
    delete pBufLst;
    LOG_EXITFN(ROK);
 }
@@ -1275,7 +1292,7 @@ RETVAL GtpSelectionMode::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
 
-   m_selMode = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
    this->hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
@@ -1290,7 +1307,7 @@ GtpLength_t GtpSelectionMode::encode(U8 *pBuf)
    GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
    pTmpBuf += GTP_IE_HDR_LEN;
 
-   GTP_ENC_SEL_MODE(pTmpBuf, m_selMode);
+   GTP_ENC_SEL_MODE(pTmpBuf, m_val);
 
    LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
@@ -1320,15 +1337,15 @@ RETVAL GtpPdnType::buildIe(const S8 *pVal)
 
    if (STRCASECMP(pVal, "ipv4"))
    {
-      m_pdnType = GTP_PDN_TYPE_IPV4;
+      m_val = (U8)GTP_PDN_TYPE_IPV4;
    }
    else if (STRCASECMP(pVal, "ipv6"))
    {
-      m_pdnType = GTP_PDN_TYPE_IPV6;
+      m_val = (U8)GTP_PDN_TYPE_IPV6;
    }
    else if (STRCASECMP(pVal, "ipv4v6"))
    {
-      m_pdnType = GTP_PDN_TYPE_IPV4V6;
+      m_val = (U8)GTP_PDN_TYPE_IPV4V6;
    }
    else
    {
@@ -1362,7 +1379,7 @@ GtpLength_t GtpPdnType::encode(U8 *pBuf)
 
    GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
    pTmpBuf += GTP_IE_HDR_LEN;
-   GTP_ENC_PDN_TYPE(pTmpBuf, m_pdnType);
+   GTP_ENC_PDN_TYPE(pTmpBuf, m_val);
 
    LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }

@@ -82,22 +82,15 @@ class GtpMsisdn : public GtpIe
 
 class GtpUli : public GtpIe
 {
-   private:
 #define GTP_ULI_CGI_PRESENT         (1 << 0)
 #define GTP_ULI_SAI_PRESENT         (1 << 1)
 #define GTP_ULI_RAI_PRESENT         (1 << 2)
 #define GTP_ULI_TAI_PRESENT         (1 << 3)
 #define GTP_ULI_ECGI_PRESENT        (1 << 4)
 #define GTP_ULI_LAI_PRESENT         (1 << 5)
-      U8          m_pres;
-
-      GtpCgi_t    m_cgi;
-      GtpSai_t    m_sai;
-      GtpRai_t    m_rai;
-      GtpTai_t    m_tai;
-      GtpEcgi_t   m_ecgi;
-
 #define GTP_ULI_MAX_LEN             44
+
+   private:
       U8          m_val[GTP_ULI_MAX_LEN];
 
    public:
@@ -106,7 +99,6 @@ class GtpUli : public GtpIe
          hdr.ieType = GTP_IE_ULI;
          hdr.instance = inst;
          hdr.len = 0;
-         m_pres = 0;
          MEMSET(m_val, 0, GTP_ULI_MAX_LEN);
       }
 
@@ -115,7 +107,6 @@ class GtpUli : public GtpIe
       RETVAL buildIe(XmlBufferLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
-
       GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
@@ -125,8 +116,7 @@ class GtpBearerContext : public GtpIe
 {
 #define              GTP_BEARER_CNTXT_MAX_LEN   256
    private:
-      GtpIeLst       m_ieLst;
-      U8             *m_pVal;
+      U8             m_val[GTP_BEARER_CNTXT_MAX_LEN];
 
    public:
       GtpBearerContext(GtpInstance_t inst)
@@ -134,10 +124,9 @@ class GtpBearerContext : public GtpIe
          hdr.ieType = GTP_IE_BEARER_CNTXT;
          hdr.instance = inst;
          hdr.len = 0;
-         m_pVal = NULL;
       }
 
-      ~GtpBearerContext();
+      ~GtpBearerContext() {};
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
       RETVAL buildIe(const HexString *value);
@@ -153,15 +142,11 @@ class GtpBearerContext : public GtpIe
 
 class GtpFteid : public GtpIe
 {
-   private:
+#define GTP_FTEID_MAX_LEN                 25
 #define GTP_FTEID_IPV4_ADDR_PRESENT       (1 << 7)
 #define GTP_FTEID_IPV6_ADDR_PRESENT       (1 << 6)
-      U8                   m_pres;
-      Ipv4Addr             m_ipv4;
-      Ipv6Addr             m_ipv6;
-      GtpIfType_E          m_ifType;
-      GtpTeid_t            m_teid;
-#define GTP_FTEID_MAX_LEN  25
+
+   private:
       U8                   m_val[GTP_FTEID_MAX_LEN];
 
    public:
@@ -170,11 +155,6 @@ class GtpFteid : public GtpIe
          hdr.ieType = GTP_IE_FTEID;
          hdr.instance = inst;
          hdr.len = 0;
-         m_pres = 0;
-         m_teid = 0;
-         MEMSET(&m_ipv4, 0, sizeof(Ipv4Addr));
-         MEMSET(&m_ipv6, 0, sizeof(Ipv6Addr));
-         m_ifType = GTP_IF_INF_INV;
          MEMSET(m_val, 0, GTP_FTEID_MAX_LEN);
       }
 
@@ -185,16 +165,15 @@ class GtpFteid : public GtpIe
       GtpLength_t encode(U8 *pBuf);
 
       GtpLength_t decode(const U8 *pBuf);
-      VOID   setTeid(GtpTeid_t teid);
-      VOID   setIpAddr(const IpAddr *pIp);
-      BOOL   isGroupedIe() {return FALSE;}
-      GtpTeid_t   getTeid() {return m_teid;}
+      VOID        setTeid(GtpTeid_t teid);
+      VOID        setIpAddr(const IpAddr *pIp);
+      BOOL        isGroupedIe() {return FALSE;}
+      GtpTeid_t   getTeid();
 };
 
 class GtpEbi : public GtpIe
 {
    private:
-      U8          m_ebi;
       U8          m_val;
 
    public:
@@ -203,7 +182,6 @@ class GtpEbi : public GtpIe
          hdr.ieType = GTP_IE_EBI;
          hdr.instance = inst;
          hdr.len = 0;
-         m_ebi = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -220,6 +198,7 @@ class GtpMei : public GtpIe
 {
 #define GTP_MEI_MAX_LEN          8
 #define GTP_MEI_MAX_DIGITS       16
+
    private:
       U8       m_val[GTP_MEI_MAX_LEN];
 
@@ -245,7 +224,6 @@ class GtpMei : public GtpIe
 class GtpRatType : public GtpIe
 {
    private:
-      GtpRatType_E      m_ratType;
       U8                m_val;
 
    public:
@@ -254,7 +232,6 @@ class GtpRatType : public GtpIe
          hdr.ieType = GTP_IE_RAT_TYPE;
          hdr.instance = inst;
          hdr.len = 0;
-         m_ratType = GTP_RAT_TYPE_RESERVED;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -274,7 +251,6 @@ class GtpServingNw : public GtpIe
 
    private:
       U8             m_val[GTP_SERVING_NW_MAX_BUF_LEN];
-      GtpPlmnId_t    m_plmnId;
 
    public:
       GtpServingNw(GtpInstance_t inst)
@@ -282,7 +258,6 @@ class GtpServingNw : public GtpIe
          hdr.ieType = GTP_IE_SERVING_NW;
          hdr.instance = inst;
          hdr.len = 0;
-         MEMSET(&m_plmnId, 0, sizeof(GtpPlmnId_t));
          MEMSET(m_val, 0, GTP_SERVING_NW_MAX_BUF_LEN);
       }
 
@@ -326,8 +301,6 @@ class GtpAmbr : public GtpIe
 {
 #define GTP_AMBR_MAX_BUF_LEN        8
    private:
-      GtpApnAmbr_t   ul;
-      GtpApnAmbr_t   dl;
       U8             m_val[GTP_AMBR_MAX_BUF_LEN];
 
    public:
@@ -336,8 +309,6 @@ class GtpAmbr : public GtpIe
          hdr.ieType   = GTP_IE_AMBR;
          hdr.instance = inst;
          hdr.len      = 0;
-         ul           = 0;
-         dl           = 0;
          MEMSET(m_val, 0, GTP_AMBR_MAX_BUF_LEN);
       }
 
@@ -354,8 +325,7 @@ class GtpAmbr : public GtpIe
 
 class GtpIndication : public GtpIe
 {
-#define GTP_INDICATION_MAX_BUF_LEN        3
-
+#define GTP_INDICATION_MAX_BUF_LEN        5
 #define GTP_INDICATION_DAF_PRES           (1 << 0)
 #define GTP_INDICATION_DTF_PRES           (1 << 1)
 #define GTP_INDICATION_DFI_PRES           (1 << 2)
@@ -374,7 +344,6 @@ class GtpIndication : public GtpIe
 #define GTP_INDICATION_CCRSI_PRES         (1 << 15)
 
    private:
-      U32      bitmask;
       U8       m_val[GTP_INDICATION_MAX_BUF_LEN];
 
    public:
@@ -406,7 +375,6 @@ class GtpSelectionMode : public GtpIe
 #define GTP_SEL_MODE_NW_APN            2
 #define GTP_SEL_MODE_FUTURE            3
    private:
-      U8       m_selMode;
       U8       m_val;
 
    public:
@@ -415,7 +383,6 @@ class GtpSelectionMode : public GtpIe
          hdr.ieType   = GTP_IE_SELECTION_MODE;
          hdr.instance = inst;
          hdr.len      = 0;
-         m_selMode = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -433,7 +400,6 @@ class GtpPdnType : public GtpIe
 {
 #define GTP_PDN_TYPE_MAX_BUF_LEN    1
    private:
-      GtpPdnType_E   m_pdnType;
       U8             m_val;
 
    public:
@@ -442,7 +408,6 @@ class GtpPdnType : public GtpIe
          hdr.ieType = GTP_IE_PDN_TYPE;
          hdr.instance = inst;
          hdr.len = 0;
-         m_pdnType = GTP_PDN_TYPE_IPV4;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -460,7 +425,6 @@ class GtpPaa : public GtpIe
 {
 #define GTP_PAA_MAX_BUF_LEN    22
    private:
-      GtpPdnType_E   m_pdnType;
       U8             m_val[GTP_PAA_MAX_BUF_LEN];
 
    public:
@@ -469,7 +433,6 @@ class GtpPaa : public GtpIe
          hdr.ieType = GTP_IE_PAA;
          hdr.instance = inst;
          hdr.len = 0;
-         m_pdnType = GTP_PDN_TYPE_IPV4;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
