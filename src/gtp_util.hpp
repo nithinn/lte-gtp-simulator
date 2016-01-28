@@ -28,6 +28,7 @@ GtpIeType_E gtpGetIeType(const S8   *pIeName);
 GtpMsgType_E gtpGetMsgType(const S8 *pXmlMsgTag);
 GtpMsgCategory_E gtpGetMsgCategory(GtpMsgType_E msgType);
 GtpLength_t gtpConvStrToHex(const Buffer *pBuf, U8 *pDst);
+GtpLength_t gtpConvStrToHex(const HexString *value, U8 *pDst);
 VOID gtpEncIeUsingHexBuf(U8 *pSrc, GtpIeHdr *pHdr, U8 *pDst, U32 *pDstLen);
 EXTERN U32 gtpConvStrToU32(const S8 *pVal, U32 len);
 GtpIfType_E gtpConvStrToIfType(const S8 *pVal, U32 len);

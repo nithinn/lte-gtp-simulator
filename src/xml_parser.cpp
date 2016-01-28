@@ -277,7 +277,7 @@ RETVAL XmlParser::procIe(xml_node *pXmlIe, GtpIeLst *pIeLst)
          else
          {
             LOG_DEBUG("Processing composite IE");
-            ret = procCompositeIe(pIe, pXmlIe);
+            ret = procComplexIe(pIe, pXmlIe);
             if (ret != ROK)
             {
                LOG_ERROR("Processing composite IE");
@@ -286,17 +286,16 @@ RETVAL XmlParser::procIe(xml_node *pXmlIe, GtpIeLst *pIeLst)
       }
       else
       {
-         const S8* pVal = pXmlIe->attribute("value").value();
-         if (XML_HEX_VAL(pVal))
+         const S8 *value = pXmlIe->attribute("value").value();
+         if (XML_HEX_VAL(value))
          {
-            XmlBuffer   *pBuf = new XmlBuffer;
-            /* dont copy '0x' part of the hex buffer */
-            XML_BUFFER_CPY(pBuf, pVal + 2, strlen(pVal) - 2);
-            ret = pIe->encode(pBuf);
+            /* skipping '0x' part of the hex buffer */
+            HexString hexStr = (value + 2);
+            ret = pIe->encode(&hexStr);
          }
          else
          {
-            ret = pIe->encode(pVal);
+            ret = pIe->encode(value);
          }
       }
 
@@ -333,7 +332,6 @@ RETVAL XmlParser::procStore(xml_node *pStore)
    return ret;
 }
 
-
 /**
  * @brief
  *
@@ -355,8 +353,18 @@ RETVAL XmlParser::procValidate(xml_node *pValidate)
    LOG_EXITFN(ret);
 }
 
-
-RETVAL XmlParser::procCompositeIe(GtpIe *pIe, xml_node *pXmlIe)
+/**
+ * @brief 
+ * Complex IEs are not grouped IEs. They are IEs with more than one 
+ * types of data within it. For example ULI is a Complex IE, but Bearer
+ * is a Grouped IE. ULI has multiple types of data present - sai, tai etc.
+ *
+ * @param pIe
+ * @param pXmlIe
+ *
+ * @return 
+ */
+RETVAL XmlParser::procComplexIe(GtpIe *pIe, xml_node *pXmlIe)
 {
    S16            ret = ROK;
    XmlBufferLst   *pBufLst = new XmlBufferLst;
@@ -389,7 +397,6 @@ RETVAL XmlParser::procCompositeIe(GtpIe *pIe, xml_node *pXmlIe)
    LOG_EXITFN(ret);
 }
 
-
 RETVAL XmlParser::procGroupedIe(GtpIe *pIe, xml_node *pXmlIe)
 {
    RETVAL         ret = ROK;
@@ -415,7 +422,6 @@ RETVAL XmlParser::procGroupedIe(GtpIe *pIe, xml_node *pXmlIe)
 
    LOG_EXITFN(ret);
 }
-
 
 PUBLIC VOID parseXmlScenario(const S8 *pScnFile, MsgVec *pMsgVec) \
       throw (ErrCodeEn)

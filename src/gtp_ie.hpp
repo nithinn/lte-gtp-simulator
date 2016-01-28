@@ -41,7 +41,7 @@ class GtpImsi : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -70,7 +70,7 @@ class GtpMsisdn : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -111,7 +111,7 @@ class GtpUli : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal) {return ROK;}
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -140,7 +140,7 @@ class GtpBearerContext : public GtpIe
       ~GtpBearerContext();
 
       RETVAL encode(const S8 *pVal) {return ROK;}
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst);
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -179,7 +179,7 @@ class GtpFteid : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal) {return ROK;}
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -206,7 +206,7 @@ class GtpEbi : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
+      RETVAL encode(const HexString *value) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -232,7 +232,7 @@ class GtpMei : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -256,7 +256,7 @@ class GtpRatType : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
+      RETVAL encode(const HexString *value) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -285,7 +285,7 @@ class GtpServingNw : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -311,7 +311,7 @@ class GtpApn : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
+      RETVAL encode(const HexString *value) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -340,7 +340,7 @@ class GtpAmbr : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal) {return ROK;}
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -385,7 +385,7 @@ class GtpIndication : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal) {return ROK;}
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -416,7 +416,7 @@ class GtpSelectionMode : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
+      RETVAL encode(const HexString *value) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;}
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -442,7 +442,7 @@ class GtpPdnType : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal);
-      RETVAL encode(XmlBuffer *pBuf) {return ROK;}
+      RETVAL encode(const HexString *value) {return ROK;}
       RETVAL encode(XmlBufferLst *pBuf) {return ROK;}
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
       RETVAL encode(U8 *pBuf, U32 *pLen);
@@ -469,7 +469,7 @@ class GtpPaa : public GtpIe
       }
 
       RETVAL encode(const S8 *pVal) {return ROK;}
-      RETVAL encode(XmlBuffer *pBuf);
+      RETVAL encode(const HexString *value);
       RETVAL encode(XmlBufferLst *pBuf);
       RETVAL encode(const GtpIeLst *pIeLst) {return ROK;};
       RETVAL encode(U8 *pBuf, U32 *pLen);

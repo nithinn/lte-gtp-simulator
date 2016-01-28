@@ -838,6 +838,33 @@ GtpLength_t gtpConvStrToHex(const Buffer *pBuf, U8 *pDst)
    LOG_EXITFN(indx);
 }
 
+GtpLength_t gtpConvStrToHex(const HexString *value, U8 *pDst)
+{
+   LOG_ENTERFN();
+
+   U32 begin = 0;
+   U32 indx = 0;
+
+   /* hex buffer string has odd len, so the first byte of hex buffer
+    * will have 0 as High nibble
+    */
+   const char* str = value->c_str();
+   if (GSIM_IS_ODD(value->size()))
+   {
+      pDst[indx++] = 0x0f & gtpCharToHex(str[0]);
+      begin++;
+   }
+
+   for (U32 i = begin; i < value->size(); i += 2)               
+   {                                                        
+      U8 HNibble = gtpCharToHex(str[i]); 
+      U8 LNibble = gtpCharToHex(str[i + 1]);     
+      pDst[indx++] = (HNibble << 4) | (LNibble);
+   }                                                        
+                                                            
+   LOG_EXITFN(indx);
+}
+
 VOID gtpEncIeUsingHexBuf(U8 *pSrc, GtpIeHdr *pHdr, U8 *pDst, U32 *pDstLen)
 {
    LOG_ENTERFN();

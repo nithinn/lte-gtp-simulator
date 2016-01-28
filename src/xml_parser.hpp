@@ -30,7 +30,7 @@ class XmlParser
       RETVAL procIe(xml_node *node, GtpIeLst *pIeLst);
       RETVAL procStore(xml_node *node);      
       RETVAL procValidate(xml_node *node);      
-      RETVAL procCompositeIe(GtpIe *pIe, xml_node *pXmlIe);
+      RETVAL procComplexIe(GtpIe *pIe, xml_node *pXmlIe);
       RETVAL procGroupedIe(GtpIe *pIe, xml_node *pXmlIe);
 
    public:

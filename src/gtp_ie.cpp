@@ -142,22 +142,21 @@ RETVAL GtpImsi::decode(const Buffer *pBuf)
  *    ROK if imsi is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpImsi::encode(XmlBuffer *pBuf)
+RETVAL GtpImsi::encode(const HexString *value)
 {
    LOG_ENTERFN();
 
    RETVAL   ret = ROK;
-   if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
-      LOG_ERROR("Invalid IMSI Hex Buffer Length [%d]", pBuf->buf.len);
+      LOG_ERROR("Invalid IMSI Hex Buffer Length [%d]", value->size());
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -254,23 +253,22 @@ RETVAL GtpMsisdn::decode(const Buffer *pBuf)
  *    ROK if msisdn is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpMsisdn::encode(XmlBuffer *pBuf)
+RETVAL GtpMsisdn::encode(const HexString *value)
 {
    LOG_ENTERFN();
 
    RETVAL   ret = ROK;
-   if (GTP_MSISDN_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_MSISDN_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
       LOG_ERROR("Invalid MSISDN Hex Buffer Length [%d]",\
-            pBuf->buf.len);
+            value->size());
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -314,23 +312,22 @@ RETVAL GtpUli::decode(const Buffer *pBuf)
  *    ROK if uli is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpUli::encode(XmlBuffer *pBuf)
+RETVAL GtpUli::encode(const HexString *value)
 {
    LOG_ENTERFN();
 
    RETVAL  ret = ROK;
 
-   if (GTP_ULI_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_ULI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
-      LOG_ERROR("Invalid ULI Hex Buffer Length [%d]", pBuf->buf.len);
+      LOG_ERROR("Invalid ULI Hex Buffer Length [%d]", value->size());
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -470,7 +467,7 @@ GtpEbi_t GtpBearerContext::getEbi()
    LOG_EXITFN(ebi);
 }
 
-RETVAL GtpBearerContext::encode(XmlBuffer *pBuf)
+RETVAL GtpBearerContext::encode(const HexString *value)
 {
    RETVAL  ret = ROK;
 
@@ -478,16 +475,15 @@ RETVAL GtpBearerContext::encode(XmlBuffer *pBuf)
 
    try
    {
-      U32 hexBufLen = GSIM_CEIL_DIVISION(pBuf->buf.len, 2);
+      U32 hexBufLen = GSIM_CEIL_DIVISION(value->size(), 2);
       m_pVal = new U8 [hexBufLen];
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_pVal);
+      this->hdr.len = gtpConvStrToHex(value, m_pVal);
    }
    catch (exception &e)
    {
       ret = ERR_MEMORY_ALLOC;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -539,15 +535,15 @@ RETVAL GtpFteid::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpFteid::encode(XmlBuffer *pBuf)
+RETVAL GtpFteid::encode(const HexString *value)
 {
    LOG_ENTERFN();
 
    RETVAL ret = ROK;
 
-   if (GTP_FTEID_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_FTEID_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -555,7 +551,6 @@ RETVAL GtpFteid::encode(XmlBuffer *pBuf)
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -798,23 +793,22 @@ RETVAL GtpMei::decode(const Buffer *pBuf)
  *    ROK if mei is encoded successfully
  *    RFAILED otherwise
  */
-RETVAL GtpMei::encode(XmlBuffer *pBuf)
+RETVAL GtpMei::encode(const HexString *value)
 {
    LOG_ENTERFN();
 
    RETVAL   ret = ROK;
-   if (GTP_MEI_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_MEI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
       LOG_ERROR("Invalid MEI Hex Buffer Length [%d]",\
-            pBuf->buf.len);
+            value->size());
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -918,24 +912,23 @@ RETVAL GtpServingNw::encode(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpServingNw::encode(XmlBuffer *pBuf)
+RETVAL GtpServingNw::encode(const HexString *value)
 {
    LOG_ENTERFN();
    
    RETVAL  ret = ROK;
 
-   if (GTP_SERVING_NW_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_SERVING_NW_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
       LOG_ERROR("Invalid Serving Network Hex Buffer Length [%d]",\
-            pBuf->buf.len);
+            value->size());
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -997,22 +990,21 @@ RETVAL GtpApn::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpAmbr::encode(XmlBuffer *pBuf)
+RETVAL GtpAmbr::encode(const HexString *value)
 {
    LOG_ENTERFN();
 
    RETVAL   ret = ROK;
-   if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
-      LOG_ERROR("Invalid Ambr Hex Buffer Length [%d]", pBuf->buf.len);
+      LOG_ERROR("Invalid Ambr Hex Buffer Length [%d]", value->size());
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -1170,22 +1162,21 @@ RETVAL GtpAmbr::decode(const Buffer *pBuf)
 }
 
 
-RETVAL GtpIndication::encode(XmlBuffer *pBuf)
+RETVAL GtpIndication::encode(const HexString *value)
 {
    LOG_ENTERFN();
 
    RETVAL   ret = ROK;
-   if (GTP_INDICATION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_INDICATION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
-      LOG_ERROR("Invalid Indicaiton IE Hex Buffer Length [%d]", pBuf->buf.len);
+      LOG_ERROR("Invalid Indicaiton IE Hex Buffer Length [%d]", value->size());
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 
@@ -1313,22 +1304,21 @@ RETVAL GtpPaa::decode(const Buffer *pBuf)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpPaa::encode(XmlBuffer *pBuf)
+RETVAL GtpPaa::encode(const HexString *value)
 {
    LOG_ENTERFN();
 
    RETVAL   ret = ROK;
-   if (GTP_PAA_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(pBuf->buf.len, 2))
+   if (GTP_PAA_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(&pBuf->buf, m_val);
+      this->hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
-      LOG_ERROR("Invalid PAA Buffer Length [%d]", pBuf->buf.len);
+      LOG_ERROR("Invalid PAA Buffer Length [%d]", value->size());
       ret = RFAILED;
    }
 
-   delete pBuf;
    LOG_EXITFN(ret);
 }
 

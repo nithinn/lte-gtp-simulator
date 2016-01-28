@@ -18,7 +18,8 @@
 #define _TYPES_H_
 
 #include <stdio.h>
-#include <string.h>
+#include <string>
+#include <cstring>
 
 typedef int                S32;
 typedef unsigned int       U32;
@@ -33,6 +34,7 @@ typedef unsigned int       Counter;
 typedef unsigned long      U64;
 typedef U64                Time_t;
 typedef U32                TransConnId;
+typedef std::string        HexString;
 
 #define EXTERN          extern
 #define PRIVATE         static

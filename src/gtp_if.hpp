@@ -29,7 +29,7 @@ class GtpIe
    public:
       virtual RETVAL encode(const S8 *pVal) = 0;
       virtual RETVAL decode(const Buffer* pBuf) = 0;
-      virtual RETVAL encode(XmlBuffer* pBuf) = 0;
+      virtual RETVAL encode(const HexString *value) = 0;
       virtual RETVAL encode(XmlBufferLst *pBuf) = 0;
       virtual RETVAL encode(const GtpIeLst *pIeLst) = 0;
       virtual RETVAL encode(U8 *pBuf, U32 *pLen) = 0;
