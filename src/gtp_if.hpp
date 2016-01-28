@@ -44,7 +44,10 @@ class GtpIe
        */
       virtual GtpLength_t  encode(U8 *pBuf) = 0;
 
-      virtual RETVAL       decode(const Buffer *pBuf) = 0;
+      /* decodes the IE from the byte buffer, updates the ie header length
+       * and copies the ie contents into local buffer
+       */
+      virtual GtpLength_t decode(const U8 *ieBuf) = 0;
 
       virtual BOOL   isGroupedIe() = 0;
       GtpIeType_E    type() {return hdr.ieType;}

@@ -122,14 +122,17 @@ RETVAL GtpImsi::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpImsi::decode(const Buffer *pBuf)
+GtpLength_t GtpImsi::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -238,14 +241,17 @@ RETVAL GtpMsisdn::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpMsisdn::decode(const Buffer *pBuf)
+GtpLength_t GtpMsisdn::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -301,14 +307,17 @@ GtpLength_t GtpMsisdn::encode(U8 *pBuf)
 }
 
 
-RETVAL GtpUli::decode(const Buffer *pBuf)
+GtpLength_t GtpUli::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -425,15 +434,18 @@ GtpBearerContext::~GtpBearerContext()
    delete[] m_pVal;
 }
 
-RETVAL GtpBearerContext::decode(const Buffer *pBuf)
+GtpLength_t GtpBearerContext::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   m_pVal = new U8 [pBuf->len];
-   MEMCPY(m_pVal, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_pVal = new U8[ieLen];
+   MEMCPY(m_pVal, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 VOID GtpBearerContext::setGtpuTeid(GtpTeid_t teid, GtpInstance_t inst)
@@ -539,15 +551,17 @@ GtpLength_t GtpBearerContext::encode(U8 *pBuf)
    LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
-RETVAL GtpFteid::decode(const Buffer *pBuf)
+GtpLength_t GtpFteid::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
-   GTP_DEC_TEID((m_val + 1), m_teid);
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpFteid::buildIe(const HexString *value)
@@ -675,14 +689,17 @@ RETVAL GtpEbi::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpEbi::decode(const Buffer *pBuf)
+GtpLength_t GtpEbi::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   GTP_DEC_EBI(pBuf->pVal, m_ebi);
-   this->hdr.len = 1;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 GtpLength_t GtpEbi::encode(U8 *pBuf)
@@ -791,14 +808,17 @@ RETVAL GtpMei::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpMei::decode(const Buffer *pBuf)
+GtpLength_t GtpMei::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -871,14 +891,16 @@ RETVAL GtpRatType::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpRatType::decode(const Buffer *pBuf)
+GtpLength_t GtpRatType::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   GTP_DEC_RAT_TYPE(pBuf->pVal, m_ratType);
-   this->hdr.len = 1;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
+   this->hdr.len = ieLen;
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 GtpLength_t GtpRatType::encode(U8 *pBuf)
@@ -966,14 +988,17 @@ GtpLength_t GtpServingNw::encode(U8 *pBuf)
    LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
-RETVAL GtpServingNw::decode(const Buffer *pBuf)
+GtpLength_t GtpServingNw::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpApn::buildIe(const S8 *pVal)
@@ -1009,14 +1034,17 @@ GtpLength_t GtpApn::encode(U8 *pBuf)
    LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
-RETVAL GtpApn::decode(const Buffer *pBuf)
+GtpLength_t GtpApn::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpAmbr::buildIe(const HexString *value)
@@ -1184,14 +1212,17 @@ RETVAL GtpIndication::buildIe(XmlBufferLst *pBufLst)
 }
 
 
-RETVAL GtpAmbr::decode(const Buffer *pBuf)
+GtpLength_t GtpAmbr::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 
@@ -1227,14 +1258,17 @@ GtpLength_t GtpIndication::encode(U8 *pBuf)
    LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
-RETVAL GtpIndication::decode(const Buffer *pBuf)
+GtpLength_t GtpIndication::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpSelectionMode::buildIe(const S8 *pVal)
@@ -1261,14 +1295,17 @@ GtpLength_t GtpSelectionMode::encode(U8 *pBuf)
    LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
 
-RETVAL GtpSelectionMode::decode(const Buffer *pBuf)
+GtpLength_t GtpSelectionMode::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   m_selMode = pBuf->pVal[0];
-   this->hdr.len = GTP_SEL_MODE_BUF_MAX_LEN;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpPdnType::buildIe(const S8 *pVal)
@@ -1304,14 +1341,17 @@ RETVAL GtpPdnType::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpPdnType::decode(const Buffer *pBuf)
+GtpLength_t GtpPdnType::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   m_pdnType = (GtpPdnType_E)(pBuf->pVal[0] & 0x0007);
-   this->hdr.len = GTP_SEL_MODE_BUF_MAX_LEN;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 GtpLength_t GtpPdnType::encode(U8 *pBuf)
@@ -1328,14 +1368,17 @@ GtpLength_t GtpPdnType::encode(U8 *pBuf)
 }
 
 
-RETVAL GtpPaa::decode(const Buffer *pBuf)
+GtpLength_t GtpPaa::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   MEMCPY(m_val, pBuf->pVal, pBuf->len);
-   this->hdr.len = pBuf->len;
+   U32 ieLen = 0;
 
-   LOG_EXITFN(ROK);
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpPaa::buildIe(const HexString *value)

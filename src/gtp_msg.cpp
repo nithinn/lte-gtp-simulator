@@ -208,25 +208,16 @@ RETVAL GtpMsg::decode()
    {
       GtpIeType_E    ieType = GTP_IE_RESERVED;
       GtpInstance_t  ieInst = 0;
-      GtpLength_t    ieLen = 0;
 
       GTP_GET_IE_TYPE(pMsgBuf, ieType);
       GTP_GET_IE_INSTANCE(pMsgBuf, ieInst);
-      GTP_GET_IE_LEN(pMsgBuf, ieLen);
 
-      GtpIe    *pIe = GtpIe::createGtpIe(ieType, ieInst);
-
-      Buffer  buf = {0, NULL};
-      buf.len = ieLen;
-      buf.pVal = new U8 [ieLen];
-      MEMCPY(buf.pVal, (pMsgBuf + GTP_IE_HDR_LEN), ieLen);
-      pIe->decode(&buf);
-
+      GtpIe *pIe = GtpIe::createGtpIe(ieType, ieInst);
+      U32 ieLen = pIe->decode(pMsgBuf);
       m_ieLst.push_back(pIe);
-      delete[] buf.pVal;
 
-      pMsgBuf += (GTP_IE_HDR_LEN + ieLen);
-      len -= (GTP_IE_HDR_LEN + ieLen);
+      pMsgBuf += ieLen;
+      len -= ieLen;
    }
 
    LOG_EXITFN(ROK);

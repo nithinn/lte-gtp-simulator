@@ -46,7 +46,7 @@ class GtpImsi : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       VOID   setImsi(GtpImsiKey*);
       BOOL   isGroupedIe() {return FALSE;}
 
@@ -75,7 +75,7 @@ class GtpMsisdn : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -116,7 +116,7 @@ class GtpUli : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -145,7 +145,7 @@ class GtpBearerContext : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst);
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return TRUE;}
       GtpEbi_t getEbi();
       VOID   setGtpuTeid(GtpTeid_t, GtpInstance_t);
@@ -184,7 +184,7 @@ class GtpFteid : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       VOID   setTeid(GtpTeid_t teid);
       VOID   setIpAddr(const IpAddr *pIp);
       BOOL   isGroupedIe() {return FALSE;}
@@ -195,6 +195,7 @@ class GtpEbi : public GtpIe
 {
    private:
       U8          m_ebi;
+      U8          m_val;
 
    public:
       GtpEbi(GtpInstance_t inst)
@@ -211,7 +212,7 @@ class GtpEbi : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -237,7 +238,7 @@ class GtpMei : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -245,6 +246,7 @@ class GtpRatType : public GtpIe
 {
    private:
       GtpRatType_E      m_ratType;
+      U8                m_val;
 
    public:
       GtpRatType(GtpInstance_t inst)
@@ -261,7 +263,7 @@ class GtpRatType : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -290,7 +292,7 @@ class GtpServingNw : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -316,7 +318,7 @@ class GtpApn : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -345,7 +347,7 @@ class GtpAmbr : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -390,7 +392,7 @@ class GtpIndication : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -405,6 +407,7 @@ class GtpSelectionMode : public GtpIe
 #define GTP_SEL_MODE_FUTURE            3
    private:
       U8       m_selMode;
+      U8       m_val;
 
    public:
       GtpSelectionMode(GtpInstance_t inst)
@@ -421,7 +424,7 @@ class GtpSelectionMode : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -431,6 +434,7 @@ class GtpPdnType : public GtpIe
 #define GTP_PDN_TYPE_MAX_BUF_LEN    1
    private:
       GtpPdnType_E   m_pdnType;
+      U8             m_val;
 
    public:
       GtpPdnType(GtpInstance_t inst)
@@ -447,7 +451,7 @@ class GtpPdnType : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -474,7 +478,7 @@ class GtpPaa : public GtpIe
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
       GtpLength_t encode(U8 *pBuf);
 
-      RETVAL decode(const Buffer *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 #endif
