@@ -444,4 +444,54 @@ class GtpPaa : public GtpIe
       GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
+
+
+class GtpBearerQos : public GtpIe
+{
+#define GTP_BEARER_QOS_MAX_BUF_LEN    18
+   private:
+      U8             m_val[GTP_BEARER_QOS_MAX_BUF_LEN];
+
+   public:
+      GtpBearerQos(GtpInstance_t inst)
+      {
+         hdr.ieType = GTP_IE_BEARER_QOS;
+         hdr.instance = inst;
+         hdr.len = 0;
+      }
+
+      RETVAL buildIe(const S8 *pVal) {return ROK;}
+      RETVAL buildIe(const HexString *value);
+      RETVAL buildIe(IeParamLst *pBuf);
+      RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
+      GtpLength_t encode(U8 *pBuf);
+
+      GtpLength_t decode(const U8 *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
+
+class GtpFlowQos : public GtpIe
+{
+#define GTP_FLOW_QOS_MAX_BUF_LEN    17
+   private:
+      U8             m_val[GTP_FLOW_QOS_MAX_BUF_LEN];
+
+   public:
+      GtpFlowQos(GtpInstance_t inst)
+      {
+         hdr.ieType = GTP_IE_FLOW_QOS;
+         hdr.instance = inst;
+         hdr.len = 0;
+      }
+
+      RETVAL buildIe(const S8 *pVal) {return ROK;}
+      RETVAL buildIe(const HexString *value);
+      RETVAL buildIe(IeParamLst *pBuf);
+      RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
+      GtpLength_t encode(U8 *pBuf);
+
+      GtpLength_t decode(const U8 *pBuf);
+      BOOL   isGroupedIe() {return FALSE;}
+};
+
 #endif

@@ -18,8 +18,13 @@ include make.in
 BIN = gsim
 SRC_PATH = ./src
 OBJ_PATH = .
-
 LIBS= -lpthread -lncurses
+
+ifeq ($(profiling), yes)
+LFLAGS += -pg
+CFLAGS += -pg
+endif
+
 
 SRC=\
 	$(SRC_PATH)/logger.cpp \
@@ -50,7 +55,7 @@ all: $(SRC) $(BIN)
 
 $(BIN): $(OBJ)
 	@echo "Building simulator ..."
-	$(CC) $(OBJ) $(LIBS) -o $@
+	$(CC) $(OBJ) $(LIBS) $(LFLAGS) -o $@
 
 .cpp.o:
 	$(CC) -c $(CFLAGS) $(INCLUDES) $< -o $@
@@ -59,4 +64,3 @@ $(BIN): $(OBJ)
 clean:
 	@echo "Cleaning the build ..."
 	$(RM) $(BIN) $(OBJ)
-

@@ -865,21 +865,6 @@ GtpLength_t gtpConvStrToHex(const HexString *value, U8 *pDst)
    LOG_EXITFN(indx);
 }
 
-VOID gtpEncIeUsingHexBuf(U8 *pSrc, GtpIeHdr *pHdr, U8 *pDst, U32 *pDstLen)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pDst;
-
-   GTP_ENC_IE_HDR(pTmpBuf, pHdr);
-
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, pSrc, pHdr->len);
-   *pDstLen = pHdr->len + GTP_IE_HDR_LEN;
-
-   LOG_EXITVOID();
-}
-
 PUBLIC U32 gtpConvStrToU32(const S8 *pVal, U32 len)
 {
    LOG_ENTERFN();

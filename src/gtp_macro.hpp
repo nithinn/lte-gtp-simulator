@@ -219,12 +219,27 @@
    GSIM_ENC_U32(_buf, _apnambr);                   \
 }
 
+#define GTP_ENC_BIT_RATE(_buf, _br)                \
+{                                                  \
+   GSIM_ENC_U32(_buf, _br);                        \
+}
+
 #define GTP_ENC_SEL_MODE(_buf, _sel)               \
 {                                                  \
    GSIM_ENC_U8(_buf, _sel);                        \
 }
 
 #define GTP_ENC_PDN_TYPE(_buf, _pt)                \
+{                                                  \
+   GSIM_ENC_U8(_buf, _pt);                         \
+}
+
+#define GTP_ENC_ARP(_buf, _pt)                     \
+{                                                  \
+   GSIM_ENC_U8(_buf, _pt);                         \
+}
+
+#define GTP_ENC_QCI(_buf, _pt)                     \
 {                                                  \
    GSIM_ENC_U8(_buf, _pt);                         \
 }

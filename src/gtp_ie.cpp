@@ -15,6 +15,7 @@
  */  
 
 #include <list>
+#include <string>
 
 #include "types.hpp"
 #include "error.hpp"
@@ -39,6 +40,14 @@ BOOL gtpIeDict[GTP_IE_MAX] = \
    FALSE
 };
 
+/**
+ * @brief Factor Method to create GTP IE
+ *
+ * @param ieType
+ * @param instance
+ *
+ * @return 
+ */
 GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
 {
    switch (ieType)
@@ -73,6 +82,10 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
          return new GtpPdnType(instance);
       case GTP_IE_PAA:
          return new GtpPaa(instance);
+      case GTP_IE_BEARER_QOS:
+         return new GtpBearerQos(instance);
+      case GTP_IE_FLOW_QOS:
+         return new GtpFlowQos(instance);
       default:
          return NULL;
    }
@@ -1092,25 +1105,25 @@ RETVAL GtpAmbr::buildIe(IeParamLst *pBufLst)
 
    for (IeParamLstItr b = pBufLst->begin(); b != pBufLst->end(); b++)
    {
-      IeParam   *pXmlBuf = *b;
+      IeParam *param = *b;
 
-     if (STRCASECMP(pXmlBuf->paramName, "ul") == 0)
+     if (STRCASECMP(param->paramName, "ul") == 0)
       {
          GtpApnAmbr_t ambrul = (GtpApnAmbr_t)gtpConvStrToU32(\
-               (const S8*)pXmlBuf->buf.pVal, pXmlBuf->buf.len);
+               (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_APN_AMBR(m_val, ambrul);
          this->hdr.len += 4;
       }
-      else if (STRCASECMP(pXmlBuf->paramName, "dl") == 0)
+      else if (STRCASECMP(param->paramName, "dl") == 0)
       {
          GtpApnAmbr_t ambrdl = (GtpApnAmbr_t)gtpConvStrToU32(\
-               (const S8*)pXmlBuf->buf.pVal, pXmlBuf->buf.len);
+               (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_APN_AMBR((m_val + 4), ambrdl);
          this->hdr.len += 4;
       }
       else
       {
-         LOG_ERROR("Invalid Ambr Parameter type [%s]", pXmlBuf->paramName);
+         LOG_ERROR("Invalid Ambr Parameter type [%s]", param->paramName);
       }
 
       delete *b;
@@ -1494,4 +1507,292 @@ GtpLength_t GtpPaa::encode(U8 *pBuf)
    MEMCPY(pTmpBuf, m_val, hdr.len);
 
    LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Builds Bearer QOS IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpBearerQos::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_BEARER_QOS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid Bearer QoS Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds Bearer QoS ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpBearerQos::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL ret = ROK;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      if (STRCASECMP(param->paramName, "arp") == 0)
+      {
+         GtpArp_t arp = (GtpArp_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_ARP(m_val, arp);
+         this->hdr.len += 1;
+      }
+      else if (STRCASECMP(param->paramName, "qci") == 0)
+      {
+         GtpQci_t qci = (GtpQci_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_QCI((m_val + 1), qci);
+         this->hdr.len += 1;
+      }
+      else if (STRCASECMP(param->paramName, "mbrul") == 0)
+      {
+         GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 2), br);
+         this->hdr.len += 4;
+      }
+      else if (STRCASECMP(param->paramName, "mbrdl") == 0)
+      {
+         GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 6), br);
+         this->hdr.len += 4;
+      }
+      else if (STRCASECMP(param->paramName, "gbrul") == 0)
+      {
+         GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 10), br);
+         this->hdr.len += 4;
+      }
+      else if (STRCASECMP(param->paramName, "gbrdl") == 0)
+      {
+         GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 14), br);
+         this->hdr.len += 4;
+      }
+      else
+      {
+         LOG_ERROR("Ignoring uknown BearerQos Parameter type [%s]",\
+               param->paramName);
+      }
+
+      delete *b;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes Bearer QOS IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpBearerQos::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the Bearer Qos IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpBearerQos::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+
+/**
+ * @brief Builds Flow QOS IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpFlowQos::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_FLOW_QOS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid Flow QoS Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds Flow QoS ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpFlowQos::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL ret = ROK;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      if (STRCASECMP(param->paramName, "qci") == 0)
+      {
+         GtpQci_t qci = (GtpQci_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_QCI(m_val, qci);
+         this->hdr.len += 1;
+      }
+      else if (STRCASECMP(param->paramName, "mbrul") == 0)
+      {
+         GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 1), br);
+         this->hdr.len += 4;
+      }
+      else if (STRCASECMP(param->paramName, "mbrdl") == 0)
+      {
+         GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 5), br);
+         this->hdr.len += 4;
+      }
+      else if (STRCASECMP(param->paramName, "gbrul") == 0)
+      {
+         GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 9), br);
+         this->hdr.len += 4;
+      }
+      else if (STRCASECMP(param->paramName, "gbrdl") == 0)
+      {
+         GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 13), br);
+         this->hdr.len += 4;
+      }
+      else
+      {
+         LOG_ERROR("Ignoring uknown FlowQos Parameter type [%s]",\
+               param->paramName);
+      }
+
+      delete *b;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes Flow QOS IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpFlowQos::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the Flow Qos IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpFlowQos::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
