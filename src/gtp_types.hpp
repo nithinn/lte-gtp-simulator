@@ -360,6 +360,10 @@ typedef enum
    GTP_RAT_TYPE_MAX
 } GtpRatType_E;
 
+/**
+ * @struct Stores Parameter details of Complex IEs that are read
+ *    from xml scenario file
+ */
 struct IeParam
 {
 #define           IE_PARAM_NAME_MAX_LEN        64
@@ -391,13 +395,5 @@ typedef enum
    GTP_PDN_TYPE_IPV4V6,
    GTP_PDN_TYPE_MAX
 } GtpPdnType_E;
-
-#define XML_BUFFER_CPY(_xmlBuf, _src, _sz)                     \
-do                                                             \
-{                                                              \
-   (_xmlBuf)->buf.len = _sz;                                   \
-   (_xmlBuf)->buf.pVal = new U8 [_sz];                         \
-   memcpy((VOID *)(_xmlBuf)->buf.pVal, (VOID *)(_src), _sz);   \
-} while (0)
 
 #endif /* _GTP_TYPES_HPP_ */

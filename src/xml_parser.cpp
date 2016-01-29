@@ -383,11 +383,11 @@ RETVAL XmlParser::procComplexIe(GtpIe *pIe, xml_node *pXmlIe)
       if (XML_HEX_VAL(pVal))
       {
          /* Hex buffer, skipt first 2 bytes '0x' */
-         XML_BUFFER_CPY(pParam, pVal + 2, strlen(pVal) - 2);
+        BUFFER_CPY(&pParam->buf, pVal + 2, strlen(pVal) - 2);
       }
       else
       {
-         XML_BUFFER_CPY(pParam, pVal, strlen(pVal));
+         BUFFER_CPY(&pParam->buf, pVal, strlen(pVal));
       }
 
       pBufLst->push_back(pParam);
