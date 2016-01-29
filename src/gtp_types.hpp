@@ -362,8 +362,8 @@ typedef enum
 
 struct IeParam
 {
-#define           XML_BUFFER_PARAM_NAME_LEN        64
-   S8             paramName[XML_BUFFER_PARAM_NAME_LEN];
+#define           IE_PARAM_NAME_MAX_LEN        64
+   S8             paramName[IE_PARAM_NAME_MAX_LEN];
    Buffer         buf;
 
    ~IeParam()
