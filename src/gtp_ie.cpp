@@ -54,38 +54,176 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
    {
       case GTP_IE_IMSI:
          return new GtpImsi(instance);
-      case GTP_IE_MSISDN:
-         return new GtpMsisdn(instance);
-      case GTP_IE_ULI:
-         return new GtpUli(instance);
-      case GTP_IE_BEARER_CNTXT:
-         return new GtpBearerContext(instance);
-      case GTP_IE_FTEID:
-         return new GtpFteid(instance);
-      case GTP_IE_EBI:
-         return new GtpEbi(instance);
-      case GTP_IE_MEI:
-         return new GtpMei(instance);
-      case GTP_IE_RAT_TYPE:
-         return new GtpRatType(instance);
-      case GTP_IE_SERVING_NW:
-         return new GtpServingNw(instance);
+      case GTP_IE_CAUSE:
+         return new GtpCause(instance);
+      case GTP_IE_RECOVERY:
+         return new GtpRecovery(instance);
+      case GTP_IE_STN_SR:
+         return new GtpStnSr(instance);
       case GTP_IE_APN:
          return new GtpApn(instance);
       case GTP_IE_AMBR:
          return new GtpAmbr(instance);
+      case GTP_IE_EBI:
+         return new GtpEbi(instance);
+      case GTP_IE_IP_ADDR:
+         return new GtpIpAddress(instance);
+      case GTP_IE_MEI:
+         return new GtpMei(instance);
+      case GTP_IE_MSISDN:
+         return new GtpMsisdn(instance);
       case GTP_IE_INDICATION:
          return new GtpIndication(instance);
-      case GTP_IE_SELECTION_MODE:
-         return new GtpSelectionMode(instance);
-      case GTP_IE_PDN_TYPE:
-         return new GtpPdnType(instance);
+      case GTP_IE_PCO:
+         return new GtpPco(instance);
       case GTP_IE_PAA:
          return new GtpPaa(instance);
       case GTP_IE_BEARER_QOS:
          return new GtpBearerQos(instance);
       case GTP_IE_FLOW_QOS:
          return new GtpFlowQos(instance);
+      case GTP_IE_RAT_TYPE:
+         return new GtpRatType(instance);
+      case GTP_IE_SERVING_NW:
+         return new GtpServingNw(instance);
+      case GTP_IE_EPS_BEARER_TFT:
+         return new GtpEpsBearerTft(instance);
+      case GTP_IE_TAD:
+         return new GtpTad(instance);
+      case GTP_IE_ULI:
+         return new GtpUli(instance);
+      case GTP_IE_FTEID:
+         return new GtpFteid(instance);
+      case GTP_IE_TMSI:
+         return new GtpTmsi(instance);
+      case GTP_IE_GLOBAL_CN_ID:
+         return new GtpGlobalCnId(instance);
+      case GTP_IE_S103_PDF:
+         return new GtpS103Pdf(instance);
+      case GTP_IE_S1UDF:
+         return new GtpS1uDf(instance);
+      case GTP_IE_DELAY_VALUE:
+         return new GtpDelayValue(instance);
+      case GTP_IE_BEARER_CNTXT:
+         return new GtpBearerContext(instance);
+      case GTP_IE_CHARGING_ID:
+         return new GtpChargingId(instance);
+      case GTP_IE_CHARGING_CHARACTERISTICS:
+         return new GtpCharginCharacteristics(instance);
+      case GTP_IE_TRACE_INFO:
+         return new GtpTraceInfo(instance);
+      case GTP_IE_BEARER_FLAGS:
+         return new GtpBearerFlags(instance);
+      case GTP_IE_PDN_TYPE:
+         return new GtpPdnType(instance);
+      case GTP_IE_PTI:
+         return new GtpPti(instance);
+      case GTP_IE_DRX_PARAM:
+         return new GtpDrxParam(instance);
+      case GTP_IE_UE_NETWORK_CAP:
+         return new GtpUeNetworkCap(instance);
+      case GTP_IE_MM_CNTXT_GSM_KEY_N_TRIPLETS:
+         return new GtpMmCntxtGsmKeyAndTriplets(instance);
+      case GTP_IE_MM_CNTXT_UMTS_KEY_USED_CIPHER_N_QUINT:
+         return new GtpMmCntxtUmtsKeyUsedCipherAndQuint(instance);
+      case GTP_IE_MM_CNTXT_GSM_KEY_USED_CIPHER_N_QUINT:
+         return new GtpMmCntxtGsmKeyUsedCipherAndQuint(instance);
+      case GTP_IE_MM_CNTXT_UMTS_KEY_N_QUINT:
+         return new GtpMmCntxtUmtsKeyAndQuint(instance);
+      case GTP_IE_MM_CNTXT_EPS_SEC_CNTXT_QUADR_N_QUINT:
+         return new GtpMmCntxtEpcSecCntxtQuadrAndQuint(instance);
+      case GTP_IE_MM_CNTXT_UMTS_KEY_QUADR_N_QUINT:
+         return new GtpMmCntxtUmtsKeyQuadrAndQuint(instance);
+      case GTP_IE_PDN_CONNECTION:
+         return new GtpPdnConnection(instance);
+      case GTP_IE_PDU_NUMBERS:
+         return new GtpPduNumbers(instance);
+      case GTP_IE_PTMSI:
+         return new GtpPtmsi(instance);
+      case GTP_IE_PTMSI_SIGNATURE:
+         return new GtpPtmsiSignature(instance);
+      case GTP_IE_HOP_COUNTER:
+         return new GtpHopCounter(instance);
+      case GTP_IE_UE_TIME_ZONE:
+         return new GtpUeTimeZone(instance);
+      case GTP_IE_TRACE_REFERENCE:
+         return new GtpTraceReference(instance);
+      case GTP_IE_COMPLETE_REQ_MSG:
+         return new GtpCompleteReqMsg(instance);
+      case GTP_IE_GUTI:
+         return new GtpGuti(instance);
+      case GTP_IE_FCONTAINER:
+         return new GtpFContainer(instance);
+      case GTP_IE_FCAUSE:
+         return new GtpFCause(instance);
+      case GTP_IE_SELECTED_PLMN_ID:
+         return new GtpSelectedPlmnId(instance);
+      case GTP_IE_TARGET_ID:
+         return new GtpTargetId(instance);
+      case GTP_IE_PACKET_FLOW_ID:
+         return new GtpPacketFlowId(instance);
+      case GTP_IE_RAB_CNTXT:
+         return new GtpRabCntxt(instance);
+      case GTP_IE_SOURCE_RNC_PDCP_CNTXT_INFO:
+         return new GtpSourceRncPdcpCntxtInfo(instance);
+      case GTP_IE_UDP_SRC_PORT:
+         return new GtpUdpSrcPort(instance);
+      case GTP_IE_APN_RESTRICTION:
+         return new GtpApnRestriction(instance);
+      case GTP_IE_SELECTION_MODE:
+         return new GtpSelectionMode(instance);
+      case GTP_IE_SRC_ID:
+         return new GtpSrcId(instance);
+      case GTP_IE_CHANGE_REPORTING_ACTION:
+         return new GtpChangeReportingAction(instance);
+      case GTP_IE_FQ_CSID:
+         return new GtpFqCsid(instance);
+      case GTP_IE_CHANNEL_NEEDED:
+         return new GtpChannelNeeded(instance);
+      case GTP_IE_EMLPP_PRIORITY:
+         return new GtpEmlppPriority(instance);
+      case GTP_IE_NODE_TYPE:
+         return new GtpNodeType(instance);
+      case GTP_IE_FQDN:
+         return new GtpFqdn(instance);
+      case GTP_IE_TI:
+         return new GtpTi(instance);
+      case GTP_IE_MBMS_SESSION_DURATION:
+         return new GtpMbmsSessionDuration(instance);
+      case GTP_IE_MBMS_SERVICE_AREA:
+         return new GtpMbmsServiceArea(instance);
+      case GTP_IE_MBMS_SESSION_ID:
+         return new GtpMbmsSessionId(instance);
+      case GTP_IE_MBMS_FLOW_ID:
+         return new GtpMbmsFlowId(instance);
+      case GTP_IE_MBMS_IP_MULTICAST_DISTRIBUTION:
+         return new GtpMbmsIpMulticastDistribution(instance);
+      case GTP_IE_MBMS_DISTRIBUTION_ACK:
+         return new GtpMbmsDistributionAck(instance);
+      case GTP_IE_RFSP_INDEX:
+         return new GtpRfspIndex(instance);
+      case GTP_IE_UCI:
+         return new GtpUci(instance);
+      case GTP_IE_CSG_INFO_REPORTING_ACTION:
+         return new GtpCsgInfoReportingAction(instance);
+      case GTP_IE_CSG_ID:
+         return new GtpCsgId(instance);
+      case GTP_IE_CMI:
+         return new GtpCmi(instance);
+      case GTP_IE_SERVICE_INDICATOR:
+         return new GtpServiceIndicator(instance);
+      case GTP_IE_DETACH_TYPE:
+         return new GtpDetachType(instance);
+      case GTP_IE_LDN:
+         return new GtpLdn(instance);
+      case GTP_IE_MBMS_TIME_TO_DATA_TRANSFER:
+         return new GtpMbmsTimeToDataTransfer(instance);
+      case GTP_IE_TMGI:
+         return new GtpTmgi(instance);
+      case GTP_IE_ADDITIONAL_MM_CNTXT_FOR_SRVCC:
+         return new GtpAdditionalMmCntxtForSrvcc(instance);
+      case GTP_IE_ADDITIONAL_FLAGS_FOR_SRVCC:
+         return new GtpAdditionalFlagsForSrvcc(instance);
       default:
          return NULL;
    }
@@ -1785,6 +1923,99 @@ GtpLength_t GtpFlowQos::encode(U8 *pBuf)
  * @return 
  */
 GtpLength_t GtpFlowQos::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+
+/**
+ * @brief Builds PCO IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpPco::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_PCO_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid PCO Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds PCO ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpPco::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL ret = ROK;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes PCO IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpPco::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the PCO IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpPco::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
