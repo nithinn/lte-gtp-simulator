@@ -522,6 +522,10 @@ class GtpPco : public GtpIe
 class GtpCause : public GtpIe
 {
 #define GTP_CAUSE_MAX_BUF_LEN    10
+#define GTP_CAUSE_CS_PRES        (1 << 0)
+#define GTP_CAUSE_BCE_PRES       (1 << 1)
+#define GTP_CAUSE_PCE_PRES       (1 << 2)
+
    private:
       U8             m_val[GTP_CAUSE_MAX_BUF_LEN];
 
@@ -534,20 +538,19 @@ class GtpCause : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
-      RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
+      RETVAL buildIe(const HexString *value);
+      RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
 
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
 class GtpRecovery : public GtpIe
 {
-#define GTP_RECOVERY_MAX_BUF_LEN    1
    private:
-      U8             m_val[GTP_RECOVERY_MAX_BUF_LEN];
+      U8    m_val;
 
    public:
       GtpRecovery(GtpInstance_t inst)
@@ -557,13 +560,12 @@ class GtpRecovery : public GtpIe
          hdr.len = 0;
       }
 
-      RETVAL buildIe(const S8 *pVal) {return ROK;}
+      RETVAL buildIe(const S8 *pVal);
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 

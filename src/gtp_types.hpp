@@ -41,6 +41,8 @@ typedef U32          GtpECellId_t;
 typedef U8           GtpEbi_t;
 typedef U8           GtpArp_t;
 typedef U8           GtpQci_t;
+typedef U8           GtpCause_t;
+typedef U8           GtpRecovery_t;
 
 typedef enum
 {

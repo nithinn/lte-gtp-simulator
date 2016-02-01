@@ -872,8 +872,8 @@ GtpLength_t GtpEbi::encode(U8 *pBuf)
 
    GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
    pTmpBuf += GTP_IE_HDR_LEN;
-
    GTP_ENC_EBI(pTmpBuf, m_val);
+
    LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
 
@@ -2023,6 +2023,232 @@ GtpLength_t GtpPco::decode(const U8 *pBuf)
 
    GTP_GET_IE_LEN(pBuf, ieLen);
    MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+
+/**
+ * @brief Builds Cause IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpCause::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_CAUSE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid Cause Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds Cause ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpCause::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   U8       errPres = 0;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      if (STRCASECMP(param->paramName, "value") == 0)
+      {
+         GtpCause_t cause = (GtpCause_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_CAUSE_VALUE(m_val, cause);
+         this->hdr.len += 1;
+      }
+      else if (STRCASECMP(param->paramName, "bce") == 0)
+      {
+         if (STRNCMP((const S8*)param->buf.pVal, "1", 1) == 0)
+         {
+            GSIM_SET_MASK(errPres, GTP_CAUSE_BCE_PRES);
+         }
+      }
+      else if (STRCASECMP(param->paramName, "pce") == 0)
+      {
+         if (STRNCMP((const S8*)param->buf.pVal, "1", 1) == 0)
+         {
+            GSIM_SET_MASK(errPres, GTP_CAUSE_PCE_PRES);
+         }
+      }
+      else if (STRCASECMP(param->paramName, "cs") == 0)
+      {
+         if (STRNCMP((const S8*)param->buf.pVal, "1", 1) == 0)
+         {
+            GSIM_SET_MASK(errPres, GTP_CAUSE_CS_PRES);
+         }
+      }
+      else if (STRCASECMP(param->paramName, "offending_ie_type") == 0)
+      {
+         GtpIeType_E ieType = (GtpIeType_E)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_IE_TYPE((m_val + 2), ieType);
+         this->hdr.len += 1;
+      }
+      else if (STRCASECMP(param->paramName, "offending_ie_length") == 0)
+      {
+         GtpLength_t ieLen = (GtpLength_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GTP_ENC_BIT_RATE((m_val + 3), ieLen);
+         this->hdr.len += 2;
+      }
+      else if (STRCASECMP(param->paramName, "offending_ie_instance") == 0)
+      {
+         GtpInstance_t ieInst = (GtpInstance_t)gtpConvStrToU32(\
+               (const S8*)param->buf.pVal, param->buf.len);
+         GSIM_ENC_U8((m_val + 5), ieInst);
+         this->hdr.len += 1;
+      }
+      else
+      {
+         LOG_ERROR("Ignoring uknown FlowQos Parameter type [%s]",\
+               param->paramName);
+      }
+
+      delete *b;
+   }
+
+   if (!errPres)
+   {
+      GSIM_ENC_U8((m_val + 1), errPres);
+      this->hdr.len += 1;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes Cause IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpCause::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the Cause IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpCause::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+
+/**
+ * @brief
+ *    Encodes Recovery IE
+ *
+ * @param pVal
+ *    string containing Recovery number
+ *
+ * @return
+ *    ROK if Recovery is encoded successfully
+ *    RFAILED otherwise
+ */
+RETVAL GtpRecovery::buildIe(const S8 *value)
+{
+   LOG_ENTERFN();
+
+   m_val = (GtpRecovery_t)gtpConvStrToU32((const S8*)value, STRLEN(value));
+   this->hdr.len = STRLEN(value);;
+   LOG_EXITFN(ROK);
+}
+
+/**
+ * @brief Encodes Recovery IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpRecovery::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   GTP_ENC_RECOVERY(pTmpBuf, m_val);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the Recovery IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpRecovery::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
    this->hdr.len = ieLen;
 
    LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);

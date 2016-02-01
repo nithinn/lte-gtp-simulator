@@ -229,17 +229,29 @@
    GSIM_ENC_U8(_buf, _sel);                        \
 }
 
-#define GTP_ENC_PDN_TYPE(_buf, _pt)                \
+#define GTP_ENC_PDN_TYPE(_buf, _v)                 \
 {                                                  \
-   GSIM_ENC_U8(_buf, _pt);                         \
+   GSIM_ENC_U8(_buf, _v);                          \
 }
 
-#define GTP_ENC_ARP(_buf, _pt)                     \
+#define GTP_ENC_ARP(_buf, _v)                      \
 {                                                  \
-   GSIM_ENC_U8(_buf, _pt);                         \
+   GSIM_ENC_U8(_buf, _v);                          \
 }
 
-#define GTP_ENC_QCI(_buf, _pt)                     \
+#define GTP_ENC_QCI(_buf, _v)                      \
 {                                                  \
-   GSIM_ENC_U8(_buf, _pt);                         \
+   GSIM_ENC_U8(_buf, _v);                          \
 }
+
+#define GTP_ENC_CAUSE_VALUE(_buf, _v)              \
+do                                                 \
+{                                                  \
+   GSIM_ENC_U8(_buf, _v);                          \
+} while (0);
+
+#define GTP_ENC_RECOVERY(_buf, _v)                 \
+do                                                 \
+{                                                  \
+   GSIM_ENC_U8(_buf, _v);                          \
+} while (0);
