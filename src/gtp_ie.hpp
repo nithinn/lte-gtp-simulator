@@ -595,7 +595,8 @@ class GtpMbmsSessionDuration : public GtpIe
 
 class GtpStnSr : public GtpIe
 {
-#define GTP_STN_SR_MAX_BUF_LEN    1
+#define GTP_STN_SR_MAX_BUF_LEN    15
+
    private:
       U8             m_val[GTP_STN_SR_MAX_BUF_LEN];
 
@@ -607,13 +608,12 @@ class GtpStnSr : public GtpIe
          hdr.len = 0;
       }
 
-      RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const S8 *pVal);
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -643,7 +643,7 @@ class GtpIpAddress : public GtpIe
 
 class GtpEpsBearerTft : public GtpIe
 {
-#define GTP_EPS_BEARER_TFT_MAX_BUF_LEN    1
+#define GTP_EPS_BEARER_TFT_MAX_BUF_LEN    255
    private:
       U8             m_val[GTP_EPS_BEARER_TFT_MAX_BUF_LEN];
 
@@ -656,12 +656,11 @@ class GtpEpsBearerTft : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
-      RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
+      RETVAL buildIe(const HexString *value);
+      RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -680,12 +679,11 @@ class GtpTad : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
-      RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
+      RETVAL buildIe(const HexString *value);
+      RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -704,12 +702,11 @@ class GtpTmsi : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1208,12 +1205,11 @@ class GtpPtmsiSignature : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1221,7 +1217,7 @@ class GtpHopCounter : public GtpIe
 {
 #define GTP_HOP_COUNTER_MAX_BUF_LEN    1
    private:
-      U8             m_val[GTP_HOP_COUNTER_MAX_BUF_LEN];
+      U8             m_val;
 
    public:
       GtpHopCounter(GtpInstance_t inst)
@@ -1231,13 +1227,12 @@ class GtpHopCounter : public GtpIe
          hdr.len = 0;
       }
 
-      RETVAL buildIe(const S8 *pVal) {return ROK;}
+      RETVAL buildIe(const S8 *pVal);
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 

@@ -2118,14 +2118,14 @@ RETVAL GtpCause::buildIe(IeParamLst *paramLst)
       {
          GtpLength_t ieLen = (GtpLength_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
-         GTP_ENC_BIT_RATE((m_val + 3), ieLen);
+         GTP_ENC_IE_LENGTH((m_val + 3), ieLen);
          this->hdr.len += 2;
       }
       else if (STRCASECMP(param->paramName, "offending_ie_instance") == 0)
       {
          GtpInstance_t ieInst = (GtpInstance_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
-         GSIM_ENC_U8((m_val + 5), ieInst);
+         GTP_ENC_IE_INSTANCE((m_val + 5), ieInst);
          this->hdr.len += 1;
       }
       else
@@ -2253,3 +2253,497 @@ GtpLength_t GtpRecovery::decode(const U8 *pBuf)
 
    LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
+
+/**
+ * @brief Builds STN-SR IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpStnSr::buildIe(const S8 *value)
+{
+   LOG_ENTERFN();
+
+   (VOID)value;
+
+   LOG_EXITFN(ROK);
+}
+
+/**
+ * @brief Builds STN-SR IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpStnSr::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_STN_SR_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid STN-SR Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes STN-SR IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpStnSr::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the STN-SR IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpStnSr::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds EPS Bearer TFT IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpEpsBearerTft::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_EPS_BEARER_TFT_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid EPS Bearer TFT Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds EPS Bearer TFT ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpEpsBearerTft::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   U8       errPres = 0;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      /* TODO */
+
+      delete param;
+   }
+
+   if (!errPres)
+   {
+      GSIM_ENC_U8((m_val + 1), errPres);
+      this->hdr.len += 1;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes EPS Bearer TFT IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpEpsBearerTft::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the EPS Bearer TFT IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpEpsBearerTft::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds TAD IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpTad::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_TAD_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TAD Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds TAD ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpTad::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   U8       errPres = 0;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      /* TODO */
+
+      delete param;
+   }
+
+   if (!errPres)
+   {
+      GSIM_ENC_U8((m_val + 1), errPres);
+      this->hdr.len += 1;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes TAD IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpTad::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the TAD IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpTad::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds TMSI IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpTmsi::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_TMSI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes TMSI IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpTmsi::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Decodes the TMSI IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpTmsi::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds PTMSI Signature IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpPtmsiSignature::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_PTMSI_SIGNAURE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid PTMSI Signature Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes PTMSI Signature IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpPtmsiSignature::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Decodes the PTMSI Signature IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpPtmsiSignature::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds Hop Counter IE from string
+ *
+ * @param pVal
+ *
+ * @return 
+ */
+RETVAL GtpHopCounter::buildIe(const S8 *pVal)
+{
+   LOG_ENTERFN();
+   
+   m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   this->hdr.len = STRLEN(pVal);
+
+   LOG_EXITFN(ROK);
+}
+
+/**
+ *
+ * @brief Encodes Hop Counter IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpHopCounter::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   GTP_ENC_HOP_COUNTER(pTmpBuf, m_val);
+
+   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Decodes the Hop Counter IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpHopCounter::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
