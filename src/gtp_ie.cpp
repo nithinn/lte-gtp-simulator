@@ -109,7 +109,7 @@ GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
       case GTP_IE_CHARGING_ID:
          return new GtpChargingId(instance);
       case GTP_IE_CHARGING_CHARACTERISTICS:
-         return new GtpCharginCharacteristics(instance);
+         return new GtpChargingCharcs(instance);
       case GTP_IE_TRACE_INFO:
          return new GtpTraceInfo(instance);
       case GTP_IE_BEARER_FLAGS:
@@ -2735,6 +2735,769 @@ GtpLength_t GtpHopCounter::encode(U8 *pBuf)
  * @return 
  */
 GtpLength_t GtpHopCounter::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds Global Connection ID IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpGlobalCnId::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_GLOBAL_CN_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid Global Connection ID Buffer Length [%d]",\
+            value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds Global Connection ID ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpGlobalCnId::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   U8       errPres = 0;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      /* TODO */
+
+      delete param;
+   }
+
+   if (!errPres)
+   {
+      GSIM_ENC_U8((m_val + 1), errPres);
+      this->hdr.len += 1;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes Global Connection ID IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpGlobalCnId::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the Global Connection ID IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpGlobalCnId::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds S103 PDF IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpS103Pdf::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN >= \
+         GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid S103 PDF Buffer Length [%d]",\
+            value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds S103 PDF ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpS103Pdf::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   U8       errPres = 0;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      /* TODO */
+
+      delete param;
+   }
+
+   if (!errPres)
+   {
+      GSIM_ENC_U8((m_val + 1), errPres);
+      this->hdr.len += 1;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes S103 PDF IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpS103Pdf::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the S103 PDF IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpS103Pdf::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds S1U DF IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpS1uDf::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN >= \
+         GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid S1U DF Buffer Length [%d]",\
+            value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds S1U DF ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpS1uDf::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   U8       errPres = 0;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      /* TODO */
+
+      delete param;
+   }
+
+   if (!errPres)
+   {
+      GSIM_ENC_U8((m_val + 1), errPres);
+      this->hdr.len += 1;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes S1U DF IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpS1uDf::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the S1U DF IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpS1uDf::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds Delay Value IE from string
+ *
+ * @param pVal
+ *
+ * @return 
+ */
+RETVAL GtpDelayValue::buildIe(const S8 *pVal)
+{
+   LOG_ENTERFN();
+   
+   m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   this->hdr.len = STRLEN(pVal);
+
+   LOG_EXITFN(ROK);
+}
+
+/**
+ *
+ * @brief Encodes Delay Value IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpDelayValue::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   GTP_ENC_DELAY_VALUE(pTmpBuf, m_val);
+
+   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Decodes the Delay Value IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpDelayValue::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds Charging ID IE from string
+ *
+ * @param pVal
+ *
+ * @return 
+ */
+RETVAL GtpChargingId::buildIe(const S8 *pVal)
+{
+   LOG_ENTERFN();
+   
+   U32 chargingId = gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
+   GTP_ENC_CHARGING_ID(m_val, chargingId);
+   this->hdr.len = STRLEN(pVal);
+
+   LOG_EXITFN(ROK);
+}
+
+/**
+ * @brief Builds S1U DF IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpChargingId::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_CHARGING_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid S1U DF Buffer Length [%d]",\
+            value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ *
+ * @brief Encodes Delay Value IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpChargingId::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, GTP_CHARGING_ID_MAX_BUF_LEN);
+
+   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Decodes the Delay Value IE from the buffer pointed by pBuf
+ *    into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpChargingId::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds Charging Charecteristics IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpChargingCharcs::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_CHARGING_CHARCS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid Charging Charecteristics Buffer Length [%d]",\
+            value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds Charging Charecteristics ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpChargingCharcs::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   U8       errPres = 0;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      /* TODO */
+
+      delete param;
+   }
+
+   if (!errPres)
+   {
+      GSIM_ENC_U8((m_val + 1), errPres);
+      this->hdr.len += 1;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes Charging Charecteristics IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpChargingCharcs::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the Charging Charecteristics IE from the buffer 
+ *    pointed by pBuf into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpChargingCharcs::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds Bearer Flags IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpBearerFlags::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_BEARER_FLAGS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, &m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid Bearer Flags Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Builds Bearer Flags ie from list of IE params
+ *
+ * @param paramLst
+ *
+ * @return 
+ */
+RETVAL GtpBearerFlags::buildIe(IeParamLst *paramLst)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+
+   if (paramLst->empty())
+   {
+      LOG_ERROR("No parameters to encode");
+      LOG_EXITFN(RFAILED);
+   }
+
+   for (IeParamLstItr b = paramLst->begin(); b != paramLst->end(); b++)
+   {
+      IeParam *param = *b;
+
+      /* TODO */
+
+      delete param;
+   }
+
+   delete paramLst;
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes Bearer Flags IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpBearerFlags::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   GTP_ENC_IE_HDR(pBuf, &hdr);
+   pBuf[GTP_IE_HDR_LEN] = m_val;
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the Bearer Flags IE from the buffer 
+ *    pointed by pBuf into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpBearerFlags::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   m_val = pBuf[GTP_IE_HDR_LEN];
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds PTI IE from string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpPti::buildIe(const S8 *value)
+{
+   LOG_ENTERFN();
+   
+   m_val = (U8)gtpConvStrToU32((const S8*)value, STRLEN(value));
+   this->hdr.len = STRLEN(value);
+
+   LOG_EXITFN(ROK);
+}
+
+/**
+ * @brief Builds PTI IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpPti::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_PTI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, &m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid PTI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+
+/**
+ * @brief Encodes PTI IE into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpPti::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   GTP_ENC_IE_HDR(pBuf, &hdr);
+   pBuf[GTP_IE_HDR_LEN] = m_val;
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief Decodes the PTI IE from the buffer 
+ *    pointed by pBuf into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpPti::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 

@@ -261,3 +261,15 @@ do                                                 \
 {                                                  \
    GSIM_ENC_U8(_buf, _v);                          \
 } while (0);
+
+#define GTP_ENC_DELAY_VALUE(_buf, _v)              \
+do                                                 \
+{                                                  \
+   GSIM_ENC_U8(_buf, _v);                          \
+} while (0);
+
+#define GTP_ENC_CHARGING_ID(_buf, _v)              \
+do                                                 \
+{                                                  \
+   GSIM_ENC_U32(_buf, _v);                         \
+} while (0);
