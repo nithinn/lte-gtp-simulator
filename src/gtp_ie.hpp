@@ -1041,11 +1041,11 @@ class GtpMmCntxtUmtsKeyAndQuint : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1064,11 +1064,11 @@ class GtpMmCntxtEpcSecCntxtQuadrAndQuint : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1087,11 +1087,11 @@ class GtpMmCntxtUmtsKeyQuadrAndQuint : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+      GtpLength_t encode(U8 *pBuf);
+      GtpLength_t decode(const U8 *pBuf);
       BOOL   isGroupedIe() {return FALSE;}
 };
 

@@ -3797,7 +3797,7 @@ RETVAL GtpMmCntxtGsmKeyAndTriplets::buildIe(const HexString *value)
    }
    else
    {
-      LOG_ERROR("Invalid UE Network Capability Buffer Length [%d]",\
+      LOG_ERROR("Invalid GSM Key and Triplets Buffer Length [%d]",\
             value->size());
       ret = RFAILED;
    }
@@ -3868,7 +3868,7 @@ RETVAL GtpMmCntxtGsmKeyUsedCipherAndQuint::buildIe(const HexString *value)
    }
    else
    {
-      LOG_ERROR("Invalid UE Network Capability Buffer Length [%d]",\
+      LOG_ERROR("Invalid GSM Key Used cipher and quints Buffer Length [%d]",\
             value->size());
       ret = RFAILED;
    }
@@ -3938,7 +3938,7 @@ RETVAL GtpMmCntxtUmtsKeyUsedCipherAndQuint::buildIe(const HexString *value)
    }
    else
    {
-      LOG_ERROR("Invalid UE Network Capability Buffer Length [%d]",\
+      LOG_ERROR("Invalid umts key used cipher and quints Buffer Length [%d]",\
             value->size());
       ret = RFAILED;
    }
@@ -3977,6 +3977,218 @@ GtpLength_t GtpMmCntxtUmtsKeyUsedCipherAndQuint::encode(U8 *pBuf)
  * @return 
  */
 GtpLength_t GtpMmCntxtUmtsKeyUsedCipherAndQuint::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds MM Context UMTS and Quintuples IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpMmCntxtUmtsKeyAndQuint::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_MM_CNTXT_UMTS_KEY_AND_QUINTS_MAX_BUF_LEN >= \
+         GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid UMTS Key and Quintuples Buffer Length [%d]",\
+            value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes MM Context UMTS Key and Quintuples IE 
+ * into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpMmCntxtUmtsKeyAndQuint::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Decodes the MM Context UMTS Key and Quintuples IE
+ *    from the buffer pointed by pBuf into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpMmCntxtUmtsKeyAndQuint::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds MM Context EPS Security Context Quadruples and Quintuples
+ * IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpMmCntxtEpcSecCntxtQuadrAndQuint::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_MM_CNTXT_EPS_SEC_CNTXT_QUADR_AND_QUITNS_MAX_BUF_LEN >= \
+         GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid EPS Security Context Quadruples and Quintuples "\
+            "Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes MM Context EPS Security Context Quadruples and Quintiuples IE 
+ * into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpMmCntxtEpcSecCntxtQuadrAndQuint::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Decodes the EPS Security Context Quadruples & Quintuples IE
+ *    from the buffer pointed by pBuf into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpMmCntxtEpcSecCntxtQuadrAndQuint::decode(const U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(pBuf, ieLen);
+   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
+   this->hdr.len = ieLen;
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+/**
+ * @brief Builds MM Context UMTS Key Quadruples and Quintuples
+ * IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpMmCntxtUmtsKeyQuadrAndQuint::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_MM_CNTXT_UMTS_KEY_QUADR_AND_QUINTS_MAX_BUF_LEN >= \
+         GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid UMTS Key Quadruples and Quintuples "\
+            "Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Encodes MM Context UMTS Key Quadruples and Quintiuples IE 
+ * into byte array pointed by pBuf
+ *
+ * @param pBuf
+ *
+ * @return 
+ *    returns the total encoded length (header length inclusive)
+ */
+GtpLength_t GtpMmCntxtUmtsKeyQuadrAndQuint::encode(U8 *pBuf)
+{
+   LOG_ENTERFN();
+
+   U8 *pTmpBuf = pBuf;
+
+   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
+   pTmpBuf += GTP_IE_HDR_LEN;
+   MEMCPY(pTmpBuf, m_val, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+/**
+ * @brief Decodes the UMTS Key Quadruples & Quintuples IE
+ *    from the buffer pointed by pBuf into local data structure
+ *
+ * @param pBuf
+ *
+ * @return 
+ */
+GtpLength_t GtpMmCntxtUmtsKeyQuadrAndQuint::decode(const U8 *pBuf)
 {
    LOG_ENTERFN();
 
