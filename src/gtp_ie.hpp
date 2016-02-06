@@ -34,9 +34,9 @@ class GtpImsi : public GtpIe
    public:
       GtpImsi(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_IMSI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_IMSI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
          MEMSET(m_val, 0, GTP_IMSI_MAX_LEN);
       }
 
@@ -71,9 +71,9 @@ class GtpMsisdn : public GtpIe
    public:
       GtpMsisdn(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MSISDN;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MSISDN;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
          MEMSET(m_val, 0, GTP_MSISDN_MAX_BUF_LEN);
       }
 
@@ -112,9 +112,9 @@ class GtpUli : public GtpIe
    public:
       GtpUli(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_ULI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_ULI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
          MEMSET(m_val, 0, GTP_ULI_MAX_LEN);
       }
 
@@ -130,12 +130,11 @@ class GtpUli : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_ULI_MAX_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
 };
-
 
 class GtpBearerContext : public GtpIe
 {
@@ -146,9 +145,9 @@ class GtpBearerContext : public GtpIe
    public:
       GtpBearerContext(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_BEARER_CNTXT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_BEARER_CNTXT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       ~GtpBearerContext() {};
@@ -165,7 +164,7 @@ class GtpBearerContext : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_BEARER_CNTXT_MAX_LEN);
       }
 
       BOOL   isGroupedIe() {return TRUE;}
@@ -185,9 +184,9 @@ class GtpFteid : public GtpIe
    public:
       GtpFteid(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_FTEID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_FTEID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
          MEMSET(m_val, 0, GTP_FTEID_MAX_LEN);
       }
 
@@ -203,7 +202,7 @@ class GtpFteid : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_FTEID_MAX_LEN);
       }
 
       VOID        setTeid(GtpTeid_t teid);
@@ -214,15 +213,17 @@ class GtpFteid : public GtpIe
 
 class GtpEbi : public GtpIe
 {
+#define GTP_EBI_MAX_BUF_LEN   1
+
    private:
       U8          m_val;
 
    public:
       GtpEbi(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_EBI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_EBI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -237,7 +238,7 @@ class GtpEbi : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_EBI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -254,9 +255,9 @@ class GtpMei : public GtpIe
    public:
       GtpMei(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MEI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MEI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
          MEMSET(m_val, 0, GTP_MEI_MAX_LEN);
       }
 
@@ -272,7 +273,7 @@ class GtpMei : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_MEI_MAX_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -280,15 +281,16 @@ class GtpMei : public GtpIe
 
 class GtpRatType : public GtpIe
 {
+#define GTP_RAT_TYPE_MAX_BUF_LEN    1
    private:
       U8                m_val;
 
    public:
       GtpRatType(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_RAT_TYPE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_RAT_TYPE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -303,7 +305,7 @@ class GtpRatType : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_RAT_TYPE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -320,9 +322,9 @@ class GtpServingNw : public GtpIe
    public:
       GtpServingNw(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_SERVING_NW;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_SERVING_NW;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
          MEMSET(m_val, 0, GTP_SERVING_NW_MAX_BUF_LEN);
       }
 
@@ -338,7 +340,7 @@ class GtpServingNw : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_SERVING_NW_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -354,9 +356,9 @@ class GtpApn : public GtpIe
    public:
       GtpApn(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_APN;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_APN;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
          MEMSET(m_val, 0, GTP_APN_MAX_LEN);
       }
 
@@ -372,7 +374,7 @@ class GtpApn : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_APN_MAX_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -387,9 +389,9 @@ class GtpAmbr : public GtpIe
    public:
       GtpAmbr(GtpInstance_t inst)
       {
-         hdr.ieType   = GTP_IE_AMBR;
-         hdr.instance = inst;
-         hdr.len      = 0;
+         m_hdr.ieType   = GTP_IE_AMBR;
+         m_hdr.instance = inst;
+         m_hdr.len      = 0;
          MEMSET(m_val, 0, GTP_AMBR_MAX_BUF_LEN);
       }
 
@@ -405,7 +407,7 @@ class GtpAmbr : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_AMBR_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -438,9 +440,9 @@ class GtpIndication : public GtpIe
    public:
       GtpIndication(GtpInstance_t inst)
       {
-         hdr.ieType   = GTP_IE_INDICATION;
-         hdr.instance = inst;
-         hdr.len      = 0;
+         m_hdr.ieType   = GTP_IE_INDICATION;
+         m_hdr.instance = inst;
+         m_hdr.len      = 0;
          MEMSET(m_val, 0, GTP_INDICATION_MAX_BUF_LEN);
       }
 
@@ -456,7 +458,7 @@ class GtpIndication : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_INDICATION_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -477,9 +479,9 @@ class GtpSelectionMode : public GtpIe
    public:
       GtpSelectionMode(GtpInstance_t inst)
       {
-         hdr.ieType   = GTP_IE_SELECTION_MODE;
-         hdr.instance = inst;
-         hdr.len      = 0;
+         m_hdr.ieType   = GTP_IE_SELECTION_MODE;
+         m_hdr.instance = inst;
+         m_hdr.len      = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -494,7 +496,7 @@ class GtpSelectionMode : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_SEL_MODE_BUF_MAX_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -510,9 +512,9 @@ class GtpPdnType : public GtpIe
    public:
       GtpPdnType(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_PDN_TYPE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_PDN_TYPE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -527,7 +529,7 @@ class GtpPdnType : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_PDN_TYPE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -543,9 +545,9 @@ class GtpPaa : public GtpIe
    public:
       GtpPaa(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_PAA;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_PAA;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -560,7 +562,7 @@ class GtpPaa : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_PAA_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -576,9 +578,9 @@ class GtpBearerQos : public GtpIe
    public:
       GtpBearerQos(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_BEARER_QOS;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_BEARER_QOS;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -593,7 +595,7 @@ class GtpBearerQos : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_BEARER_QOS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -608,9 +610,9 @@ class GtpFlowQos : public GtpIe
    public:
       GtpFlowQos(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_FLOW_QOS;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_FLOW_QOS;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -625,7 +627,7 @@ class GtpFlowQos : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_FLOW_QOS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -640,9 +642,9 @@ class GtpPco : public GtpIe
    public:
       GtpPco(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_FLOW_QOS;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_FLOW_QOS;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -657,7 +659,7 @@ class GtpPco : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_PCO_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -677,9 +679,9 @@ class GtpCause : public GtpIe
    public:
       GtpCause(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_CAUSE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_CAUSE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -694,7 +696,7 @@ class GtpCause : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_CAUSE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -702,15 +704,16 @@ class GtpCause : public GtpIe
 
 class GtpRecovery : public GtpIe
 {
+#define GTP_RECOVERY_MAX_BUF_LEN    4
    private:
       U8    m_val;
 
    public:
       GtpRecovery(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_RECOVERY;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_RECOVERY;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -725,7 +728,7 @@ class GtpRecovery : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_RECOVERY_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -740,9 +743,9 @@ class GtpMbmsSessionDuration : public GtpIe
    public:
       GtpMbmsSessionDuration(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MBMS_SESSION_DURATION;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MBMS_SESSION_DURATION;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -757,7 +760,8 @@ class GtpMbmsSessionDuration : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MBMS_SESSION_DURATION_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -773,9 +777,9 @@ class GtpStnSr : public GtpIe
    public:
       GtpStnSr(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_STN_SR;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_STN_SR;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -790,7 +794,7 @@ class GtpStnSr : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_STN_SR_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -805,9 +809,9 @@ class GtpIpAddress : public GtpIe
    public:
       GtpIpAddress(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_IP_ADDR;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_IP_ADDR;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -822,7 +826,7 @@ class GtpIpAddress : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_IP_ADDRESS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -837,9 +841,9 @@ class GtpEpsBearerTft : public GtpIe
    public:
       GtpEpsBearerTft(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_EPS_BEARER_TFT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_EPS_BEARER_TFT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -854,7 +858,7 @@ class GtpEpsBearerTft : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_EPS_BEARER_TFT_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -869,9 +873,9 @@ class GtpTad : public GtpIe
    public:
       GtpTad(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_TAD;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_TAD;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -886,7 +890,7 @@ class GtpTad : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_TAD_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -901,9 +905,9 @@ class GtpTmsi : public GtpIe
    public:
       GtpTmsi(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_TMSI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_TMSI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -918,7 +922,7 @@ class GtpTmsi : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_TMSI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -933,9 +937,9 @@ class GtpGlobalCnId : public GtpIe
    public:
       GtpGlobalCnId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_GLOBAL_CN_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_GLOBAL_CN_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -950,7 +954,7 @@ class GtpGlobalCnId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_GLOBAL_CN_ID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -965,9 +969,9 @@ class GtpS103Pdf : public GtpIe
    public:
       GtpS103Pdf(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_S103_PDF;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_S103_PDF;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -982,7 +986,8 @@ class GtpS103Pdf : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -997,9 +1002,9 @@ class GtpS1uDf : public GtpIe
    public:
       GtpS1uDf(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_S1UDF;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_S1UDF;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1014,7 +1019,7 @@ class GtpS1uDf : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_S1U_DATA_FWD_INFO_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1029,9 +1034,9 @@ class GtpDelayValue : public GtpIe
    public:
       GtpDelayValue(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_DELAY_VALUE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_DELAY_VALUE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -1046,7 +1051,7 @@ class GtpDelayValue : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_DELAY_VALUE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1061,9 +1066,9 @@ class GtpChargingId : public GtpIe
    public:
       GtpChargingId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_CHARGING_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_CHARGING_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -1078,7 +1083,7 @@ class GtpChargingId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_CHARGING_ID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1093,9 +1098,9 @@ class GtpChargingCharcs : public GtpIe
    public:
       GtpChargingCharcs(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_CHARGING_CHARACTERISTICS;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_CHARGING_CHARACTERISTICS;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1110,7 +1115,7 @@ class GtpChargingCharcs : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_CHARGING_CHARCS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1125,9 +1130,9 @@ class GtpTraceInfo : public GtpIe
    public:
       GtpTraceInfo(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_TRACE_INFO;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_TRACE_INFO;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1142,7 +1147,7 @@ class GtpTraceInfo : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_TRACE_INFO_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1157,9 +1162,9 @@ class GtpBearerFlags : public GtpIe
    public:
       GtpBearerFlags(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_BEARER_FLAGS;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_BEARER_FLAGS;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1174,7 +1179,7 @@ class GtpBearerFlags : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_BEARER_FLAGS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1189,9 +1194,9 @@ class GtpPti : public GtpIe
    public:
       GtpPti(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_PTI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_PTI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -1206,7 +1211,7 @@ class GtpPti : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_PTI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1221,9 +1226,9 @@ class GtpDrxParam : public GtpIe
    public:
       GtpDrxParam(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_DRX_PARAM;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_DRX_PARAM;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1238,7 +1243,7 @@ class GtpDrxParam : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_DRX_PARAM_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1253,9 +1258,9 @@ class GtpUeNetworkCap : public GtpIe
    public:
       GtpUeNetworkCap(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_UE_NETWORK_CAP;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_UE_NETWORK_CAP;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1270,7 +1275,7 @@ class GtpUeNetworkCap : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_UE_NETWORK_CAP_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1285,9 +1290,9 @@ class GtpMmCntxtGsmKeyAndTriplets : public GtpIe
    public:
       GtpMmCntxtGsmKeyAndTriplets(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MM_CNTXT_GSM_KEY_N_TRIPLETS;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MM_CNTXT_GSM_KEY_N_TRIPLETS;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1302,7 +1307,8 @@ class GtpMmCntxtGsmKeyAndTriplets : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MM_CNTXT_GSM_KEY_AND_TRIPLETS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1317,9 +1323,9 @@ class GtpMmCntxtUmtsKeyUsedCipherAndQuint : public GtpIe
    public:
       GtpMmCntxtUmtsKeyUsedCipherAndQuint(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MM_CNTXT_UMTS_KEY_USED_CIPHER_N_QUINT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MM_CNTXT_UMTS_KEY_USED_CIPHER_N_QUINT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1334,7 +1340,8 @@ class GtpMmCntxtUmtsKeyUsedCipherAndQuint : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MM_CNTXT_UMTS_KEY_USED_CIPHER_AND_QUINTS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1349,9 +1356,9 @@ class GtpMmCntxtGsmKeyUsedCipherAndQuint : public GtpIe
    public:
       GtpMmCntxtGsmKeyUsedCipherAndQuint(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MM_CNTXT_GSM_KEY_USED_CIPHER_N_QUINT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MM_CNTXT_GSM_KEY_USED_CIPHER_N_QUINT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1366,7 +1373,8 @@ class GtpMmCntxtGsmKeyUsedCipherAndQuint : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MM_CNTXT_GSM_KEY_USED_CIPHER_N_QUINT_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1381,9 +1389,9 @@ class GtpMmCntxtUmtsKeyAndQuint : public GtpIe
    public:
       GtpMmCntxtUmtsKeyAndQuint(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MM_CNTXT_UMTS_KEY_N_QUINT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MM_CNTXT_UMTS_KEY_N_QUINT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1398,7 +1406,8 @@ class GtpMmCntxtUmtsKeyAndQuint : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MM_CNTXT_UMTS_KEY_AND_QUINTS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1413,9 +1422,9 @@ class GtpMmCntxtEpcSecCntxtQuadrAndQuint : public GtpIe
    public:
       GtpMmCntxtEpcSecCntxtQuadrAndQuint(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MM_CNTXT_EPS_SEC_CNTXT_QUADR_N_QUINT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MM_CNTXT_EPS_SEC_CNTXT_QUADR_N_QUINT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1430,7 +1439,8 @@ class GtpMmCntxtEpcSecCntxtQuadrAndQuint : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MM_CNTXT_EPS_SEC_CNTXT_QUADR_AND_QUITNS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1445,9 +1455,9 @@ class GtpMmCntxtUmtsKeyQuadrAndQuint : public GtpIe
    public:
       GtpMmCntxtUmtsKeyQuadrAndQuint(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MM_CNTXT_UMTS_KEY_QUADR_N_QUINT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MM_CNTXT_UMTS_KEY_QUADR_N_QUINT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1462,7 +1472,8 @@ class GtpMmCntxtUmtsKeyQuadrAndQuint : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MM_CNTXT_UMTS_KEY_QUADR_AND_QUINTS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1477,9 +1488,9 @@ class GtpPdnConnection : public GtpIe
    public:
       GtpPdnConnection(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_PDN_CONNECTION;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_PDN_CONNECTION;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1494,7 +1505,7 @@ class GtpPdnConnection : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_PDN_CONNECTION_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1509,9 +1520,9 @@ class GtpPduNumbers : public GtpIe
    public:
       GtpPduNumbers(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_PDU_NUMBERS;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_PDU_NUMBERS;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1526,7 +1537,7 @@ class GtpPduNumbers : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_PDU_NUMBERS_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1541,9 +1552,9 @@ class GtpPtmsi : public GtpIe
    public:
       GtpPtmsi(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_PTMSI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_PTMSI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1558,7 +1569,7 @@ class GtpPtmsi : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_PTMSI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1573,9 +1584,9 @@ class GtpPtmsiSignature : public GtpIe
    public:
       GtpPtmsiSignature(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_PTMSI_SIGNATURE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_PTMSI_SIGNATURE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1590,7 +1601,7 @@ class GtpPtmsiSignature : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_PTMSI_SIGNAURE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1605,9 +1616,9 @@ class GtpHopCounter : public GtpIe
    public:
       GtpHopCounter(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_HOP_COUNTER;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_HOP_COUNTER;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal);
@@ -1622,7 +1633,7 @@ class GtpHopCounter : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_HOP_COUNTER_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1637,9 +1648,9 @@ class GtpUeTimeZone : public GtpIe
    public:
       GtpUeTimeZone(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_UE_TIME_ZONE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_UE_TIME_ZONE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1654,7 +1665,7 @@ class GtpUeTimeZone : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_UE_TIME_ZONE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1669,9 +1680,9 @@ class GtpTraceReference : public GtpIe
    public:
       GtpTraceReference(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_TRACE_REFERENCE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_TRACE_REFERENCE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1686,7 +1697,7 @@ class GtpTraceReference : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_TRACE_REFERENCE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1701,9 +1712,9 @@ class GtpCompleteReqMsg : public GtpIe
    public:
       GtpCompleteReqMsg(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_COMPLETE_REQ_MSG;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_COMPLETE_REQ_MSG;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1718,7 +1729,7 @@ class GtpCompleteReqMsg : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_COMPLETE_REQ_MSG_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1733,9 +1744,9 @@ class GtpGuti : public GtpIe
    public:
       GtpGuti(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_GUTI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_GUTI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1750,7 +1761,7 @@ class GtpGuti : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_GUTI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1765,9 +1776,9 @@ class GtpFContainer : public GtpIe
    public:
       GtpFContainer(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_FCONTAINER;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_FCONTAINER;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1782,7 +1793,7 @@ class GtpFContainer : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_FCONTAINER_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1797,9 +1808,9 @@ class GtpFCause : public GtpIe
    public:
       GtpFCause(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_FCAUSE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_FCAUSE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1814,7 +1825,7 @@ class GtpFCause : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_FCAUSE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1829,9 +1840,9 @@ class GtpSelectedPlmnId : public GtpIe
    public:
       GtpSelectedPlmnId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_SELECTED_PLMN_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_SELECTED_PLMN_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1846,7 +1857,7 @@ class GtpSelectedPlmnId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_SELECTED_PLMNID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1861,9 +1872,9 @@ class GtpTargetId : public GtpIe
    public:
       GtpTargetId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_TARGET_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_TARGET_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1878,7 +1889,7 @@ class GtpTargetId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_TARGET_ID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1893,9 +1904,9 @@ class GtpPacketFlowId : public GtpIe
    public:
       GtpPacketFlowId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_PACKET_FLOW_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_PACKET_FLOW_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1910,7 +1921,7 @@ class GtpPacketFlowId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_PACKET_FLOW_ID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1925,9 +1936,9 @@ class GtpRabCntxt : public GtpIe
    public:
       GtpRabCntxt(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_RAB_CNTXT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_RAB_CNTXT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1942,7 +1953,7 @@ class GtpRabCntxt : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_RAB_CNTXT_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1957,9 +1968,9 @@ class GtpSourceRncPdcpCntxtInfo : public GtpIe
    public:
       GtpSourceRncPdcpCntxtInfo(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_SOURCE_RNC_PDCP_CNTXT_INFO;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_SOURCE_RNC_PDCP_CNTXT_INFO;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -1974,7 +1985,8 @@ class GtpSourceRncPdcpCntxtInfo : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_SOURCE_RNC_PDCP_CNTXT_INFO_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -1989,9 +2001,9 @@ class GtpUdpSrcPort : public GtpIe
    public:
       GtpUdpSrcPort(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_UDP_SRC_PORT;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_UDP_SRC_PORT;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2006,7 +2018,7 @@ class GtpUdpSrcPort : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_UDP_SRC_PORT_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2021,9 +2033,9 @@ class GtpApnRestriction : public GtpIe
    public:
       GtpApnRestriction(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_APN_RESTRICTION;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_APN_RESTRICTION;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2038,7 +2050,7 @@ class GtpApnRestriction : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_APN_RESTRICTION_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2053,9 +2065,9 @@ class GtpSrcId : public GtpIe
    public:
       GtpSrcId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_SRC_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_SRC_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2070,7 +2082,7 @@ class GtpSrcId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_SRC_ID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2085,9 +2097,9 @@ class GtpChangeReportingAction : public GtpIe
    public:
       GtpChangeReportingAction(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_CHANGE_REPORTING_ACTION;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_CHANGE_REPORTING_ACTION;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2102,7 +2114,8 @@ class GtpChangeReportingAction : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_CHANGE_REPORTING_ACTION_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2117,9 +2130,9 @@ class GtpFqdn : public GtpIe
    public:
       GtpFqdn(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_FQDN;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_FQDN;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2134,7 +2147,7 @@ class GtpFqdn : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_FQDN_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2149,9 +2162,9 @@ class GtpChannelNeeded : public GtpIe
    public:
       GtpChannelNeeded(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_CHANNEL_NEEDED;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_CHANNEL_NEEDED;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2166,7 +2179,7 @@ class GtpChannelNeeded : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_CHANNEL_NEEDED_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2181,9 +2194,9 @@ class GtpEmlppPriority : public GtpIe
    public:
       GtpEmlppPriority(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_EMLPP_PRIORITY;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_EMLPP_PRIORITY;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2198,7 +2211,7 @@ class GtpEmlppPriority : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_EMLPP_PRIORITY_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2213,9 +2226,9 @@ class GtpNodeType : public GtpIe
    public:
       GtpNodeType(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_NODE_TYPE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_NODE_TYPE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2230,7 +2243,7 @@ class GtpNodeType : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_NODE_TYPE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2245,9 +2258,9 @@ class GtpFqCsid : public GtpIe
    public:
       GtpFqCsid(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_FQ_CSID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_FQ_CSID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2262,7 +2275,7 @@ class GtpFqCsid : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_FQ_CSID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2277,9 +2290,9 @@ class GtpTi : public GtpIe
    public:
       GtpTi(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_TI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_TI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2294,7 +2307,7 @@ class GtpTi : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_TI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2309,9 +2322,9 @@ class GtpMbmsServiceArea : public GtpIe
    public:
       GtpMbmsServiceArea(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MBMS_SERVICE_AREA;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MBMS_SERVICE_AREA;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2326,7 +2339,7 @@ class GtpMbmsServiceArea : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_MBMS_SERVICE_AREA_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2341,9 +2354,9 @@ class GtpMbmsSessionId : public GtpIe
    public:
       GtpMbmsSessionId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MBMS_SESSION_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MBMS_SESSION_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2358,7 +2371,7 @@ class GtpMbmsSessionId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_MBMS_SESSION_ID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2373,9 +2386,9 @@ class GtpMbmsFlowId : public GtpIe
    public:
       GtpMbmsFlowId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MBMS_FLOW_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MBMS_FLOW_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2390,7 +2403,7 @@ class GtpMbmsFlowId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_MBMS_FLOW_ID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2405,9 +2418,9 @@ class GtpMbmsIpMulticastDistribution : public GtpIe
    public:
       GtpMbmsIpMulticastDistribution(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MBMS_IP_MULTICAST_DISTRIBUTION;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MBMS_IP_MULTICAST_DISTRIBUTION;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2422,7 +2435,8 @@ class GtpMbmsIpMulticastDistribution : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MBMS_IP_MULTICAST_DISTRIBUTION_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2437,9 +2451,9 @@ class GtpMbmsDistributionAck : public GtpIe
    public:
       GtpMbmsDistributionAck(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MBMS_DISTRIBUTION_ACK;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MBMS_DISTRIBUTION_ACK;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2454,7 +2468,8 @@ class GtpMbmsDistributionAck : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MBMS_DISTRIBUTION_ACK_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2469,9 +2484,9 @@ class GtpRfspIndex : public GtpIe
    public:
       GtpRfspIndex(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_RFSP_INDEX;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_RFSP_INDEX;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2486,7 +2501,7 @@ class GtpRfspIndex : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_RFSP_INDEX_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2501,9 +2516,9 @@ class GtpUci : public GtpIe
    public:
       GtpUci(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_UCI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_UCI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2518,7 +2533,7 @@ class GtpUci : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_UCI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2533,9 +2548,9 @@ class GtpCsgInfoReportingAction : public GtpIe
    public:
       GtpCsgInfoReportingAction(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_CSG_INFO_REPORTING_ACTION;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_CSG_INFO_REPORTING_ACTION;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2550,7 +2565,8 @@ class GtpCsgInfoReportingAction : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_CSG_INFO_REPORTING_ACTION_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2565,9 +2581,9 @@ class GtpCsgId : public GtpIe
    public:
       GtpCsgId(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_CSG_ID;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_CSG_ID;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2582,7 +2598,7 @@ class GtpCsgId : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_CSG_ID_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2597,9 +2613,9 @@ class GtpCmi : public GtpIe
    public:
       GtpCmi(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_CMI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_CMI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2614,7 +2630,7 @@ class GtpCmi : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_CMI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2629,9 +2645,9 @@ class GtpServiceIndicator : public GtpIe
    public:
       GtpServiceIndicator(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_SERVICE_INDICATOR;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_SERVICE_INDICATOR;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2646,7 +2662,7 @@ class GtpServiceIndicator : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_SERVICE_INDICATOR_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2661,9 +2677,9 @@ class GtpDetachType : public GtpIe
    public:
       GtpDetachType(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_DETACH_TYPE;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_DETACH_TYPE;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2678,7 +2694,7 @@ class GtpDetachType : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_DETACH_TYPE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2693,9 +2709,9 @@ class GtpLdn : public GtpIe
    public:
       GtpLdn(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_LDN;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_LDN;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2710,7 +2726,7 @@ class GtpLdn : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_LDN_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2725,9 +2741,9 @@ class GtpMbmsTimeToDataTransfer : public GtpIe
    public:
       GtpMbmsTimeToDataTransfer(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_MBMS_TIME_TO_DATA_TRANSFER;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_MBMS_TIME_TO_DATA_TRANSFER;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2742,7 +2758,8 @@ class GtpMbmsTimeToDataTransfer : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_MBMS_TIME_TO_DATA_TRANSFER_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2757,9 +2774,9 @@ class GtpTmgi : public GtpIe
    public:
       GtpTmgi(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_TMGI;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_TMGI;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2774,7 +2791,7 @@ class GtpTmgi : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_TMGI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2789,9 +2806,9 @@ class GtpAdditionalMmCntxtForSrvcc : public GtpIe
    public:
       GtpAdditionalMmCntxtForSrvcc(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_ADDITIONAL_MM_CNTXT_FOR_SRVCC;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_ADDITIONAL_MM_CNTXT_FOR_SRVCC;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2806,7 +2823,8 @@ class GtpAdditionalMmCntxtForSrvcc : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_ADDITIONAL_MM_CNTXT_FOR_SRVCC_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -2821,9 +2839,9 @@ class GtpAdditionalFlagsForSrvcc : public GtpIe
    public:
       GtpAdditionalFlagsForSrvcc(GtpInstance_t inst)
       {
-         hdr.ieType = GTP_IE_ADDITIONAL_FLAGS_FOR_SRVCC;
-         hdr.instance = inst;
-         hdr.len = 0;
+         m_hdr.ieType = GTP_IE_ADDITIONAL_FLAGS_FOR_SRVCC;
+         m_hdr.instance = inst;
+         m_hdr.len = 0;
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
@@ -2838,7 +2856,8 @@ class GtpAdditionalFlagsForSrvcc : public GtpIe
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val,\
+               GTP_ADDITIONAL_FLAGS_FOR_SRVCC_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}

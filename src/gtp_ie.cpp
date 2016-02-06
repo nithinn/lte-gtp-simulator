@@ -55,13 +55,12 @@ GtpLength_t GtpIe::encodeHelper(U8 *inbuf, U8 *outbuf)
 
    U8 *tmp = outbuf;
 
-   GTP_ENC_IE_HDR(tmp, &this->hdr);
+   GTP_ENC_IE_HDR(tmp, &this->m_hdr);
    tmp += GTP_IE_HDR_LEN;
-   MEMCPY(tmp, inbuf, hdr.len);
+   MEMCPY(tmp, inbuf, this->m_hdr.len);
 
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+   LOG_EXITFN(this->m_hdr.len + GTP_IE_HDR_LEN);
 }
-
 
 /**
  * @brief
@@ -84,13 +83,13 @@ GtpLength_t GtpIe::decodeHelper(const U8 *inbuf, U8 *outbuf,\
    if (maxIeLen < ieLen)
    {
       LOG_ERROR("IE [%s] received with Invalid length [%d]",\
-            gtpGetIeName(this->hdr.ieType), ieLen);
+            gtpGetIeName(this->m_hdr.ieType), ieLen);
       throw ERR_INVALID_IE_LENGTH; 
    }
    else
    {
       MEMCPY(outbuf, inbuf + GTP_IE_HDR_LEN, ieLen);
-      this->hdr.len = ieLen;
+      this->m_hdr.len = ieLen;
    }
 
    LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
@@ -327,7 +326,7 @@ RETVAL GtpImsi::buildIe(const S8 *pVal)
       len++;
    }
 
-   this->hdr.len = len;
+   this->m_hdr.len = len;
    LOG_EXITFN(ROK);
 }
 
@@ -348,7 +347,7 @@ RETVAL GtpImsi::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -364,7 +363,7 @@ VOID GtpImsi::setImsi(GtpImsiKey *pImsi)
    LOG_ENTERFN();
 
    MEMCPY(m_val, pImsi->val, pImsi->len);
-   this->hdr.len = pImsi->len;
+   this->m_hdr.len = pImsi->len;
 
    LOG_EXITVOID();
 }
@@ -409,7 +408,7 @@ RETVAL GtpMsisdn::buildIe(const S8 *pVal)
       len++;
    }
 
-   this->hdr.len = len;
+   this->m_hdr.len = len;
 
    LOG_EXITFN(ROK);
 }
@@ -431,7 +430,7 @@ RETVAL GtpMsisdn::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_MSISDN_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -461,7 +460,7 @@ RETVAL GtpUli::buildIe(const HexString *value)
 
    if (GTP_ULI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -522,14 +521,14 @@ RETVAL GtpUli::buildIe(IeParamLst *pBufLst)
 
       U32 len = gtpConvStrToHex(&pXmlBuf->buf, pBuf);
       pBuf += len;
-      this->hdr.len += len;
+      this->m_hdr.len += len;
 
       delete *b;
    }
 
    /* encoding 1 byte of ULI flags */
    GSIM_ENC_U8(m_val, pres);
-   this->hdr.len += 1;
+   this->m_hdr.len += 1;
 
    delete pBufLst;
    LOG_EXITFN(ret);
@@ -541,7 +540,7 @@ VOID GtpBearerContext::setGtpuTeid(GtpTeid_t teid, GtpInstance_t inst)
 
    GtpIeHdr    ieHdr;
    U8          *pBuf = m_val;
-   GtpLength_t ieLen = this->hdr.len;
+   GtpLength_t ieLen = this->m_hdr.len;
 
    while (ieLen)
    {
@@ -566,7 +565,7 @@ GtpEbi_t GtpBearerContext::getEbi()
 
    GtpEbi_t ebi = 0;
 
-   U8 *pBuf = getIeBufPtr(m_val, this->hdr.len, GTP_IE_EBI, 0, 1);
+   U8 *pBuf = getIeBufPtr(m_val, this->m_hdr.len, GTP_IE_EBI, 0, 1);
    if (NULL != pBuf)
    {
       GTP_DEC_EBI(pBuf, ebi);
@@ -589,7 +588,7 @@ RETVAL GtpBearerContext::buildIe(const HexString *value)
    {
       if (GTP_BEARER_CNTXT_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
       {
-         this->hdr.len = gtpConvStrToHex(value, m_val);
+         this->m_hdr.len = gtpConvStrToHex(value, m_val);
       }
       else
       {
@@ -619,12 +618,12 @@ RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
    {
       U32 len = (*ie)->encode(pBuf);
       pBuf += len;
-      this->hdr.len += len;
+      this->m_hdr.len += len;
 
       delete *ie;
    }
 
-   MEMCPY(m_val, buf, this->hdr.len);
+   MEMCPY(m_val, buf, this->m_hdr.len);
 
    LOG_EXITFN(ret);
 }
@@ -637,7 +636,7 @@ RETVAL GtpFteid::buildIe(const HexString *value)
 
    if (GTP_FTEID_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -667,7 +666,7 @@ RETVAL GtpFteid::buildIe(IeParamLst *pBufLst)
          GtpIfType_E ifType = gtpConvStrToIfType((const S8*)pXmlBuf->buf.pVal,\
                pXmlBuf->buf.len);
          GSIM_ENC_U8(m_val, ifType);
-         this->hdr.len += 1;
+         this->m_hdr.len += 1;
       }
       else if (STRCASECMP(pXmlBuf->paramName, "ipv4") == 0)
       {
@@ -675,7 +674,7 @@ RETVAL GtpFteid::buildIe(IeParamLst *pBufLst)
          IpAddr ipAddr = convIpStrToIpAddr((const S8*)pXmlBuf->buf.pVal,\
                pXmlBuf->buf.len);
          GTP_ENC_IPV4_ADDR((m_val + 5), ipAddr.u.ipv4Addr.addr);
-         this->hdr.len += IPV4_ADDR_MAX_LEN;
+         this->m_hdr.len += IPV4_ADDR_MAX_LEN;
       }
       else if (STRCASECMP(pXmlBuf->paramName, "ipv6") == 0)
       {
@@ -683,21 +682,21 @@ RETVAL GtpFteid::buildIe(IeParamLst *pBufLst)
          IpAddr ipAddr = convIpStrToIpAddr((const S8*)pXmlBuf->buf.pVal,\
                pXmlBuf->buf.len);
          GTP_ENC_IPV6_ADDR((m_val + 9), ipAddr.u.ipv6Addr.addr);
-         this->hdr.len += IPV6_ADDR_MAX_LEN;
+         this->m_hdr.len += IPV6_ADDR_MAX_LEN;
       }
       else if (STRCASECMP(pXmlBuf->paramName, "teid") == 0)
       {
          GtpTeid_t teid = (GtpTeid_t)gtpConvStrToU32(\
                (const S8*)pXmlBuf->buf.pVal, pXmlBuf->buf.len);
          GTP_ENC_TEID((m_val + 1), teid);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else if (STRCASECMP(pXmlBuf->paramName, "grekey") == 0)
       {
          GtpTeid_t greKey = (GtpTeid_t)gtpConvStrToU32(\
                (const S8*)pXmlBuf->buf.pVal, pXmlBuf->buf.len);
          GTP_ENC_TEID((m_val + 1), greKey);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else
       {
@@ -753,7 +752,7 @@ RETVAL GtpEbi::buildIe(const S8 *pVal)
    LOG_ENTERFN();
    
    m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
-   this->hdr.len = STRLEN(pVal);
+   this->m_hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
 }
@@ -846,7 +845,7 @@ RETVAL GtpMei::buildIe(const S8 *pVal)
       len++;
    }
 
-   this->hdr.len = len;
+   this->m_hdr.len = len;
 
    LOG_EXITFN(ROK);
 }
@@ -868,7 +867,7 @@ RETVAL GtpMei::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_MEI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -892,7 +891,7 @@ RETVAL GtpRatType::buildIe(const S8 *pVal)
    LOG_ENTERFN();
    
    m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
-   this->hdr.len = STRLEN(pVal);
+   this->m_hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
 }
@@ -932,7 +931,7 @@ RETVAL GtpServingNw::buildIe(const S8 *pVal)
    }
 
    gtpUtlEncPlmnId(&plmnId, m_val);
-   hdr.len = GTP_SERVING_NW_MAX_BUF_LEN;
+   this->m_hdr.len = GTP_SERVING_NW_MAX_BUF_LEN;
 
    LOG_EXITFN(ROK);
 }
@@ -945,7 +944,7 @@ RETVAL GtpServingNw::buildIe(const HexString *value)
 
    if (GTP_SERVING_NW_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -971,8 +970,8 @@ RETVAL GtpApn::buildIe(const S8 *pVal)
       LOG_ERROR("Invalid APN length")
    }
 
-   hdr.len = STRLEN(pVal);
-   MEMCPY(m_val, pVal, hdr.len);
+   this->m_hdr.len = STRLEN(pVal);
+   MEMCPY(m_val, pVal, this->m_hdr.len);
 
    LOG_EXITFN(ROK);
 }
@@ -984,7 +983,7 @@ RETVAL GtpAmbr::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1015,14 +1014,14 @@ RETVAL GtpAmbr::buildIe(IeParamLst *pBufLst)
          GtpApnAmbr_t ambrul = (GtpApnAmbr_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_APN_AMBR(m_val, ambrul);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else if (STRCASECMP(param->paramName, "dl") == 0)
       {
          GtpApnAmbr_t ambrdl = (GtpApnAmbr_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_APN_AMBR((m_val + 4), ambrdl);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else
       {
@@ -1125,7 +1124,7 @@ RETVAL GtpIndication::buildIe(IeParamLst *pBufLst)
    }
 
    GSIM_ENC_3B(m_val, bitmask);
-   this->hdr.len += GTP_INDICATION_MAX_BUF_LEN;
+   this->m_hdr.len += GTP_INDICATION_MAX_BUF_LEN;
 
    delete pBufLst;
    LOG_EXITFN(ROK);
@@ -1138,7 +1137,7 @@ RETVAL GtpIndication::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_INDICATION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1177,7 +1176,7 @@ RETVAL GtpPdnType::buildIe(const S8 *pVal)
       LOG_EXITFN(RFAILED);
    }
 
-   this->hdr.len = GTP_PDN_TYPE_MAX_BUF_LEN;
+   this->m_hdr.len = GTP_PDN_TYPE_MAX_BUF_LEN;
 
    LOG_EXITFN(ROK);
 }
@@ -1189,7 +1188,7 @@ RETVAL GtpPaa::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_PAA_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1243,14 +1242,14 @@ RETVAL GtpPaa::buildIe(IeParamLst *pBufLst)
          IpAddr ipAddr = convIpStrToIpAddr((const S8 *)pXmlBuf->buf.pVal,\
                pXmlBuf->buf.len);
          GTP_ENC_IPV4_ADDR((m_val + 1), ipAddr.u.ipv4Addr.addr);
-         this->hdr.len += IPV4_ADDR_MAX_LEN;
+         this->m_hdr.len += IPV4_ADDR_MAX_LEN;
       }
       else if (STRCASECMP(pXmlBuf->paramName, "ipv6") == 0)
       {
          IpAddr ipAddr = convIpStrToIpAddr((const S8 *)pXmlBuf->buf.pVal,\
                pXmlBuf->buf.len);
          GTP_ENC_IPV6_ADDR((m_val + 1), ipAddr.u.ipv6Addr.addr);
-         this->hdr.len += IPV6_ADDR_MAX_LEN;
+         this->m_hdr.len += IPV6_ADDR_MAX_LEN;
       }
       else if (STRCASECMP(pXmlBuf->paramName, "ipv4v6") == 0)
       {
@@ -1281,7 +1280,7 @@ RETVAL GtpBearerQos::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_BEARER_QOS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1321,42 +1320,42 @@ RETVAL GtpBearerQos::buildIe(IeParamLst *paramLst)
          GtpArp_t arp = (GtpArp_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_ARP(m_val, arp);
-         this->hdr.len += 1;
+         this->m_hdr.len += 1;
       }
       else if (STRCASECMP(param->paramName, "qci") == 0)
       {
          GtpQci_t qci = (GtpQci_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_QCI((m_val + 1), qci);
-         this->hdr.len += 1;
+         this->m_hdr.len += 1;
       }
       else if (STRCASECMP(param->paramName, "mbrul") == 0)
       {
          GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_BIT_RATE((m_val + 2), br);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else if (STRCASECMP(param->paramName, "mbrdl") == 0)
       {
          GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_BIT_RATE((m_val + 6), br);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else if (STRCASECMP(param->paramName, "gbrul") == 0)
       {
          GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_BIT_RATE((m_val + 10), br);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else if (STRCASECMP(param->paramName, "gbrdl") == 0)
       {
          GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_BIT_RATE((m_val + 14), br);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else
       {
@@ -1385,7 +1384,7 @@ RETVAL GtpFlowQos::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_FLOW_QOS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1425,35 +1424,35 @@ RETVAL GtpFlowQos::buildIe(IeParamLst *paramLst)
          GtpQci_t qci = (GtpQci_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_QCI(m_val, qci);
-         this->hdr.len += 1;
+         this->m_hdr.len += 1;
       }
       else if (STRCASECMP(param->paramName, "mbrul") == 0)
       {
          GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_BIT_RATE((m_val + 1), br);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else if (STRCASECMP(param->paramName, "mbrdl") == 0)
       {
          GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_BIT_RATE((m_val + 5), br);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else if (STRCASECMP(param->paramName, "gbrul") == 0)
       {
          GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_BIT_RATE((m_val + 9), br);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else if (STRCASECMP(param->paramName, "gbrdl") == 0)
       {
          GtpBitRate_t br = (GtpBitRate_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_BIT_RATE((m_val + 13), br);
-         this->hdr.len += 4;
+         this->m_hdr.len += 4;
       }
       else
       {
@@ -1482,7 +1481,7 @@ RETVAL GtpPco::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_PCO_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1531,7 +1530,7 @@ RETVAL GtpCause::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_CAUSE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1572,7 +1571,7 @@ RETVAL GtpCause::buildIe(IeParamLst *paramLst)
          GtpCause_t cause = (GtpCause_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_CAUSE_VALUE(m_val, cause);
-         this->hdr.len += 1;
+         this->m_hdr.len += 1;
       }
       else if (STRCASECMP(param->paramName, "bce") == 0)
       {
@@ -1600,21 +1599,21 @@ RETVAL GtpCause::buildIe(IeParamLst *paramLst)
          GtpIeType_E ieType = (GtpIeType_E)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_IE_TYPE((m_val + 2), ieType);
-         this->hdr.len += 1;
+         this->m_hdr.len += 1;
       }
       else if (STRCASECMP(param->paramName, "offending_ie_length") == 0)
       {
          GtpLength_t ieLen = (GtpLength_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_IE_LENGTH((m_val + 3), ieLen);
-         this->hdr.len += 2;
+         this->m_hdr.len += 2;
       }
       else if (STRCASECMP(param->paramName, "offending_ie_instance") == 0)
       {
          GtpInstance_t ieInst = (GtpInstance_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_IE_INSTANCE((m_val + 5), ieInst);
-         this->hdr.len += 1;
+         this->m_hdr.len += 1;
       }
       else
       {
@@ -1628,7 +1627,7 @@ RETVAL GtpCause::buildIe(IeParamLst *paramLst)
    if (!errPres)
    {
       GSIM_ENC_U8((m_val + 1), errPres);
-      this->hdr.len += 1;
+      this->m_hdr.len += 1;
    }
 
    delete paramLst;
@@ -1651,7 +1650,7 @@ RETVAL GtpRecovery::buildIe(const S8 *value)
    LOG_ENTERFN();
 
    m_val = (GtpRecovery_t)gtpConvStrToU32((const S8*)value, STRLEN(value));
-   this->hdr.len = STRLEN(value);;
+   this->m_hdr.len = STRLEN(value);;
    LOG_EXITFN(ROK);
 }
 
@@ -1685,7 +1684,7 @@ RETVAL GtpStnSr::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_STN_SR_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1710,7 +1709,7 @@ RETVAL GtpEpsBearerTft::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_EPS_BEARER_TFT_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1754,7 +1753,7 @@ RETVAL GtpEpsBearerTft::buildIe(IeParamLst *paramLst)
    if (!errPres)
    {
       GSIM_ENC_U8((m_val + 1), errPres);
-      this->hdr.len += 1;
+      this->m_hdr.len += 1;
    }
 
    delete paramLst;
@@ -1775,7 +1774,7 @@ RETVAL GtpTad::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_TAD_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1819,7 +1818,7 @@ RETVAL GtpTad::buildIe(IeParamLst *paramLst)
    if (!errPres)
    {
       GSIM_ENC_U8((m_val + 1), errPres);
-      this->hdr.len += 1;
+      this->m_hdr.len += 1;
    }
 
    delete paramLst;
@@ -1840,7 +1839,7 @@ RETVAL GtpTmsi::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_TMSI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1865,7 +1864,7 @@ RETVAL GtpGlobalCnId::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_GLOBAL_CN_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1910,7 +1909,7 @@ RETVAL GtpGlobalCnId::buildIe(IeParamLst *paramLst)
    if (!errPres)
    {
       GSIM_ENC_U8((m_val + 1), errPres);
-      this->hdr.len += 1;
+      this->m_hdr.len += 1;
    }
 
    delete paramLst;
@@ -1932,7 +1931,7 @@ RETVAL GtpS103Pdf::buildIe(const HexString *value)
    if (GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -1977,7 +1976,7 @@ RETVAL GtpS103Pdf::buildIe(IeParamLst *paramLst)
    if (!errPres)
    {
       GSIM_ENC_U8((m_val + 1), errPres);
-      this->hdr.len += 1;
+      this->m_hdr.len += 1;
    }
 
    delete paramLst;
@@ -1999,7 +1998,7 @@ RETVAL GtpS1uDf::buildIe(const HexString *value)
    if (GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2044,7 +2043,7 @@ RETVAL GtpS1uDf::buildIe(IeParamLst *paramLst)
    if (!errPres)
    {
       GSIM_ENC_U8((m_val + 1), errPres);
-      this->hdr.len += 1;
+      this->m_hdr.len += 1;
    }
 
    delete paramLst;
@@ -2063,7 +2062,7 @@ RETVAL GtpDelayValue::buildIe(const S8 *pVal)
    LOG_ENTERFN();
    
    m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
-   this->hdr.len = STRLEN(pVal);
+   this->m_hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
 }
@@ -2081,7 +2080,7 @@ RETVAL GtpChargingId::buildIe(const S8 *pVal)
    
    U32 chargingId = gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
    GTP_ENC_CHARGING_ID(m_val, chargingId);
-   this->hdr.len = STRLEN(pVal);
+   this->m_hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
 }
@@ -2100,7 +2099,7 @@ RETVAL GtpChargingId::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_CHARGING_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2126,7 +2125,7 @@ RETVAL GtpChargingCharcs::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_CHARGING_CHARCS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2171,7 +2170,7 @@ RETVAL GtpChargingCharcs::buildIe(IeParamLst *paramLst)
    if (!errPres)
    {
       GSIM_ENC_U8((m_val + 1), errPres);
-      this->hdr.len += 1;
+      this->m_hdr.len += 1;
    }
 
    delete paramLst;
@@ -2192,7 +2191,7 @@ RETVAL GtpTraceInfo::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_TRACE_INFO_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2217,7 +2216,7 @@ RETVAL GtpBearerFlags::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_BEARER_FLAGS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, &m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, &m_val);
    }
    else
    {
@@ -2272,7 +2271,7 @@ RETVAL GtpPti::buildIe(const S8 *value)
    LOG_ENTERFN();
    
    m_val = (U8)gtpConvStrToU32((const S8*)value, STRLEN(value));
-   this->hdr.len = STRLEN(value);
+   this->m_hdr.len = STRLEN(value);
 
    LOG_EXITFN(ROK);
 }
@@ -2291,7 +2290,7 @@ RETVAL GtpPti::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_PTI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, &m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, &m_val);
    }
    else
    {
@@ -2316,7 +2315,7 @@ RETVAL GtpDrxParam::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_DRX_PARAM_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2341,7 +2340,7 @@ RETVAL GtpUeNetworkCap::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_UE_NETWORK_CAP_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2368,7 +2367,7 @@ RETVAL GtpMmCntxtGsmKeyAndTriplets::buildIe(const HexString *value)
    if (GTP_MM_CNTXT_GSM_KEY_AND_TRIPLETS_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2396,7 +2395,7 @@ RETVAL GtpMmCntxtGsmKeyUsedCipherAndQuint::buildIe(const HexString *value)
    if (GTP_MM_CNTXT_GSM_KEY_USED_CIPHER_N_QUINT_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2423,7 +2422,7 @@ RETVAL GtpMmCntxtUmtsKeyUsedCipherAndQuint::buildIe(const HexString *value)
    if (GTP_MM_CNTXT_UMTS_KEY_USED_CIPHER_AND_QUINTS_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2450,7 +2449,7 @@ RETVAL GtpMmCntxtUmtsKeyAndQuint::buildIe(const HexString *value)
    if (GTP_MM_CNTXT_UMTS_KEY_AND_QUINTS_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2478,7 +2477,7 @@ RETVAL GtpMmCntxtEpcSecCntxtQuadrAndQuint::buildIe(const HexString *value)
    if (GTP_MM_CNTXT_EPS_SEC_CNTXT_QUADR_AND_QUITNS_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2506,7 +2505,7 @@ RETVAL GtpMmCntxtUmtsKeyQuadrAndQuint::buildIe(const HexString *value)
    if (GTP_MM_CNTXT_UMTS_KEY_QUADR_AND_QUINTS_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2532,7 +2531,7 @@ RETVAL GtpPdnConnection::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_PDN_CONNECTION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2558,7 +2557,7 @@ RETVAL GtpPduNumbers::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_PDU_NUMBERS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2584,7 +2583,7 @@ RETVAL GtpPtmsi::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_PTMSI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2609,7 +2608,7 @@ RETVAL GtpPtmsiSignature::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_PTMSI_SIGNAURE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2632,7 +2631,7 @@ RETVAL GtpHopCounter::buildIe(const S8 *pVal)
    LOG_ENTERFN();
    
    m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
-   this->hdr.len = STRLEN(pVal);
+   this->m_hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
 }
@@ -2651,7 +2650,7 @@ RETVAL GtpUeTimeZone::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_UE_TIME_ZONE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2676,7 +2675,7 @@ RETVAL GtpTraceReference::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_TRACE_REFERENCE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2701,7 +2700,7 @@ RETVAL GtpCompleteReqMsg::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_COMPLETE_REQ_MSG_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2726,7 +2725,7 @@ RETVAL GtpGuti::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_GUTI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2751,7 +2750,7 @@ RETVAL GtpFContainer::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_FCONTAINER_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2776,7 +2775,7 @@ RETVAL GtpFCause::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_FCAUSE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2801,7 +2800,7 @@ RETVAL GtpSelectedPlmnId::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_SELECTED_PLMNID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2826,7 +2825,7 @@ RETVAL GtpTargetId::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_TARGET_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2851,7 +2850,7 @@ RETVAL GtpPacketFlowId::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_PACKET_FLOW_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2876,7 +2875,7 @@ RETVAL GtpRabCntxt::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_RAB_CNTXT_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2902,7 +2901,7 @@ RETVAL GtpSourceRncPdcpCntxtInfo::buildIe(const HexString *value)
    if (GTP_SOURCE_RNC_PDCP_CNTXT_INFO_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2927,7 +2926,7 @@ RETVAL GtpUdpSrcPort::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_UDP_SRC_PORT_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2952,7 +2951,7 @@ RETVAL GtpApnRestriction::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_APN_RESTRICTION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -2975,7 +2974,7 @@ RETVAL GtpSelectionMode::buildIe(const S8 *pVal)
    LOG_ENTERFN();
 
    m_val = (U8)gtpConvStrToU32((const S8*)pVal, STRLEN(pVal));
-   this->hdr.len = STRLEN(pVal);
+   this->m_hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
 }
@@ -2994,7 +2993,7 @@ RETVAL GtpSrcId::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_SRC_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3020,7 +3019,7 @@ RETVAL GtpChangeReportingAction::buildIe(const HexString *value)
    if (GTP_CHANGE_REPORTING_ACTION_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3045,7 +3044,7 @@ RETVAL GtpFqCsid::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_FQ_CSID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3070,7 +3069,7 @@ RETVAL GtpChannelNeeded::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_CHANNEL_NEEDED_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3095,7 +3094,7 @@ RETVAL GtpEmlppPriority::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_EMLPP_PRIORITY_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3120,7 +3119,7 @@ RETVAL GtpNodeType::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_NODE_TYPE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3145,7 +3144,7 @@ RETVAL GtpFqdn::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_FQDN_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3170,7 +3169,7 @@ RETVAL GtpTi::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_TI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3196,7 +3195,7 @@ RETVAL GtpMbmsSessionDuration::buildIe(const HexString *value)
    if (GTP_MBMS_SESSION_DURATION_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3222,7 +3221,7 @@ RETVAL GtpMbmsServiceArea::buildIe(const HexString *value)
    if (GTP_MBMS_SERVICE_AREA_MAX_BUF_LEN >= \
          GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {
@@ -3247,7 +3246,7 @@ RETVAL GtpMbmsSessionId::buildIe(const HexString *value)
    RETVAL   ret = ROK;
    if (GTP_MBMS_SESSION_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
-      this->hdr.len = gtpConvStrToHex(value, m_val);
+      this->m_hdr.len = gtpConvStrToHex(value, m_val);
    }
    else
    {

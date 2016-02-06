@@ -24,7 +24,7 @@ typedef GtpIeLst::iterator       GtpIeLstItr;
 class GtpIe
 {
    protected:
-      GtpIeHdr    hdr;
+      GtpIeHdr    m_hdr;
 
    public:
       /* builds IE from a char string */
@@ -58,9 +58,9 @@ class GtpIe
 
       U8 *getIeBufPtr(U8*, GtpLength_t, GtpIeType_E, GtpInstance_t, U32);
 
-      GtpIeType_E    type() {return hdr.ieType;}
+      GtpIeType_E    type() {return m_hdr.ieType;}
 
-      GtpInstance_t  instance() {return hdr.instance;}
+      GtpInstance_t  instance() {return m_hdr.instance;}
 
    protected:
 
