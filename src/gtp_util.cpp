@@ -1066,3 +1066,16 @@ PUBLIC VOID gtpUtlEncPlmnId(GtpPlmnId_t *pPlmnId, U8* pBuf)
 
    LOG_EXITVOID();
 }
+
+/**
+ * @brief
+ *    Returns name of IE string based on IE Type
+ *
+ * @param ieType
+ *
+ * @return 
+ */
+PUBLIC S8 *gtpGetIeName(GtpIeType_E ieType)
+{
+   return g_gtpIeName[ieType];
+}

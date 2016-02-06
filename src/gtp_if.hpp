@@ -42,7 +42,7 @@ class GtpIe
       /* encodes IE header and Contents into a byte buffer pointed by pBuf
        * returns the length of encoded buffer
        */
-      virtual GtpLength_t  encode(U8 *pBuf) = 0;
+      virtual GtpLength_t encode(U8 *pBuf) = 0;
 
       /* decodes the IE from the byte buffer, updates the ie header length
        * and copies the ie contents into local buffer
@@ -50,15 +50,30 @@ class GtpIe
       virtual GtpLength_t decode(const U8 *ieBuf) = 0;
 
       virtual BOOL   isGroupedIe() = 0;
-      GtpIeType_E    type() {return hdr.ieType;}
-      GtpInstance_t  instance() {return hdr.instance;}
+
       virtual ~GtpIe() {};
 
       // the factory method returns Gtp IE instance
       static GtpIe*  createGtpIe(GtpIeType_E ieType, GtpInstance_t instance);
 
-      U8*            getIeBufPtr(U8*, GtpLength_t, GtpIeType_E, GtpInstance_t,\
-                                 U32);
+      U8 *getIeBufPtr(U8*, GtpLength_t, GtpIeType_E, GtpInstance_t, U32);
+
+      GtpIeType_E    type() {return hdr.ieType;}
+
+      GtpInstance_t  instance() {return hdr.instance;}
+
+   protected:
+
+      /* Helper function used by derived IE classes to encode IE
+       * into byte buffer
+       */
+      GtpLength_t encodeHelper(U8 *inbuf, U8 *outbuf);
+
+      /* Helper function used by derived IE classes to decode IE from
+       * byte buffer received into member variable
+       */
+      GtpLength_t decodeHelper(const U8 *inbuf, U8 *outbuf,\
+            GtpLength_t maxIeLen);
 };
 
 #endif

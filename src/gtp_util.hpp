@@ -37,5 +37,6 @@ U32 encodeImsi(S8 *pImsiStr, U32 imsiStrLen, U8 *pBuf);
 EXTERN VOID numericStrIncriment(S8 *pStr, U32 len);
 PUBLIC U8* getImsiBufPtr(Buffer *pGtpcBuf);
 EXTERN VOID gtpUtlEncPlmnId(GtpPlmnId_t *pPlmnId, U8* pBuf);
+PUBLIC S8 *gtpGetIeName(GtpIeType_E ieType);
 
 #endif

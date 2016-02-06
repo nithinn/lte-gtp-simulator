@@ -41,6 +41,64 @@ BOOL gtpIeDict[GTP_IE_MAX] = \
 };
 
 /**
+ * @brief Helper function used by derived IE objects to encode the IE
+ *    into byte buffer
+ *
+ * @param inbuf
+ * @param outbuf
+ *
+ * @return 
+ */
+GtpLength_t GtpIe::encodeHelper(U8 *inbuf, U8 *outbuf)
+{
+   LOG_ENTERFN();
+
+   U8 *tmp = outbuf;
+
+   GTP_ENC_IE_HDR(tmp, &this->hdr);
+   tmp += GTP_IE_HDR_LEN;
+   MEMCPY(tmp, inbuf, hdr.len);
+
+   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
+}
+
+
+/**
+ * @brief
+ *    Helper function used by derived IE classes to decode IE from
+ *    byte buffer received into member variable
+ *
+ * @param pBuf
+ *
+ * @return
+ *    returns the length of IE inclusive of header length
+ */
+GtpLength_t GtpIe::decodeHelper(const U8 *inbuf, U8 *outbuf,\
+      GtpLength_t maxIeLen)
+{
+   LOG_ENTERFN();
+
+   U32 ieLen = 0;
+
+   GTP_GET_IE_LEN(inbuf, ieLen);
+   if (maxIeLen < ieLen)
+   {
+      LOG_ERROR("IE [%s] received with Invalid length [%d]",\
+            gtpGetIeName(this->hdr.ieType), ieLen);
+      throw ERR_INVALID_IE_LENGTH; 
+   }
+   else
+   {
+      MEMCPY(outbuf, inbuf + GTP_IE_HDR_LEN, ieLen);
+      this->hdr.len = ieLen;
+   }
+
+   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+}
+
+
+
+/**
  * @brief Factor Method to create GTP IE
  *
  * @param ieType
@@ -273,19 +331,6 @@ RETVAL GtpImsi::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-GtpLength_t GtpImsi::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
 /**
  * @brief 
  *
@@ -313,29 +358,6 @@ RETVAL GtpImsi::buildIe(const HexString *value)
 
    LOG_EXITFN(ret);
 }
-
-/**
- * @brief
- *    Enocdes the IMSI into U8 buffer
- *
- * @param pBuf
- * @param pLen
- *
- * @return 
- */
-GtpLength_t GtpImsi::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
 
 VOID GtpImsi::setImsi(GtpImsiKey *pImsi)
 {
@@ -392,19 +414,6 @@ RETVAL GtpMsisdn::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-GtpLength_t GtpMsisdn::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
 /**
  * @brief 
  *
@@ -420,7 +429,7 @@ RETVAL GtpMsisdn::buildIe(const HexString *value)
    LOG_ENTERFN();
 
    RETVAL   ret = ROK;
-   if (GTP_MSISDN_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   if (GTP_MSISDN_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
    {
       this->hdr.len = gtpConvStrToHex(value, m_val);
    }
@@ -432,43 +441,6 @@ RETVAL GtpMsisdn::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-
-/**
- * @brief
- *    Enocdes the MSISDN into U8 buffer
- *
- * @param pBuf
- * @param pLen
- *
- * @return 
- */
-GtpLength_t GtpMsisdn::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-GtpLength_t GtpUli::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -561,32 +533,6 @@ RETVAL GtpUli::buildIe(IeParamLst *pBufLst)
 
    delete pBufLst;
    LOG_EXITFN(ret);
-}
-
-GtpLength_t GtpUli::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-GtpLength_t GtpBearerContext::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 VOID GtpBearerContext::setGtpuTeid(GtpTeid_t teid, GtpInstance_t inst)
@@ -683,32 +629,6 @@ RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
    LOG_EXITFN(ret);
 }
 
-GtpLength_t GtpBearerContext::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-GtpLength_t GtpFteid::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
 RETVAL GtpFteid::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
@@ -791,19 +711,6 @@ RETVAL GtpFteid::buildIe(IeParamLst *pBufLst)
    LOG_EXITFN(ROK);
 }
 
-GtpLength_t GtpFteid::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
 VOID GtpFteid::setTeid(GtpTeid_t teid)
 {
    LOG_ENTERFN();
@@ -849,32 +756,6 @@ RETVAL GtpEbi::buildIe(const S8 *pVal)
    this->hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
-}
-
-GtpLength_t GtpEbi::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-GtpLength_t GtpEbi::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   GTP_ENC_EBI(pTmpBuf, m_val);
-
-   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
 }
 
 /**
@@ -970,19 +851,6 @@ RETVAL GtpMei::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-GtpLength_t GtpMei::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
 /**
  * @brief 
  *
@@ -1012,30 +880,6 @@ RETVAL GtpMei::buildIe(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-
-/**
- * @brief
- *    Enocdes the MEI into U8 buffer
- *
- * @param pBuf
- * @param pLen
- *
- * @return 
- */
-GtpLength_t GtpMei::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
 /**
  * @brief encodes RAT type from type of rat represented in integer string
  *
@@ -1052,33 +896,6 @@ RETVAL GtpRatType::buildIe(const S8 *pVal)
 
    LOG_EXITFN(ROK);
 }
-
-GtpLength_t GtpRatType::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-GtpLength_t GtpRatType::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-
-   GTP_ENC_RAT_TYPE(pTmpBuf, m_val);
-
-   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
-}
-
 
 RETVAL GtpServingNw::buildIe(const S8 *pVal)
 {
@@ -1140,32 +957,6 @@ RETVAL GtpServingNw::buildIe(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-GtpLength_t GtpServingNw::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-GtpLength_t GtpServingNw::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
 RETVAL GtpApn::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
@@ -1184,32 +975,6 @@ RETVAL GtpApn::buildIe(const S8 *pVal)
    MEMCPY(m_val, pVal, hdr.len);
 
    LOG_EXITFN(ROK);
-}
-
-GtpLength_t GtpApn::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-GtpLength_t GtpApn::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpAmbr::buildIe(const HexString *value)
@@ -1269,19 +1034,6 @@ RETVAL GtpAmbr::buildIe(IeParamLst *pBufLst)
 
    delete pBufLst;
    LOG_EXITFN(ROK);
-}
-
-GtpLength_t GtpAmbr::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 RETVAL GtpIndication::buildIe(IeParamLst *pBufLst)
@@ -1379,21 +1131,6 @@ RETVAL GtpIndication::buildIe(IeParamLst *pBufLst)
    LOG_EXITFN(ROK);
 }
 
-
-GtpLength_t GtpAmbr::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-
 RETVAL GtpIndication::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
@@ -1410,33 +1147,6 @@ RETVAL GtpIndication::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-
-GtpLength_t GtpIndication::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-GtpLength_t GtpIndication::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpPdnType::buildIe(const S8 *pVal)
@@ -1470,46 +1180,6 @@ RETVAL GtpPdnType::buildIe(const S8 *pVal)
    this->hdr.len = GTP_PDN_TYPE_MAX_BUF_LEN;
 
    LOG_EXITFN(ROK);
-}
-
-GtpLength_t GtpPdnType::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-GtpLength_t GtpPdnType::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   GTP_ENC_PDN_TYPE(pTmpBuf, m_val);
-
-   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-GtpLength_t GtpPaa::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 RETVAL GtpPaa::buildIe(const HexString *value)
@@ -1595,19 +1265,6 @@ RETVAL GtpPaa::buildIe(IeParamLst *pBufLst)
 
    delete pBufLst;
    LOG_EXITFN(ret);
-}
-
-GtpLength_t GtpPaa::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
 }
 
 /**
@@ -1715,50 +1372,6 @@ RETVAL GtpBearerQos::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes Bearer QOS IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpBearerQos::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the Bearer Qos IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpBearerQos::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-
-/**
  * @brief Builds Flow QOS IE from hex string
  *
  * @param value
@@ -1856,50 +1469,6 @@ RETVAL GtpFlowQos::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes Flow QOS IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpFlowQos::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the Flow Qos IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpFlowQos::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-
-/**
  * @brief Builds PCO IE from hex string
  *
  * @param value
@@ -1947,50 +1516,6 @@ RETVAL GtpPco::buildIe(IeParamLst *paramLst)
    delete paramLst;
    LOG_EXITFN(ret);
 }
-
-/**
- * @brief Encodes PCO IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpPco::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the PCO IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpPco::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
 
 /**
  * @brief Builds Cause IE from hex string
@@ -2111,50 +1636,6 @@ RETVAL GtpCause::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes Cause IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpCause::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the Cause IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpCause::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-
-/**
  * @brief
  *    Encodes Recovery IE
  *
@@ -2172,49 +1653,6 @@ RETVAL GtpRecovery::buildIe(const S8 *value)
    m_val = (GtpRecovery_t)gtpConvStrToU32((const S8*)value, STRLEN(value));
    this->hdr.len = STRLEN(value);;
    LOG_EXITFN(ROK);
-}
-
-/**
- * @brief Encodes Recovery IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpRecovery::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   GTP_ENC_RECOVERY(pTmpBuf, m_val);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the Recovery IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpRecovery::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -2256,49 +1694,6 @@ RETVAL GtpStnSr::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes STN-SR IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpStnSr::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the STN-SR IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpStnSr::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -2367,49 +1762,6 @@ RETVAL GtpEpsBearerTft::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes EPS Bearer TFT IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpEpsBearerTft::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the EPS Bearer TFT IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpEpsBearerTft::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds TAD IE from hex string
  *
  * @param value
@@ -2475,49 +1827,6 @@ RETVAL GtpTad::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes TAD IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpTad::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the TAD IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpTad::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds TMSI IE from hex string
  *
  * @param value
@@ -2540,48 +1849,6 @@ RETVAL GtpTmsi::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes TMSI IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpTmsi::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the TMSI IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpTmsi::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -2648,49 +1915,6 @@ RETVAL GtpGlobalCnId::buildIe(IeParamLst *paramLst)
 
    delete paramLst;
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes Global Connection ID IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpGlobalCnId::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the Global Connection ID IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpGlobalCnId::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -2761,49 +1985,6 @@ RETVAL GtpS103Pdf::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes S103 PDF IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpS103Pdf::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the S103 PDF IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpS103Pdf::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds S1U DF IE from hex string
  *
  * @param value
@@ -2871,49 +2052,6 @@ RETVAL GtpS1uDf::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes S1U DF IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpS1uDf::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the S1U DF IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpS1uDf::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds Delay Value IE from string
  *
  * @param pVal
@@ -2928,48 +2066,6 @@ RETVAL GtpDelayValue::buildIe(const S8 *pVal)
    this->hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
-}
-
-/**
- *
- * @brief Encodes Delay Value IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpDelayValue::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   GTP_ENC_DELAY_VALUE(pTmpBuf, m_val);
-
-   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Delay Value IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpDelayValue::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -3014,47 +2110,6 @@ RETVAL GtpChargingId::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- *
- * @brief Encodes Delay Value IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpChargingId::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, GTP_CHARGING_ID_MAX_BUF_LEN);
-
-   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Delay Value IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpChargingId::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -3124,49 +2179,6 @@ RETVAL GtpChargingCharcs::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes Charging Charecteristics IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpChargingCharcs::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the Charging Charecteristics IE from the buffer 
- *    pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpChargingCharcs::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds Trace Info IE from hex string
  *
  * @param value
@@ -3189,48 +2201,6 @@ RETVAL GtpTraceInfo::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes Trace Info IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpTraceInfo::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Trace Info IE from the buffer 
- *    pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpTraceInfo::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -3291,46 +2261,6 @@ RETVAL GtpBearerFlags::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Encodes Bearer Flags IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpBearerFlags::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   GTP_ENC_IE_HDR(pBuf, &hdr);
-   pBuf[GTP_IE_HDR_LEN] = m_val;
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the Bearer Flags IE from the buffer 
- *    pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpBearerFlags::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds PTI IE from string
  *
  * @param value
@@ -3372,47 +2302,6 @@ RETVAL GtpPti::buildIe(const HexString *value)
    LOG_EXITFN(ret);
 }
 
-
-/**
- * @brief Encodes PTI IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpPti::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   GTP_ENC_IE_HDR(pBuf, &hdr);
-   pBuf[GTP_IE_HDR_LEN] = m_val;
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-
-/**
- * @brief Decodes the PTI IE from the buffer 
- *    pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpPti::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
 /**
  * @brief Builds Drx Parameter IE from hex string
  *
@@ -3436,48 +2325,6 @@ RETVAL GtpDrxParam::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes Drx Parameter IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpDrxParam::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Drx Parameter IE from the buffer 
- *    pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpDrxParam::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -3507,48 +2354,6 @@ RETVAL GtpUeNetworkCap::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes UE Network Capability IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpUeNetworkCap::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the UE Network Capability IE from the buffer 
- *    pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpUeNetworkCap::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds MM Context GSM Key and Triplets IE from hex string
  *
  * @param value
@@ -3573,49 +2378,6 @@ RETVAL GtpMmCntxtGsmKeyAndTriplets::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes MM Context GSM Key and Triplets IE into byte array 
- * pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpMmCntxtGsmKeyAndTriplets::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the MM Context GSM Key and Triplets IE from the buffer 
- *    pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpMmCntxtGsmKeyAndTriplets::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -3647,49 +2409,6 @@ RETVAL GtpMmCntxtGsmKeyUsedCipherAndQuint::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes MM Context GSM Key Used Cipher and Quintiuples IE 
- *    into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpMmCntxtGsmKeyUsedCipherAndQuint::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the MM Context GSM Key Used Cipher and Quintuples IE
- *    from the buffer pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpMmCntxtGsmKeyUsedCipherAndQuint::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds MM Context UMTS Used Cipher and Quintuples IE from hex string
  *
  * @param value
@@ -3717,49 +2436,6 @@ RETVAL GtpMmCntxtUmtsKeyUsedCipherAndQuint::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes MM Context UMTS Key Used Cipher and Quintuples IE 
- * into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpMmCntxtUmtsKeyUsedCipherAndQuint::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the MM Context UMTS Key Used Cipher and Quintuples IE
- *    from the buffer pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpMmCntxtUmtsKeyUsedCipherAndQuint::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds MM Context UMTS and Quintuples IE from hex string
  *
  * @param value
@@ -3784,49 +2460,6 @@ RETVAL GtpMmCntxtUmtsKeyAndQuint::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes MM Context UMTS Key and Quintuples IE 
- * into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpMmCntxtUmtsKeyAndQuint::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the MM Context UMTS Key and Quintuples IE
- *    from the buffer pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpMmCntxtUmtsKeyAndQuint::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -3858,49 +2491,6 @@ RETVAL GtpMmCntxtEpcSecCntxtQuadrAndQuint::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes MM Context EPS Security Context Quadruples and Quintiuples IE 
- * into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpMmCntxtEpcSecCntxtQuadrAndQuint::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the EPS Security Context Quadruples & Quintuples IE
- *    from the buffer pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpMmCntxtEpcSecCntxtQuadrAndQuint::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds MM Context UMTS Key Quadruples and Quintuples
  * IE from hex string
  *
@@ -3926,49 +2516,6 @@ RETVAL GtpMmCntxtUmtsKeyQuadrAndQuint::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes MM Context UMTS Key Quadruples and Quintiuples IE 
- * into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpMmCntxtUmtsKeyQuadrAndQuint::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the MM Context UMTS Key Quadruples & Quintuples IE
- *    from the buffer pointed by pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpMmCntxtUmtsKeyQuadrAndQuint::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -3998,48 +2545,6 @@ RETVAL GtpPdnConnection::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes PDN Connection IE  into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpPdnConnection::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the PDN Connection IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpPdnConnection::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds PDU Numbers IE from hex string
  *
  * @param value
@@ -4063,48 +2568,6 @@ RETVAL GtpPduNumbers::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes PDU Numbers IE  into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpPduNumbers::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the PDU Numbers IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpPduNumbers::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -4133,48 +2596,6 @@ RETVAL GtpPtmsi::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes P-TMSI IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpPtmsi::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the P-TMSI IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpPtmsi::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds PTMSI Signature IE from hex string
  *
  * @param value
@@ -4200,48 +2621,6 @@ RETVAL GtpPtmsiSignature::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes PTMSI Signature IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpPtmsiSignature::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the PTMSI Signature IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpPtmsiSignature::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds Hop Counter IE from string
  *
  * @param pVal
@@ -4256,48 +2635,6 @@ RETVAL GtpHopCounter::buildIe(const S8 *pVal)
    this->hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
-}
-
-/**
- *
- * @brief Encodes Hop Counter IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpHopCounter::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   GTP_ENC_HOP_COUNTER(pTmpBuf, m_val);
-
-   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Hop Counter IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpHopCounter::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -4326,48 +2663,6 @@ RETVAL GtpUeTimeZone::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes UE Time Zone IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpUeTimeZone::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the UE Time Zone IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpUeTimeZone::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds Trace Reference IE from hex string
  *
  * @param value
@@ -4390,48 +2685,6 @@ RETVAL GtpTraceReference::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes Trace Reference IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpTraceReference::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Trace Reference IE from the buffer pointed by pBuf
- *    into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpTraceReference::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -4460,48 +2713,6 @@ RETVAL GtpCompleteReqMsg::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes Complete Request Message IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpCompleteReqMsg::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Complete Request Message IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpCompleteReqMsg::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds GUTI IE from hex string
  *
  * @param value
@@ -4524,48 +2735,6 @@ RETVAL GtpGuti::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes GUTI IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpGuti::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the GUTI IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpGuti::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -4594,48 +2763,6 @@ RETVAL GtpFContainer::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes F Container IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpFContainer::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the F Container IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpFContainer::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds F Cause IE from hex string
  *
  * @param value
@@ -4658,48 +2785,6 @@ RETVAL GtpFCause::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes F Cause IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpFCause::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the F Cause IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpFCause::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -4728,48 +2813,6 @@ RETVAL GtpSelectedPlmnId::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes Selected PLMN ID IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpSelectedPlmnId::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Selected PLMN ID IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpSelectedPlmnId::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds Target ID IE from hex string
  *
  * @param value
@@ -4792,48 +2835,6 @@ RETVAL GtpTargetId::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes Target ID IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpTargetId::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Target ID IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpTargetId::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -4862,48 +2863,6 @@ RETVAL GtpPacketFlowId::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes Packet Flow ID IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpPacketFlowId::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Packet Flow ID IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpPacketFlowId::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds RAB Context ID IE from hex string
  *
  * @param value
@@ -4926,48 +2885,6 @@ RETVAL GtpRabCntxt::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes RAB Context ID IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpRabCntxt::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the RAB Context ID IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpRabCntxt::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -4997,48 +2914,6 @@ RETVAL GtpSourceRncPdcpCntxtInfo::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes Source RNC PDCP Context IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpSourceRncPdcpCntxtInfo::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Source RNC PDCP Context IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpSourceRncPdcpCntxtInfo::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief Builds Source UDP Port IE from hex string
  *
  * @param value
@@ -5061,48 +2936,6 @@ RETVAL GtpUdpSrcPort::buildIe(const HexString *value)
    }
 
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief Encodes Source UDP Port IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpUdpSrcPort::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the Source UDP Port IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpUdpSrcPort::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
 /**
@@ -5131,48 +2964,6 @@ RETVAL GtpApnRestriction::buildIe(const HexString *value)
 }
 
 /**
- * @brief Encodes APN Restriction IE into byte array pointed by pBuf
- *
- * @param pBuf
- *
- * @return 
- *    returns the total encoded length (header length inclusive)
- */
-GtpLength_t GtpApnRestriction::encode(U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U8 *pTmpBuf = pBuf;
-
-   GTP_ENC_IE_HDR(pTmpBuf, &hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-   MEMCPY(pTmpBuf, m_val, hdr.len);
-
-   LOG_EXITFN(hdr.len + GTP_IE_HDR_LEN);
-}
-
-/**
- * @brief Decodes the APN Restriction IE from the buffer pointed by 
- * pBuf into local data structure
- *
- * @param pBuf
- *
- * @return 
- */
-GtpLength_t GtpApnRestriction::decode(const U8 *pBuf)
-{
-   LOG_ENTERFN();
-
-   U32 ieLen = 0;
-
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   MEMCPY(m_val, pBuf + GTP_IE_HDR_LEN, ieLen);
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
-}
-
-/**
  * @brief 
  *
  * @param pVal
@@ -5190,44 +2981,280 @@ RETVAL GtpSelectionMode::buildIe(const S8 *pVal)
 }
 
 /**
- * @brief 
+ * @brief Builds Source ID IE from hex string
  *
- * @param pBuf
+ * @param value
  *
  * @return 
  */
-GtpLength_t GtpSelectionMode::encode(U8 *pBuf)
+RETVAL GtpSrcId::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
-   U8 *pTmpBuf = pBuf;
+   RETVAL   ret = ROK;
+   if (GTP_SRC_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
 
-   GTP_ENC_IE_HDR(pTmpBuf, &this->hdr);
-   pTmpBuf += GTP_IE_HDR_LEN;
-
-   GTP_ENC_SEL_MODE(pTmpBuf, m_val);
-
-   LOG_EXITFN(this->hdr.len + GTP_IE_HDR_LEN);
+   LOG_EXITFN(ret);
 }
 
 /**
- * @brief 
+ * @brief Builds Change Reporting Action IE from hex string
  *
- * @param pBuf
+ * @param value
  *
  * @return 
  */
-GtpLength_t GtpSelectionMode::decode(const U8 *pBuf)
+RETVAL GtpChangeReportingAction::buildIe(const HexString *value)
 {
    LOG_ENTERFN();
 
-   U32 ieLen = 0;
+   RETVAL   ret = ROK;
+   if (GTP_CHANGE_REPORTING_ACTION_MAX_BUF_LEN >= \
+         GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
 
-   GTP_GET_IE_LEN(pBuf, ieLen);
-   m_val = pBuf[GTP_IE_HDR_LEN];
-   this->hdr.len = ieLen;
-
-   LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
+   LOG_EXITFN(ret);
 }
 
+/**
+ * @brief Builds FQCSID IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpFqCsid::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_FQ_CSID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Builds Channel Needed IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpChannelNeeded::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_CHANNEL_NEEDED_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Builds EMLPP Priority IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpEmlppPriority::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_EMLPP_PRIORITY_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Builds Node Type IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpNodeType::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_NODE_TYPE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Builds FQDN IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpFqdn::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_FQDN_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Builds TI IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpTi::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_TI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Builds MBMS Session Duration IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpMbmsSessionDuration::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_MBMS_SESSION_DURATION_MAX_BUF_LEN >= \
+         GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Builds MBMS Service Area IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpMbmsServiceArea::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_MBMS_SERVICE_AREA_MAX_BUF_LEN >= \
+         GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Builds MBMS Session ID IE from hex string
+ *
+ * @param value
+ *
+ * @return 
+ */
+RETVAL GtpMbmsSessionId::buildIe(const HexString *value)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   if (GTP_MBMS_SESSION_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
+   {
+      this->hdr.len = gtpConvStrToHex(value, m_val);
+   }
+   else
+   {
+      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
+      ret = RFAILED;
+   }
+
+   LOG_EXITFN(ret);
+}
 

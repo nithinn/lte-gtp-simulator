@@ -44,8 +44,17 @@ class GtpImsi : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       VOID   setImsi(GtpImsiKey*);
       BOOL   isGroupedIe() {return FALSE;}
 
@@ -54,10 +63,10 @@ class GtpImsi : public GtpIe
 
 class GtpMsisdn : public GtpIe
 {
-#define GTP_MSISDN_MAX_LEN          8
+#define GTP_MSISDN_MAX_BUF_LEN      8
 #define GTP_MSISDN_MAX_DIGITS       15
    private:
-      U8       m_val[GTP_MSISDN_MAX_LEN];
+      U8       m_val[GTP_MSISDN_MAX_BUF_LEN];
 
    public:
       GtpMsisdn(GtpInstance_t inst)
@@ -65,15 +74,24 @@ class GtpMsisdn : public GtpIe
          hdr.ieType = GTP_IE_MSISDN;
          hdr.instance = inst;
          hdr.len = 0;
-         MEMSET(m_val, 0, GTP_MSISDN_MAX_LEN);
+         MEMSET(m_val, 0, GTP_MSISDN_MAX_BUF_LEN);
       }
 
       RETVAL buildIe(const S8 *pVal);
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_MSISDN_MAX_BUF_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -104,8 +122,17 @@ class GtpUli : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -130,8 +157,17 @@ class GtpBearerContext : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst);
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return TRUE;}
       GtpEbi_t getEbi();
       VOID   setGtpuTeid(GtpTeid_t, GtpInstance_t);
@@ -159,8 +195,17 @@ class GtpFteid : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       VOID        setTeid(GtpTeid_t teid);
       VOID        setIpAddr(const IpAddr *pIp);
       BOOL        isGroupedIe() {return FALSE;}
@@ -184,8 +229,17 @@ class GtpEbi : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -210,8 +264,17 @@ class GtpMei : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -232,8 +295,17 @@ class GtpRatType : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -258,8 +330,17 @@ class GtpServingNw : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -283,8 +364,17 @@ class GtpApn : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -307,8 +397,17 @@ class GtpAmbr : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -349,8 +448,17 @@ class GtpIndication : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -378,8 +486,17 @@ class GtpSelectionMode : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -402,8 +519,17 @@ class GtpPdnType : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -426,8 +552,17 @@ class GtpPaa : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -450,8 +585,17 @@ class GtpBearerQos : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -473,8 +617,17 @@ class GtpFlowQos : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -496,8 +649,17 @@ class GtpPco : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -524,8 +686,17 @@ class GtpCause : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -546,8 +717,17 @@ class GtpRecovery : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -566,11 +746,20 @@ class GtpMbmsSessionDuration : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -593,8 +782,17 @@ class GtpStnSr : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -616,8 +814,17 @@ class GtpIpAddress : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -639,8 +846,17 @@ class GtpEpsBearerTft : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -662,8 +878,17 @@ class GtpTad : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -685,8 +910,17 @@ class GtpTmsi : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -708,8 +942,17 @@ class GtpGlobalCnId : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -731,8 +974,17 @@ class GtpS103Pdf : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -754,8 +1006,17 @@ class GtpS1uDf : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -777,8 +1038,17 @@ class GtpDelayValue : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -800,8 +1070,17 @@ class GtpChargingId : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -823,8 +1102,17 @@ class GtpChargingCharcs : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -846,8 +1134,17 @@ class GtpTraceInfo : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -869,8 +1166,17 @@ class GtpBearerFlags : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -892,8 +1198,17 @@ class GtpPti : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -915,8 +1230,17 @@ class GtpDrxParam : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -938,8 +1262,17 @@ class GtpUeNetworkCap : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -961,8 +1294,17 @@ class GtpMmCntxtGsmKeyAndTriplets : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -984,8 +1326,17 @@ class GtpMmCntxtUmtsKeyUsedCipherAndQuint : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1007,8 +1358,17 @@ class GtpMmCntxtGsmKeyUsedCipherAndQuint : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1030,8 +1390,17 @@ class GtpMmCntxtUmtsKeyAndQuint : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1053,8 +1422,17 @@ class GtpMmCntxtEpcSecCntxtQuadrAndQuint : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1076,8 +1454,17 @@ class GtpMmCntxtUmtsKeyQuadrAndQuint : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1099,8 +1486,17 @@ class GtpPdnConnection : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1122,8 +1518,17 @@ class GtpPduNumbers : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1145,8 +1550,17 @@ class GtpPtmsi : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1168,8 +1582,17 @@ class GtpPtmsiSignature : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1191,8 +1614,17 @@ class GtpHopCounter : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(&m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, &m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1214,8 +1646,17 @@ class GtpUeTimeZone : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1237,8 +1678,17 @@ class GtpTraceReference : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1260,8 +1710,17 @@ class GtpCompleteReqMsg : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1283,8 +1742,17 @@ class GtpGuti : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1306,8 +1774,17 @@ class GtpFContainer : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1329,8 +1806,17 @@ class GtpFCause : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1352,8 +1838,17 @@ class GtpSelectedPlmnId : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1375,8 +1870,17 @@ class GtpTargetId : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1398,8 +1902,17 @@ class GtpPacketFlowId : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1421,8 +1934,17 @@ class GtpRabCntxt : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1444,8 +1966,17 @@ class GtpSourceRncPdcpCntxtInfo : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1467,8 +1998,17 @@ class GtpUdpSrcPort : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1490,8 +2030,17 @@ class GtpApnRestriction : public GtpIe
       RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf);
-      GtpLength_t decode(const U8 *pBuf);
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1510,11 +2059,20 @@ class GtpSrcId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1533,11 +2091,20 @@ class GtpChangeReportingAction : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1556,11 +2123,20 @@ class GtpFqdn : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1579,11 +2155,20 @@ class GtpChannelNeeded : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1602,11 +2187,20 @@ class GtpEmlppPriority : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1625,11 +2219,20 @@ class GtpNodeType : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1648,11 +2251,20 @@ class GtpFqCsid : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1671,11 +2283,20 @@ class GtpTi : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1694,11 +2315,20 @@ class GtpMbmsServiceArea : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1717,13 +2347,23 @@ class GtpMbmsSessionId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+      RETVAL buildIe(const HexString *value);
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
+
 class GtpMbmsFlowId : public GtpIe
 {
 #define GTP_MBMS_FLOW_ID_MAX_BUF_LEN    1
@@ -1742,8 +2382,17 @@ class GtpMbmsFlowId : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1765,8 +2414,17 @@ class GtpMbmsIpMulticastDistribution : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1788,8 +2446,17 @@ class GtpMbmsDistributionAck : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1811,8 +2478,17 @@ class GtpRfspIndex : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1834,8 +2510,17 @@ class GtpUci : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1857,8 +2542,17 @@ class GtpCsgInfoReportingAction : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1880,8 +2574,17 @@ class GtpCsgId : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1903,8 +2606,17 @@ class GtpCmi : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1926,8 +2638,17 @@ class GtpServiceIndicator : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1949,8 +2670,17 @@ class GtpDetachType : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1972,8 +2702,17 @@ class GtpLdn : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -1995,8 +2734,17 @@ class GtpMbmsTimeToDataTransfer : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -2018,8 +2766,17 @@ class GtpTmgi : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -2041,8 +2798,17 @@ class GtpAdditionalMmCntxtForSrvcc : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
@@ -2064,8 +2830,17 @@ class GtpAdditionalFlagsForSrvcc : public GtpIe
       RETVAL buildIe(const HexString *value) {return ROK;}
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
-      GtpLength_t encode(U8 *pBuf) {return 0;}
-      GtpLength_t decode(const U8 *pBuf) {return 0;}
+
+      GtpLength_t encode(U8 *outbuf)
+      {
+         return GtpIe::encodeHelper(m_val, outbuf);
+      }
+
+      GtpLength_t decode(const U8 *inbuf)
+      {
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+      }
+
       BOOL   isGroupedIe() {return FALSE;}
 };
 
