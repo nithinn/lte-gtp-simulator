@@ -95,6 +95,42 @@ GtpLength_t GtpIe::decodeHelper(const U8 *inbuf, U8 *outbuf,\
    LOG_EXITFN(GTP_IE_HDR_LEN + ieLen);
 }
 
+/**
+ * @brief
+ *    Helper function used by derived IE classes to build IE from
+ *    hex string read from xml scenario file 
+ *    
+ * @param pBuf
+ *
+ * @return
+ */
+RETVAL GtpIe::buildIeHelper(const HexString *inbuf, U8 *outbuf,\
+      GtpLength_t maxIeLen)
+{
+   LOG_ENTERFN();
+
+   RETVAL      ret   = ROK;
+
+   try
+   {
+      GtpLength_t ieLen = GSIM_CEIL_DIVISION(inbuf->size(), 2);
+      if (maxIeLen >= ieLen)
+      {
+         this->m_hdr.len = gtpConvStrToHex(inbuf, outbuf);
+      }
+      else
+      {
+         ret = RFAILED;
+      }
+   }
+   catch (exception &e)
+   {
+      ret = ERR_MEMORY_ALLOC;
+   }
+
+   LOG_EXITFN(ret);
+}
+
 
 
 /**
@@ -330,34 +366,6 @@ RETVAL GtpImsi::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-/**
- * @brief 
- *
- * @param pBuf
- *    Buffer containing hex representation of imsi
- *
- * @return
- *    ROK if imsi is encoded successfully
- *    RFAILED otherwise
- */
-RETVAL GtpImsi::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid IMSI Hex Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 VOID GtpImsi::setImsi(GtpImsiKey *pImsi)
 {
    LOG_ENTERFN();
@@ -411,64 +419,6 @@ RETVAL GtpMsisdn::buildIe(const S8 *pVal)
    this->m_hdr.len = len;
 
    LOG_EXITFN(ROK);
-}
-
-/**
- * @brief 
- *
- * @param pBuf
- *    Buffer containing hex representation of msisidn
- *
- * @return
- *    ROK if msisdn is encoded successfully
- *    RFAILED otherwise
- */
-RETVAL GtpMsisdn::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MSISDN_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid MSISDN Hex Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief 
- *
- * @param pBuf
- *    Buffer containing hex representation of uli 
- *
- * @return
- *    ROK if uli is encoded successfully
- *    RFAILED otherwise
- */
-RETVAL GtpUli::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL  ret = ROK;
-
-   if (GTP_ULI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid ULI Hex Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
 }
 
 RETVAL GtpUli::buildIe(IeParamLst *pBufLst)
@@ -578,42 +528,17 @@ GtpEbi_t GtpBearerContext::getEbi()
    LOG_EXITFN(ebi);
 }
 
-RETVAL GtpBearerContext::buildIe(const HexString *value)
-{
-   RETVAL  ret = ROK;
-
-   LOG_ENTERFN();
-
-   try
-   {
-      if (GTP_BEARER_CNTXT_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-      {
-         this->m_hdr.len = gtpConvStrToHex(value, m_val);
-      }
-      else
-      {
-         ret = RFAILED;
-      }
-   }
-   catch (exception &e)
-   {
-      ret = ERR_MEMORY_ALLOC;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
 {
    LOG_ENTERFN();
 
    RETVAL                     ret = ROK;
-   U8                         buf[GTP_BEARER_CNTXT_MAX_LEN];
+   U8                         buf[GTP_BEARER_CNTXT_MAX_BUF_LEN];
    U8                         *pBuf = &buf[0];
    GtpIeLst::const_iterator  ie;
 
    LOG_DEBUG("[%d] IEs to encode", pIeLst->size());
-   MEMSET(buf, 0, GTP_BEARER_CNTXT_MAX_LEN); 
+   MEMSET(buf, 0, GTP_BEARER_CNTXT_MAX_BUF_LEN); 
    for (ie = pIeLst->begin(); ie != pIeLst->end(); ie++)
    {
       U32 len = (*ie)->encode(pBuf);
@@ -624,25 +549,6 @@ RETVAL GtpBearerContext::buildIe(const GtpIeLst *pIeLst)
    }
 
    MEMCPY(m_val, buf, this->m_hdr.len);
-
-   LOG_EXITFN(ret);
-}
-
-RETVAL GtpFteid::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL ret = ROK;
-
-   if (GTP_FTEID_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid FTEID Hex length");
-      ret = RFAILED;
-   }
 
    LOG_EXITFN(ret);
 }
@@ -851,35 +757,6 @@ RETVAL GtpMei::buildIe(const S8 *pVal)
 }
 
 /**
- * @brief 
- *
- * @param pBuf
- *    Buffer containing hex representation of msisidn
- *
- * @return
- *    ROK if mei is encoded successfully
- *    RFAILED otherwise
- */
-RETVAL GtpMei::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MEI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid MEI Hex Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
  * @brief encodes RAT type from type of rat represented in integer string
  *
  * @param pVal
@@ -936,26 +813,6 @@ RETVAL GtpServingNw::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpServingNw::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-   
-   RETVAL  ret = ROK;
-
-   if (GTP_SERVING_NW_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Serving Network Hex Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 RETVAL GtpApn::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
@@ -965,7 +822,7 @@ RETVAL GtpApn::buildIe(const S8 *pVal)
       LOG_ERROR("NULL function parameter")
    }
 
-   if (STRLEN(pVal) > GTP_APN_MAX_LEN)
+   if (STRLEN(pVal) > GTP_APN_MAX_BUF_LEN)
    {
       LOG_ERROR("Invalid APN length")
    }
@@ -975,25 +832,6 @@ RETVAL GtpApn::buildIe(const S8 *pVal)
 
    LOG_EXITFN(ROK);
 }
-
-RETVAL GtpAmbr::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_IMSI_MAX_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Ambr Hex Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 
 RETVAL GtpAmbr::buildIe(IeParamLst *pBufLst)
 {
@@ -1130,24 +968,6 @@ RETVAL GtpIndication::buildIe(IeParamLst *pBufLst)
    LOG_EXITFN(ROK);
 }
 
-RETVAL GtpIndication::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_INDICATION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Indicaiton IE Hex Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 RETVAL GtpPdnType::buildIe(const S8 *pVal)
 {
    LOG_ENTERFN();
@@ -1180,25 +1000,6 @@ RETVAL GtpPdnType::buildIe(const S8 *pVal)
 
    LOG_EXITFN(ROK);
 }
-
-RETVAL GtpPaa::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_PAA_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid PAA Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 
 RETVAL GtpPaa::buildIe(IeParamLst *pBufLst)
 {
@@ -1265,32 +1066,6 @@ RETVAL GtpPaa::buildIe(IeParamLst *pBufLst)
    delete pBufLst;
    LOG_EXITFN(ret);
 }
-
-/**
- * @brief Builds Bearer QOS IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpBearerQos::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_BEARER_QOS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Bearer QoS Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 
 /**
  * @brief Builds Bearer QoS ie from list of IE params
@@ -1371,32 +1146,6 @@ RETVAL GtpBearerQos::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Builds Flow QOS IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpFlowQos::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_FLOW_QOS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Flow QoS Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-
-/**
  * @brief Builds Flow QoS ie from list of IE params
  *
  * @param paramLst
@@ -1468,32 +1217,6 @@ RETVAL GtpFlowQos::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Builds PCO IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpPco::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_PCO_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid PCO Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-
-/**
  * @brief Builds PCO ie from list of IE params
  *
  * @param paramLst
@@ -1515,32 +1238,6 @@ RETVAL GtpPco::buildIe(IeParamLst *paramLst)
    delete paramLst;
    LOG_EXITFN(ret);
 }
-
-/**
- * @brief Builds Cause IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpCause::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_CAUSE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Cause Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 
 /**
  * @brief Builds Cause ie from list of IE params
@@ -1671,57 +1368,6 @@ RETVAL GtpStnSr::buildIe(const S8 *value)
 }
 
 /**
- * @brief Builds STN-SR IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpStnSr::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_STN_SR_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid STN-SR Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds EPS Bearer TFT IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpEpsBearerTft::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_EPS_BEARER_TFT_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid EPS Bearer TFT Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-
-/**
  * @brief Builds EPS Bearer TFT ie from list of IE params
  *
  * @param paramLst
@@ -1759,32 +1405,6 @@ RETVAL GtpEpsBearerTft::buildIe(IeParamLst *paramLst)
    delete paramLst;
    LOG_EXITFN(ret);
 }
-
-/**
- * @brief Builds TAD IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpTad::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_TAD_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TAD Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 
 /**
  * @brief Builds TAD ie from list of IE params
@@ -1826,58 +1446,6 @@ RETVAL GtpTad::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Builds TMSI IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpTmsi::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_TMSI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Global Connection ID IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpGlobalCnId::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_GLOBAL_CN_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Global Connection ID Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-
-/**
  * @brief Builds Global Connection ID ie from list of IE params
  *
  * @param paramLst
@@ -1917,34 +1485,6 @@ RETVAL GtpGlobalCnId::buildIe(IeParamLst *paramLst)
 }
 
 /**
- * @brief Builds S103 PDF IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpS103Pdf::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid S103 PDF Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-
-/**
  * @brief Builds S103 PDF ie from list of IE params
  *
  * @param paramLst
@@ -1982,34 +1522,6 @@ RETVAL GtpS103Pdf::buildIe(IeParamLst *paramLst)
    delete paramLst;
    LOG_EXITFN(ret);
 }
-
-/**
- * @brief Builds S1U DF IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpS1uDf::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid S1U DF Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
 
 /**
  * @brief Builds S1U DF ie from list of IE params
@@ -2086,59 +1598,6 @@ RETVAL GtpChargingId::buildIe(const S8 *pVal)
 }
 
 /**
- * @brief Builds S1U DF IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpChargingId::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_CHARGING_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid S1U DF Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Charging Charecteristics IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpChargingCharcs::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_CHARGING_CHARCS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Charging Charecteristics Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-
-/**
  * @brief Builds Charging Charecteristics ie from list of IE params
  *
  * @param paramLst
@@ -2174,56 +1633,6 @@ RETVAL GtpChargingCharcs::buildIe(IeParamLst *paramLst)
    }
 
    delete paramLst;
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Trace Info IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpTraceInfo::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_TRACE_INFO_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Trace Info Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Bearer Flags IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpBearerFlags::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_BEARER_FLAGS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, &m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Bearer Flags Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
    LOG_EXITFN(ret);
 }
 
@@ -2277,349 +1686,6 @@ RETVAL GtpPti::buildIe(const S8 *value)
 }
 
 /**
- * @brief Builds PTI IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpPti::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_PTI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, &m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid PTI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Drx Parameter IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpDrxParam::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_DRX_PARAM_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid Drx Parameter Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds UE Network Capability IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpUeNetworkCap::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_UE_NETWORK_CAP_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid UE Network Capability Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MM Context GSM Key and Triplets IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMmCntxtGsmKeyAndTriplets::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MM_CNTXT_GSM_KEY_AND_TRIPLETS_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid GSM Key and Triplets Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MM Context GSM Key Used cipher and quintiuples IE from 
- *    hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMmCntxtGsmKeyUsedCipherAndQuint::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MM_CNTXT_GSM_KEY_USED_CIPHER_N_QUINT_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid GSM Key Used cipher and quints Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MM Context UMTS Used Cipher and Quintuples IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMmCntxtUmtsKeyUsedCipherAndQuint::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MM_CNTXT_UMTS_KEY_USED_CIPHER_AND_QUINTS_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid umts key used cipher and quints Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MM Context UMTS and Quintuples IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMmCntxtUmtsKeyAndQuint::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MM_CNTXT_UMTS_KEY_AND_QUINTS_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid UMTS Key and Quintuples Buffer Length [%d]",\
-            value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MM Context EPS Security Context Quadruples and Quintuples
- * IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMmCntxtEpcSecCntxtQuadrAndQuint::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MM_CNTXT_EPS_SEC_CNTXT_QUADR_AND_QUITNS_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid EPS Security Context Quadruples and Quintuples "\
-            "Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MM Context UMTS Key Quadruples and Quintuples
- * IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMmCntxtUmtsKeyQuadrAndQuint::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MM_CNTXT_UMTS_KEY_QUADR_AND_QUINTS_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid UMTS Key Quadruples and Quintuples "\
-            "Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds PDN Connection IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpPdnConnection::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_PDN_CONNECTION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid UMTS Key Quadruples and Quintuples "\
-            "Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds PDU Numbers IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpPduNumbers::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_PDU_NUMBERS_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid UMTS Key Quadruples and Quintuples "\
-            "Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds P-TMSI IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpPtmsi::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_PTMSI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds PTMSI Signature IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpPtmsiSignature::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_PTMSI_SIGNAURE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid PTMSI Signature Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
  * @brief Builds Hop Counter IE from string
  *
  * @param pVal
@@ -2634,332 +1700,6 @@ RETVAL GtpHopCounter::buildIe(const S8 *pVal)
    this->m_hdr.len = STRLEN(pVal);
 
    LOG_EXITFN(ROK);
-}
-
-/**
- * @brief Builds UE Time Zone IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpUeTimeZone::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_UE_TIME_ZONE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Trace Reference IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpTraceReference::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_TRACE_REFERENCE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Complete Request Message IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpCompleteReqMsg::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_COMPLETE_REQ_MSG_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds GUTI IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpGuti::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_GUTI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds F Container IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpFContainer::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_FCONTAINER_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds F Cause IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpFCause::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_FCAUSE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Selected PLMN ID IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpSelectedPlmnId::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_SELECTED_PLMNID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Target ID IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpTargetId::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_TARGET_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Packet Flow ID IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpPacketFlowId::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_PACKET_FLOW_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds RAB Context ID IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpRabCntxt::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_RAB_CNTXT_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Source RNC PDCP Context IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpSourceRncPdcpCntxtInfo::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_SOURCE_RNC_PDCP_CNTXT_INFO_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Source UDP Port IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpUdpSrcPort::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_UDP_SRC_PORT_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds APN Restriction IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpApnRestriction::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_APN_RESTRICTION_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
 }
 
 /**
@@ -2979,281 +1719,5 @@ RETVAL GtpSelectionMode::buildIe(const S8 *pVal)
    LOG_EXITFN(ROK);
 }
 
-/**
- * @brief Builds Source ID IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpSrcId::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
 
-   RETVAL   ret = ROK;
-   if (GTP_SRC_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Change Reporting Action IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpChangeReportingAction::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_CHANGE_REPORTING_ACTION_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds FQCSID IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpFqCsid::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_FQ_CSID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Channel Needed IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpChannelNeeded::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_CHANNEL_NEEDED_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds EMLPP Priority IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpEmlppPriority::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_EMLPP_PRIORITY_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds Node Type IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpNodeType::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_NODE_TYPE_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds FQDN IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpFqdn::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_FQDN_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds TI IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpTi::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_TI_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MBMS Session Duration IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMbmsSessionDuration::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MBMS_SESSION_DURATION_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MBMS Service Area IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMbmsServiceArea::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MBMS_SERVICE_AREA_MAX_BUF_LEN >= \
-         GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
-
-/**
- * @brief Builds MBMS Session ID IE from hex string
- *
- * @param value
- *
- * @return 
- */
-RETVAL GtpMbmsSessionId::buildIe(const HexString *value)
-{
-   LOG_ENTERFN();
-
-   RETVAL   ret = ROK;
-   if (GTP_MBMS_SESSION_ID_MAX_BUF_LEN >= GSIM_CEIL_DIVISION(value->size(), 2))
-   {
-      this->m_hdr.len = gtpConvStrToHex(value, m_val);
-   }
-   else
-   {
-      LOG_ERROR("Invalid TMSI Buffer Length [%d]", value->size());
-      ret = RFAILED;
-   }
-
-   LOG_EXITFN(ret);
-}
 

@@ -74,6 +74,13 @@ class GtpIe
        */
       GtpLength_t decodeHelper(const U8 *inbuf, U8 *outbuf,\
             GtpLength_t maxIeLen);
+
+      /* Helper function used by derived IE classes to build IE from
+       * hex string read from xml scenario file 
+       */
+      RETVAL buildIeHelper(const HexString *inbuf, U8 *outbuf,\
+            GtpLength_t maxIeLen);
+
 };
 
 #endif

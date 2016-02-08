@@ -19,9 +19,9 @@
 
 typedef struct
 {
-#define GTP_IMSI_MAX_LEN         8
+#define GTP_IMSI_MAX_BUF_LEN         8
    U32   len;
-   U8    val[GTP_IMSI_MAX_LEN];
+   U8    val[GTP_IMSI_MAX_BUF_LEN];
 } GtpImsiKey;
 
 
@@ -29,7 +29,7 @@ class GtpImsi : public GtpIe
 {
 #define GTP_IMSI_MAX_DIGITS      15
    private:
-      U8          m_val[GTP_IMSI_MAX_LEN];
+      U8          m_val[GTP_IMSI_MAX_BUF_LEN];
 
    public:
       GtpImsi(GtpInstance_t inst)
@@ -37,22 +37,27 @@ class GtpImsi : public GtpIe
          m_hdr.ieType = GTP_IE_IMSI;
          m_hdr.instance = inst;
          m_hdr.len = 0;
-         MEMSET(m_val, 0, GTP_IMSI_MAX_LEN);
+         MEMSET(m_val, 0, GTP_IMSI_MAX_BUF_LEN);
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_IMSI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_IMSI_MAX_BUF_LEN);
       }
 
       VOID   setImsi(GtpImsiKey*);
@@ -78,13 +83,18 @@ class GtpMsisdn : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_MSISDN_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -104,10 +114,10 @@ class GtpUli : public GtpIe
 #define GTP_ULI_TAI_PRESENT         (1 << 3)
 #define GTP_ULI_ECGI_PRESENT        (1 << 4)
 #define GTP_ULI_LAI_PRESENT         (1 << 5)
-#define GTP_ULI_MAX_LEN             44
+#define GTP_ULI_MAX_BUF_LEN             44
 
    private:
-      U8          m_val[GTP_ULI_MAX_LEN];
+      U8          m_val[GTP_ULI_MAX_BUF_LEN];
 
    public:
       GtpUli(GtpInstance_t inst)
@@ -115,22 +125,27 @@ class GtpUli : public GtpIe
          m_hdr.ieType = GTP_IE_ULI;
          m_hdr.instance = inst;
          m_hdr.len = 0;
-         MEMSET(m_val, 0, GTP_ULI_MAX_LEN);
+         MEMSET(m_val, 0, GTP_ULI_MAX_BUF_LEN);
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_ULI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_ULI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_ULI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -138,9 +153,9 @@ class GtpUli : public GtpIe
 
 class GtpBearerContext : public GtpIe
 {
-#define              GTP_BEARER_CNTXT_MAX_LEN   256
+#define              GTP_BEARER_CNTXT_MAX_BUF_LEN   256
    private:
-      U8             m_val[GTP_BEARER_CNTXT_MAX_LEN];
+      U8             m_val[GTP_BEARER_CNTXT_MAX_BUF_LEN];
 
    public:
       GtpBearerContext(GtpInstance_t inst)
@@ -153,18 +168,23 @@ class GtpBearerContext : public GtpIe
       ~GtpBearerContext() {};
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_BEARER_CNTXT_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst);
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_BEARER_CNTXT_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_BEARER_CNTXT_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return TRUE;}
@@ -174,12 +194,12 @@ class GtpBearerContext : public GtpIe
 
 class GtpFteid : public GtpIe
 {
-#define GTP_FTEID_MAX_LEN                 25
+#define GTP_FTEID_MAX_BUF_LEN                 25
 #define GTP_FTEID_IPV4_ADDR_PRESENT       (1 << 7)
 #define GTP_FTEID_IPV6_ADDR_PRESENT       (1 << 6)
 
    private:
-      U8                   m_val[GTP_FTEID_MAX_LEN];
+      U8                   m_val[GTP_FTEID_MAX_BUF_LEN];
 
    public:
       GtpFteid(GtpInstance_t inst)
@@ -187,22 +207,27 @@ class GtpFteid : public GtpIe
          m_hdr.ieType = GTP_IE_FTEID;
          m_hdr.instance = inst;
          m_hdr.len = 0;
-         MEMSET(m_val, 0, GTP_FTEID_MAX_LEN);
+         MEMSET(m_val, 0, GTP_FTEID_MAX_BUF_LEN);
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_FTEID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_FTEID_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_FTEID_MAX_BUF_LEN);
       }
 
       VOID        setTeid(GtpTeid_t teid);
@@ -227,13 +252,18 @@ class GtpEbi : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_EBI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -246,11 +276,11 @@ class GtpEbi : public GtpIe
 
 class GtpMei : public GtpIe
 {
-#define GTP_MEI_MAX_LEN          8
+#define GTP_MEI_MAX_BUF_LEN          8
 #define GTP_MEI_MAX_DIGITS       16
 
    private:
-      U8       m_val[GTP_MEI_MAX_LEN];
+      U8       m_val[GTP_MEI_MAX_BUF_LEN];
 
    public:
       GtpMei(GtpInstance_t inst)
@@ -258,22 +288,27 @@ class GtpMei : public GtpIe
          m_hdr.ieType = GTP_IE_MEI;
          m_hdr.instance = inst;
          m_hdr.len = 0;
-         MEMSET(m_val, 0, GTP_MEI_MAX_LEN);
+         MEMSET(m_val, 0, GTP_MEI_MAX_BUF_LEN);
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_MEI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_MEI_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_MEI_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -294,13 +329,18 @@ class GtpRatType : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_RAT_TYPE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -329,13 +369,18 @@ class GtpServingNw : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_SERVING_NW_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -348,10 +393,10 @@ class GtpServingNw : public GtpIe
 
 class GtpApn : public GtpIe
 {
-#define GTP_APN_MAX_LEN      128
+#define GTP_APN_MAX_BUF_LEN      128
 
    private:
-      U8             m_val[GTP_APN_MAX_LEN];
+      U8             m_val[GTP_APN_MAX_BUF_LEN];
 
    public:
       GtpApn(GtpInstance_t inst)
@@ -359,22 +404,27 @@ class GtpApn : public GtpIe
          m_hdr.ieType = GTP_IE_APN;
          m_hdr.instance = inst;
          m_hdr.len = 0;
-         MEMSET(m_val, 0, GTP_APN_MAX_LEN);
+         MEMSET(m_val, 0, GTP_APN_MAX_BUF_LEN);
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_APN_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, m_val, GTP_APN_MAX_LEN);
+         return decodeHelper(inbuf, m_val, GTP_APN_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -396,13 +446,18 @@ class GtpAmbr : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_AMBR_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -447,13 +502,18 @@ class GtpIndication : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_INDICATION_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -467,7 +527,7 @@ class GtpIndication : public GtpIe
 
 class GtpSelectionMode : public GtpIe
 {
-#define GTP_SEL_MODE_BUF_MAX_LEN       1
+#define GTP_SEL_MODE_MAX_BUF_LEN       1
 
 #define GTP_SEL_MODE_MS_OR_NW_APN      0
 #define GTP_SEL_MODE_MS_APN            1
@@ -485,18 +545,23 @@ class GtpSelectionMode : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_SEL_MODE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
       {
-         return decodeHelper(inbuf, &m_val, GTP_SEL_MODE_BUF_MAX_LEN);
+         return decodeHelper(inbuf, &m_val, GTP_SEL_MODE_MAX_BUF_LEN);
       }
 
       BOOL   isGroupedIe() {return FALSE;}
@@ -518,13 +583,18 @@ class GtpPdnType : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_PDN_TYPE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -551,13 +621,18 @@ class GtpPaa : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_PAA_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -584,13 +659,18 @@ class GtpBearerQos : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_BEARER_QOS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -616,13 +696,18 @@ class GtpFlowQos : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_FLOW_QOS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -648,13 +733,18 @@ class GtpPco : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_PCO_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -685,13 +775,18 @@ class GtpCause : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_CAUSE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -717,13 +812,18 @@ class GtpRecovery : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_RECOVERY_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -749,13 +849,19 @@ class GtpMbmsSessionDuration : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MBMS_SESSION_DURATION_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -783,13 +889,18 @@ class GtpStnSr : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_STN_SR_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -815,13 +926,18 @@ class GtpIpAddress : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_IP_ADDRESS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -847,13 +963,18 @@ class GtpEpsBearerTft : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_EPS_BEARER_TFT_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -879,13 +1000,18 @@ class GtpTad : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_TAD_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -911,13 +1037,18 @@ class GtpTmsi : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_TMSI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -943,13 +1074,18 @@ class GtpGlobalCnId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_GLOBAL_CN_ID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -975,13 +1111,19 @@ class GtpS103Pdf : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1008,13 +1150,18 @@ class GtpS1uDf : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_S1U_DATA_FWD_INFO_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1040,13 +1187,18 @@ class GtpDelayValue : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_DELAY_VALUE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1072,13 +1224,18 @@ class GtpChargingId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_CHARGING_ID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1104,13 +1261,18 @@ class GtpChargingCharcs : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_CHARGING_CHARCS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1136,13 +1298,18 @@ class GtpTraceInfo : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_TRACE_INFO_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1168,13 +1335,18 @@ class GtpBearerFlags : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_BEARER_FLAGS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf);
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1200,13 +1372,18 @@ class GtpPti : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_PTI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;}
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1232,13 +1409,18 @@ class GtpDrxParam : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_DRX_PARAM_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1264,13 +1446,18 @@ class GtpUeNetworkCap : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_UE_NETWORK_CAP_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1296,13 +1483,19 @@ class GtpMmCntxtGsmKeyAndTriplets : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MM_CNTXT_GSM_KEY_AND_TRIPLETS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1329,13 +1522,19 @@ class GtpMmCntxtUmtsKeyUsedCipherAndQuint : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MM_CNTXT_UMTS_KEY_USED_CIPHER_AND_QUINTS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1362,13 +1561,19 @@ class GtpMmCntxtGsmKeyUsedCipherAndQuint : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MM_CNTXT_GSM_KEY_USED_CIPHER_N_QUINT_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1395,13 +1600,19 @@ class GtpMmCntxtUmtsKeyAndQuint : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MM_CNTXT_UMTS_KEY_AND_QUINTS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1428,13 +1639,19 @@ class GtpMmCntxtEpcSecCntxtQuadrAndQuint : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MM_CNTXT_EPS_SEC_CNTXT_QUADR_AND_QUITNS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1461,13 +1678,19 @@ class GtpMmCntxtUmtsKeyQuadrAndQuint : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MM_CNTXT_UMTS_KEY_QUADR_AND_QUINTS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1494,13 +1717,18 @@ class GtpPdnConnection : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_PDN_CONNECTION_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1526,13 +1754,18 @@ class GtpPduNumbers : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_PDU_NUMBERS_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1558,13 +1791,18 @@ class GtpPtmsi : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_PTMSI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1590,13 +1828,18 @@ class GtpPtmsiSignature : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_PTMSI_SIGNAURE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1622,13 +1865,18 @@ class GtpHopCounter : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal);
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, &m_val, GTP_HOP_COUNTER_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(&m_val, outbuf);
+         return encodeHelper(&m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1654,13 +1902,18 @@ class GtpUeTimeZone : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_UE_TIME_ZONE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1686,13 +1939,18 @@ class GtpTraceReference : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_TRACE_REFERENCE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1718,13 +1976,18 @@ class GtpCompleteReqMsg : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_COMPLETE_REQ_MSG_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1750,13 +2013,18 @@ class GtpGuti : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_GUTI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1782,13 +2050,18 @@ class GtpFContainer : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_FCONTAINER_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1814,13 +2087,18 @@ class GtpFCause : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_FCAUSE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1846,13 +2124,18 @@ class GtpSelectedPlmnId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_SELECTED_PLMNID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1878,13 +2161,18 @@ class GtpTargetId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_TARGET_ID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1910,13 +2198,18 @@ class GtpPacketFlowId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_PACKET_FLOW_ID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1942,13 +2235,18 @@ class GtpRabCntxt : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_RAB_CNTXT_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -1974,13 +2272,19 @@ class GtpSourceRncPdcpCntxtInfo : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_SOURCE_RNC_PDCP_CNTXT_INFO_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2007,13 +2311,18 @@ class GtpUdpSrcPort : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_UDP_SRC_PORT_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2039,13 +2348,18 @@ class GtpApnRestriction : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_APN_RESTRICTION_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2071,13 +2385,18 @@ class GtpSrcId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_SRC_ID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2103,13 +2422,19 @@ class GtpChangeReportingAction : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_CHANGE_REPORTING_ACTION_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2136,13 +2461,18 @@ class GtpFqdn : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_FQDN_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2168,13 +2498,18 @@ class GtpChannelNeeded : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_CHANNEL_NEEDED_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2200,13 +2535,18 @@ class GtpEmlppPriority : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_EMLPP_PRIORITY_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2232,13 +2572,18 @@ class GtpNodeType : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_NODE_TYPE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2264,13 +2609,18 @@ class GtpFqCsid : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_FQ_CSID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2296,13 +2646,18 @@ class GtpTi : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_TI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2328,13 +2683,18 @@ class GtpMbmsServiceArea : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_MBMS_SERVICE_AREA_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2360,13 +2720,18 @@ class GtpMbmsSessionId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value);
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_MBMS_SESSION_ID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2392,13 +2757,18 @@ class GtpMbmsFlowId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_MBMS_FLOW_ID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2424,13 +2794,19 @@ class GtpMbmsIpMulticastDistribution : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MBMS_IP_MULTICAST_DISTRIBUTION_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2457,13 +2833,19 @@ class GtpMbmsDistributionAck : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MBMS_DISTRIBUTION_ACK_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2490,13 +2872,18 @@ class GtpRfspIndex : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_RFSP_INDEX_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2522,13 +2909,18 @@ class GtpUci : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_UCI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2554,13 +2946,19 @@ class GtpCsgInfoReportingAction : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_CSG_INFO_REPORTING_ACTION_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2587,13 +2985,18 @@ class GtpCsgId : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_CSG_ID_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2619,13 +3022,18 @@ class GtpCmi : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_CMI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2651,13 +3059,18 @@ class GtpServiceIndicator : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_SERVICE_INDICATOR_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2683,13 +3096,18 @@ class GtpDetachType : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_DETACH_TYPE_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2715,13 +3133,18 @@ class GtpLdn : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_LDN_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2747,13 +3170,19 @@ class GtpMbmsTimeToDataTransfer : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_MBMS_TIME_TO_DATA_TRANSFER_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2780,13 +3209,18 @@ class GtpTmgi : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val, GTP_TMGI_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2812,13 +3246,19 @@ class GtpAdditionalMmCntxtForSrvcc : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_ADDITIONAL_MM_CNTXT_FOR_SRVCC_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
@@ -2845,13 +3285,19 @@ class GtpAdditionalFlagsForSrvcc : public GtpIe
       }
 
       RETVAL buildIe(const S8 *pVal) {return ROK;}
-      RETVAL buildIe(const HexString *value) {return ROK;}
+
+      RETVAL buildIe(const HexString *value)
+      {
+         return buildIeHelper(value, m_val,\
+               GTP_ADDITIONAL_FLAGS_FOR_SRVCC_MAX_BUF_LEN);
+      }
+
       RETVAL buildIe(IeParamLst *pBuf) {return ROK;}
       RETVAL buildIe(const GtpIeLst *pIeLst) {return ROK;};
 
       GtpLength_t encode(U8 *outbuf)
       {
-         return GtpIe::encodeHelper(m_val, outbuf);
+         return encodeHelper(m_val, outbuf);
       }
 
       GtpLength_t decode(const U8 *inbuf)
