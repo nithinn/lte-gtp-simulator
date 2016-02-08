@@ -28,16 +28,16 @@ typedef enum
    MSG_TASK_RECV,
    MSG_TASK_WAIT,
    MSG_TASK_MAX
-} MsgTaskType_E;
+} MsgTaskType_t;
 
 class MsgTask
 {
    public:
       GtpMsg*        getGtpMsg();
-      MsgTaskType_E  type();
+      MsgTaskType_t  type();
       Time_t         wait();
       MsgTask();
-      MsgTask(GtpMsg*, MsgTaskType_E);
+      MsgTask(GtpMsg*, MsgTaskType_t);
       ~MsgTask();
 
       Counter        m_numSnd;
@@ -50,7 +50,7 @@ class MsgTask
 
    private:
       GtpMsg         *m_pGtpMsg;
-      MsgTaskType_E  m_type;
+      MsgTaskType_t  m_type;
       Time_t         m_wait;
 };
 

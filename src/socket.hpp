@@ -35,7 +35,7 @@ typedef enum
    SOCK_TYPE_GTPU,
    SOCK_TYPE_GTPU_CTRL,
    SOCK_TYPE_MAX
-} SockType_E;
+} SockType_t;
 
 typedef struct pollfd   GSimPollFd;
 
@@ -75,12 +75,12 @@ typedef GSimSockBufLst::iterator  GSimSockBufLstItr;
 class GSimSocket
 {
    public:
-      GSimSocket(SockType_E);
-      GSimSocket(SockType_E, IPEndPoint);
+      GSimSocket(SockType_t);
+      GSimSocket(SockType_t, IPEndPoint);
       ~GSimSocket();
 
       S32               fd();
-      SockType_E        type();
+      SockType_t        type();
       IpAddrTypeEn      ipAddrType();
       RETVAL            bindSocket();
       RETVAL            recvMsg();
@@ -89,7 +89,7 @@ class GSimSocket
    private:
       S32               m_fd;
       U32               m_pollFdIndex;
-      SockType_E        m_type;
+      SockType_t        m_type;
       IPEndPoint        m_ep;
       RETVAL            recvMsgV6();
       RETVAL            recvMsgV4();

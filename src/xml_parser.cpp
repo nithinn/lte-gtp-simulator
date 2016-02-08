@@ -249,7 +249,7 @@ MsgTask* XmlParser::procWait(xml_node *pWait)
 RETVAL XmlParser::procIe(xml_node *pXmlIe, GtpIeLst *pIeLst)
 {
    RETVAL         ret        = ROK;
-   GtpIeType_E    ieType     = GTP_IE_MAX;
+   GtpIeType_t    ieType     = GTP_IE_MAX;
    GtpInstance_t  ieInstance = 0;
 
    LOG_DEBUG("Processing IE <%s>",\

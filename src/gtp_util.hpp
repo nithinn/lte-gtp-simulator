@@ -23,20 +23,20 @@
 #define GTP_IE_NAME_LEN          64
 #define GTP_MSG_XML_TAG_MAX_LEN  16
 
-S8* gtpGetMsgName(GtpMsgType_E msgType);
-GtpIeType_E gtpGetIeType(const S8   *pIeName);
-GtpMsgType_E gtpGetMsgType(const S8 *pXmlMsgTag);
-GtpMsgCategory_E gtpGetMsgCategory(GtpMsgType_E msgType);
+S8* gtpGetMsgName(GtpMsgType_t msgType);
+GtpIeType_t gtpGetIeType(const S8   *pIeName);
+GtpMsgType_t gtpGetMsgType(const S8 *pXmlMsgTag);
+GtpMsgCategory_t gtpGetMsgCategory(GtpMsgType_t msgType);
 GtpLength_t gtpConvStrToHex(const Buffer *pBuf, U8 *pDst);
 GtpLength_t gtpConvStrToHex(const HexString *value, U8 *pDst);
 EXTERN U32 gtpConvStrToU32(const S8 *pVal, U32 len);
-GtpIfType_E gtpConvStrToIfType(const S8 *pVal, U32 len);
+GtpIfType_t gtpConvStrToIfType(const S8 *pVal, U32 len);
 IpAddr convIpStrToIpAddr(const S8* pIp, U32 len);
 VOID decIeHdr(U8 *pBuf, GtpIeHdr *pHdr);
 U32 encodeImsi(S8 *pImsiStr, U32 imsiStrLen, U8 *pBuf);
 EXTERN VOID numericStrIncriment(S8 *pStr, U32 len);
 PUBLIC U8* getImsiBufPtr(Buffer *pGtpcBuf);
 EXTERN VOID gtpUtlEncPlmnId(GtpPlmnId_t *pPlmnId, U8* pBuf);
-PUBLIC S8 *gtpGetIeName(GtpIeType_E ieType);
+PUBLIC S8 *gtpGetIeName(GtpIeType_t ieType);
 
 #endif

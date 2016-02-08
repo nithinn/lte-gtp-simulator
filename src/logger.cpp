@@ -24,7 +24,7 @@
 #include "logger.hpp"
 #include "sim_cfg.hpp"
 
-LogLevel_E  Logger::m_logLevel = LOG_LVL_ERROR;
+LogLevel_t  Logger::m_logLevel = LOG_LVL_ERROR;
 FILE*       Logger::m_logFile = NULL;
 FILE*       Logger::m_traceMsgFile = NULL;
 BOOL        Logger::m_traceMsgEnabled = FALSE;
@@ -48,7 +48,7 @@ U8 g_logLvlStr[LOG_LVL_END][LOG_LVL_STR_MAX] = \
  */
 VOID Logger::init(U32 level)
 {
-   m_logLevel = (LogLevel_E)level;
+   m_logLevel = (LogLevel_t)level;
 
    std::string logFile = Config::getInstance()->getLogFile();
    if (!logFile.empty())
@@ -81,7 +81,7 @@ VOID Logger::init(U32 level)
  */
 VOID Logger::log
 (
-LogLevel_E        logLvl,
+LogLevel_t        logLvl,
 const S8          *fileName,
 const U32         lineNum,
 const S8          *format, ...
@@ -117,7 +117,7 @@ VOID Logger::log
 const U8             *pMsgName,\
 const U8             *pMsgBuf,\
 U32                  msgLen,\
-MsgAction_E          dir,\
+MsgAction_t          dir,\
 const U8             *pIpAddr,\
 U16                  port
 )

@@ -34,7 +34,7 @@ MsgTask::MsgTask()
    m_pGtpMsg = NULL;
 }
 
-MsgTask::MsgTask(GtpMsg *pGtpMsg, MsgTaskType_E taskType)
+MsgTask::MsgTask(GtpMsg *pGtpMsg, MsgTaskType_t taskType)
 {
    m_type          = taskType;
    m_pGtpMsg       = pGtpMsg;
@@ -68,7 +68,7 @@ GtpMsg* MsgTask::getGtpMsg()
    return m_pGtpMsg;
 }
 
-MsgTaskType_E MsgTask::type()
+MsgTaskType_t MsgTask::type()
 {
    return m_type;
 }

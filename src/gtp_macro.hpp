@@ -19,7 +19,7 @@
 
 #define GTP_MSG_GET_TYPE(_buf, _type)                       \
 {                                                           \
-   _type = (GtpMsgType_E)(_buf[1]);                         \
+   _type = (GtpMsgType_t)(_buf[1]);                         \
 }
 
 #define GTP_MSG_GET_LEN(_buf, _len)                         \
@@ -76,7 +76,7 @@
 
 #define GTP_GET_IE_TYPE(_buf, _type)         \
 {                                            \
-   _type = (GtpIeType_E)(_buf[0]);           \
+   _type = (GtpIeType_t)(_buf[0]);           \
 }
 
 #define GTP_GET_IE_INSTANCE(_buf, _ins)      \
@@ -179,7 +179,7 @@
 {                                                  \
    U8 _t = 0;                                      \
    GSIM_DEC_U8(_buf, _t);                          \
-   _ieType = (GtpIeType_E)_t;                      \
+   _ieType = (GtpIeType_t)_t;                      \
 }
 
 #define GTP_DEC_IE_LEN(_buf, _ieLen)               \
@@ -206,7 +206,7 @@
 {                                                  \
    U8 _e = 0;                                      \
    GSIM_DEC_U8((_buf + GTP_IE_HDR_LEN), _e);       \
-   _ebi = (GtpRatType_E)_e;                        \
+   _ebi = (GtpRatType_t)_e;                        \
 }
 
 #define GTP_ENC_RAT_TYPE(_buf, _ebi)               \

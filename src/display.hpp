@@ -32,7 +32,7 @@ class Display: virtual public Task
    private:
       static class Display  *m_pDisp;
 
-      Counter  getStats(GtpStat_E type);
+      Counter  getStats(GtpStat_t type);
 
       Time_t            m_lastRunTime;
       Time_t            m_dispIntvl;

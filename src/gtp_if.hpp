@@ -54,11 +54,11 @@ class GtpIe
       virtual ~GtpIe() {};
 
       // the factory method returns Gtp IE instance
-      static GtpIe*  createGtpIe(GtpIeType_E ieType, GtpInstance_t instance);
+      static GtpIe*  createGtpIe(GtpIeType_t ieType, GtpInstance_t instance);
 
-      U8 *getIeBufPtr(U8*, GtpLength_t, GtpIeType_E, GtpInstance_t, U32);
+      U8 *getIeBufPtr(U8*, GtpLength_t, GtpIeType_t, GtpInstance_t, U32);
 
-      GtpIeType_E    type() {return m_hdr.ieType;}
+      GtpIeType_t    type() {return m_hdr.ieType;}
 
       GtpInstance_t  instance() {return m_hdr.instance;}
 

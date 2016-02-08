@@ -23,7 +23,7 @@ typedef enum
    SCN_TYPE_INITIATING, /**< First action in scenario is send a message */
    SCN_TYPE_WAITING,    /**< First action in scenario is recv a message */
    SCN_TYPE_MAX
-} ScenarioType_E;
+} ScenarioType_t;
 
 class Scenario
 {
@@ -31,11 +31,11 @@ class Scenario
       ~Scenario();
 
       static class Scenario* getInstance();
-      ScenarioType_E getScnType();
+      ScenarioType_t getScnType();
       BOOL           run();
       VOID           init(const S8 *pScnFile) throw (ErrCodeEn);
       VOID           shutdown();
-      GtpIfType_E    ifType();
+      GtpIfType_t    ifType();
 
       MsgVec         m_msgVec;
    private:
@@ -44,8 +44,8 @@ class Scenario
       static class Scenario   *m_pMainScn;
       U32            m_lastRunTime;
       U32            m_scnRunIntvl;
-      ScenarioType_E m_scnType;
-      GtpIfType_E    m_ifType;
+      ScenarioType_t m_scnType;
+      GtpIfType_t    m_ifType;
 };
 
 #endif

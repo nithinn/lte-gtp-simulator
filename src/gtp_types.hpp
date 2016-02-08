@@ -52,7 +52,7 @@ typedef enum
    EPC_NODE_PGW,
    EPC_NODE_SGSN,
    EPC_NODE_MAX
-} EpcNodeType_E;
+} EpcNodeType_t;
 
 typedef enum
 {
@@ -131,7 +131,7 @@ typedef enum
    GTPC_MSG_MBMS_SSN_STOP_REQ,
    GTPC_MSG_MBMS_SSN_STOP_RSP,
    GTPC_MSG_TYPE_MAX
-} GtpMsgType_E;
+} GtpMsgType_t;
 
 typedef enum
 {
@@ -140,7 +140,7 @@ typedef enum
    GTP_MSG_CAT_TRIG,
    GTP_MSG_CAT_TRIG_RSP,
    GTP_MSG_CAT_MAX
-} GtpMsgCategory_E;
+} GtpMsgCategory_t;
 
 typedef enum
 {
@@ -246,7 +246,7 @@ typedef enum
    GTP_IE_SPARE                                 = 163,
    GTP_IE_PRIVATE_IE                            = 255,
    GTP_IE_MAX
-} GtpIeType_E;
+} GtpIeType_t;
 
 typedef enum
 {
@@ -261,7 +261,7 @@ typedef enum
     GTP_IF_S4_C_SGW      = 11,
     GTP_IF_S4_C_SGSN     = 12,
     GTP_IF_INF_INV       = 32
-} GtpIfType_E;
+} GtpIfType_t;
 
 typedef enum 
 {
@@ -269,11 +269,11 @@ typedef enum
     GTP_IP_ADDR_V6,
     GTP_IP_ADDR_V4V6,
     GTP_IP_ADDR_INV
-} GtpIpAddrType_E;
+} GtpIpAddrType_t;
 
 typedef struct
 {
-   GtpIeType_E      ieType;
+   GtpIeType_t      ieType;
    GtpInstance_t    instance;
    GtpLength_t      len;
 } GtpIeHdr;
@@ -292,7 +292,7 @@ struct GtpMsgHdr
    GtpLength_t       len;
    GtpTeid_t         teid;
    GtpSeqNumber_t    seqN;
-   GtpMsgType_E      msgType;
+   GtpMsgType_t      msgType;
 
    GtpMsgHdr()
    {
@@ -363,7 +363,7 @@ typedef enum
    GTP_RAT_TYPE_HSPA_EVO,
    GTP_RAT_TYPE_EUTRAN,
    GTP_RAT_TYPE_MAX
-} GtpRatType_E;
+} GtpRatType_t;
 
 /**
  * @struct Stores Parameter details of Complex IEs that are read
@@ -390,7 +390,7 @@ typedef enum
    GTPC_MSG_DIR_INV,
    GTPC_MSG_DIR_IN,
    GTPC_MSG_DIR_OUT
-} GtpcMsgDir_E;
+} GtpcMsgDir_t;
 
 typedef enum
 {
@@ -399,6 +399,6 @@ typedef enum
    GTP_PDN_TYPE_IPV6,
    GTP_PDN_TYPE_IPV4V6,
    GTP_PDN_TYPE_MAX
-} GtpPdnType_E;
+} GtpPdnType_t;
 
 #endif /* _GTP_TYPES_HPP_ */

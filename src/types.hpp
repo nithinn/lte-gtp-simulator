@@ -106,7 +106,7 @@ typedef enum
    MSG_ACTION_SEND,
    MSG_ACTION_RECV,
    MSG_ACTION_MAX
-} MsgAction_E;
+} MsgAction_t;
 
 struct Buffer
 {

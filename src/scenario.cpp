@@ -58,7 +58,7 @@ Scenario* Scenario::getInstance()
 Scenario::Scenario()
 {
    m_scnRunIntvl = Config::getInstance()->getScnRunInterval();
-   m_ifType = (GtpIfType_E)Config::getInstance()->getIfType();
+   m_ifType = (GtpIfType_t)Config::getInstance()->getIfType();
 }
 
 Scenario::~Scenario()
@@ -113,7 +113,7 @@ BOOL Scenario::run()
    return true;
 }
 
-ScenarioType_E Scenario::getScnType()
+ScenarioType_t Scenario::getScnType()
 {
    return m_scnType;
 }
@@ -127,7 +127,7 @@ VOID Scenario::shutdown()
    LOG_EXITVOID();
 }
 
-GtpIfType_E Scenario::ifType()
+GtpIfType_t Scenario::ifType()
 {
    return m_ifType;
 }

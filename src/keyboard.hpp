@@ -23,7 +23,7 @@ typedef enum
    KB_KEY_PAUSE_TRAFFIC,
    KB_KEY_SIM_QUIT,
    KB_KEY_SIM_MAX
-} KeyboardKey_E;
+} KeyboardKey_t;
 
 class Keyboard
 {
@@ -33,7 +33,7 @@ class Keyboard
       VOID init();
       VOID abort();
 
-      static KeyboardKey_E    key;
+      static KeyboardKey_t    key;
       
    private:
       static class Keyboard   *m_pKb;

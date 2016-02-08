@@ -159,7 +159,7 @@ class UeSession: public Task
       Time_t            m_wait;
       BOOL              m_isWaiting;
       IPEndPoint        m_peerEp;
-      EpcNodeType_E     m_nodeType; 
+      EpcNodeType_t     m_nodeType; 
       GtpcPdnLst        m_pdnLst;     
       GtpBearerLst      m_bearerLst;
       GtpSeqNumber_t    m_currSeqNum;

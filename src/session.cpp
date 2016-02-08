@@ -64,7 +64,7 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_retryCnt = 0;
    m_t3time = Config::getInstance()->getT3Timer();
    m_sessionId = ++g_sessionId;
-   m_nodeType = (EpcNodeType_E)Config::getInstance()->getNodeType();
+   m_nodeType = (EpcNodeType_t)Config::getInstance()->getNodeType();
    m_peerEp.ipAddr = *(Config::getInstance()->getRemoteIpAddr());
    m_peerEp.port = Config::getInstance()->getRemoteGtpcPort();
    m_isWaiting = FALSE;
@@ -139,7 +139,7 @@ BOOL UeSession::run()
    }
 
    m_pCurrTask = m_pScn->m_msgVec[m_currTaskIndx];
-   MsgTaskType_E  taskType = m_pCurrTask->type();
+   MsgTaskType_t  taskType = m_pCurrTask->type();
 
    switch (taskType)
    {
@@ -189,7 +189,7 @@ BOOL UeSession::run()
 Time_t UeSession::wake()
 {
    Time_t         wakeTime = 0;
-   MsgTaskType_E  taskType = MSG_TASK_INV;
+   MsgTaskType_t  taskType = MSG_TASK_INV;
 
    taskType = m_pCurrTask->type();
    switch (taskType)
@@ -233,7 +233,7 @@ RETVAL UeSession::procSend()
 
    try
    {
-      GtpMsgType_E msgType = m_pCurrTask->getGtpMsg()->type();
+      GtpMsgType_t msgType = m_pCurrTask->getGtpMsg()->type();
 
       if (GTPC_MSG_CS_REQ == msgType)
       {
@@ -256,7 +256,7 @@ RETVAL UeSession::procSend()
       GtpcNwData     *pNwData = new GtpcNwData;
       encGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg(), &pNwData->gtpcMsgBuf);
 
-      GtpMsgCategory_E msgCat = gtpGetMsgCategory(msgType);
+      GtpMsgCategory_t msgCat = gtpGetMsgCategory(msgType);
       if (GTP_MSG_CAT_INITIAL == msgCat)
       {
          /* initial message, send the message over default send socket */
@@ -305,8 +305,8 @@ RETVAL UeSession::procRecv()
        * session
        */
       GtpMsg            *pGtpMsg = new GtpMsg(&m_pRcvdNwData->gtpcMsgBuf);
-      GtpMsgType_E      msgType = pGtpMsg->type();
-      GtpMsgCategory_E  msgCat = gtpGetMsgCategory(msgType);
+      GtpMsgType_t      msgType = pGtpMsg->type();
+      GtpMsgCategory_t  msgCat = gtpGetMsgCategory(msgType);
       if (msgCat == GTP_MSG_CAT_INITIAL)
       {
          LOG_DEBUG("Processing Incoming Request message");
@@ -375,7 +375,7 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
 
    GtpMsg *pExpctdGtpMsg = m_pCurrTask->getGtpMsg();
 
-   GtpMsgType_E rcvdMsgType = pGtpMsg->type();
+   GtpMsgType_t rcvdMsgType = pGtpMsg->type();
    LOG_DEBUG("Received Message: [%s]", gtpGetMsgName(rcvdMsgType));
    if (rcvdMsgType == pExpctdGtpMsg->type())
    {
@@ -434,7 +434,7 @@ PUBLIC RETVAL UeSession::procIncRspMsg(GtpMsg *pGtpMsg)
    RETVAL   ret = ROK;
    GtpMsg   *pExpctdGtpMsg = m_pCurrTask->getGtpMsg();
 
-   GtpMsgType_E rcvdMsgType = pGtpMsg->type();
+   GtpMsgType_t rcvdMsgType = pGtpMsg->type();
    if (rcvdMsgType != pExpctdGtpMsg->type())
    {
       LOG_DEBUG("Unexpected Response Message Received");
@@ -614,7 +614,7 @@ const IPEndPoint  *pPeerEp
 {
    LOG_ENTERFN();
 
-   GtpMsgType_E rcvdMsgTye = pGtpMsg->type();
+   GtpMsgType_t rcvdMsgTye = pGtpMsg->type();
    if (rcvdMsgTye == GTPC_MSG_CS_REQ || rcvdMsgTye == GTPC_MSG_CS_RSP)
    {
       GtpFteid *pFteid = dynamic_cast<GtpFteid *>\
@@ -664,7 +664,7 @@ VOID UeSession::encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
    GSIM_SET_MASK(msgHdr.pres, GTP_MSG_HDR_SEQ_PRES);
    pGtpMsg->setMsgHdr(&msgHdr);
 
-   GtpMsgType_E msgType = pGtpMsg->type();
+   GtpMsgType_t msgType = pGtpMsg->type();
    if (GTPC_MSG_CS_REQ == msgType)
    {
       pGtpMsg->setImsi(&m_imsiKey);
@@ -785,7 +785,7 @@ GtpcTun* UeSession::createCTun(GtpcPdn *pPdn)
 
    try
    {
-      GtpIfType_E ifType = m_pScn->ifType();
+      GtpIfType_t ifType = m_pScn->ifType();
       if (GTP_IF_S11_C_MME == ifType)
       {
          pCTun = getS11S4CTun(pPdn->pUeSession);

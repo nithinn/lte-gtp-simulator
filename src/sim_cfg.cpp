@@ -629,7 +629,7 @@ Time_t Config::getSessionRatePeriod()
 
 VOID Config::setLogLevel(string level)
 {
-   m_logLevel = (LogLevel_E)atoi(level.c_str());
+   m_logLevel = (LogLevel_t)atoi(level.c_str());
 }
 
 U32 Config::getLogLevel()

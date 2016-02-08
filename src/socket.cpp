@@ -544,7 +544,7 @@ PUBLIC RETVAL initTransport()
    LOG_EXITFN(ret);
 }
 
-GSimSocket::GSimSocket(SockType_E   sockType)
+GSimSocket::GSimSocket(SockType_t   sockType)
 {
    if (SOCK_TYPE_STDIN == sockType)
    {
@@ -570,7 +570,7 @@ GSimSocket::GSimSocket(SockType_E   sockType)
    }
 }
 
-GSimSocket::GSimSocket(SockType_E sockType, IPEndPoint ep)
+GSimSocket::GSimSocket(SockType_t sockType, IPEndPoint ep)
 {
    if (SOCK_TYPE_STDIN != sockType)
    {
@@ -613,7 +613,7 @@ IpAddrTypeEn GSimSocket::ipAddrType()
    return m_ep.ipAddr.ipAddrType;
 }
 
-SockType_E GSimSocket::type()
+SockType_t GSimSocket::type()
 {
    return m_type;
 }

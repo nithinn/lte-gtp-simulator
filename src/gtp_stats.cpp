@@ -116,7 +116,7 @@ Stats* Stats::getInstance()
  * @return
  *    GTP statistics counter value
  */
-Counter Stats::getStats(GtpStat_E  statsType)
+Counter Stats::getStats(GtpStat_t  statsType)
 {
    return s_gsimStats[statsType];
 }
@@ -131,12 +131,12 @@ Counter Stats::getStats(GtpStat_E  statsType)
  * @return
  *    GTP statistics counter value
  */
-VOID Stats::incStats(GtpStat_E statsType)
+VOID Stats::incStats(GtpStat_t statsType)
 {
    ++s_gsimStats[statsType];
 }
 
-VOID Stats::decStats(GtpStat_E statsType)
+VOID Stats::decStats(GtpStat_t statsType)
 {
    --s_gsimStats[statsType];
 }

@@ -215,7 +215,7 @@ VOID Display::disp()
    fflush(stdout);
 }
 
-Counter Display::getStats(GtpStat_E type)
+Counter Display::getStats(GtpStat_t type)
 {
    return m_pStats->getStats(type);
 }

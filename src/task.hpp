@@ -29,7 +29,7 @@ typedef enum
    TASK_STATE_PAUSED,
    TASK_STATE_STOPPED,
    TASK_STATE_MAX
-} TaskState_E;
+} TaskState_t;
 
 class TaskMgr
 {
@@ -77,7 +77,7 @@ class Task
       TaskListItr       m_allTaskItr;
       TaskListItr       m_runningTaskItr;
       TaskListItr       m_pausedTaskItr;
-      TaskState_E       m_taskState;
+      TaskState_t       m_taskState;
       
       friend class TaskMgr;
 };

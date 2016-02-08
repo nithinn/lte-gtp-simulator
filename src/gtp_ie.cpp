@@ -141,7 +141,7 @@ RETVAL GtpIe::buildIeHelper(const HexString *inbuf, U8 *outbuf,\
  *
  * @return 
  */
-GtpIe* GtpIe::createGtpIe(GtpIeType_E  ieType, GtpInstance_t instance)
+GtpIe* GtpIe::createGtpIe(GtpIeType_t  ieType, GtpInstance_t instance)
 {
    switch (ieType)
    {
@@ -569,7 +569,7 @@ RETVAL GtpFteid::buildIe(IeParamLst *pBufLst)
 
       if (STRCASECMP(pXmlBuf->paramName, "iftype") == 0)
       {
-         GtpIfType_E ifType = gtpConvStrToIfType((const S8*)pXmlBuf->buf.pVal,\
+         GtpIfType_t ifType = gtpConvStrToIfType((const S8*)pXmlBuf->buf.pVal,\
                pXmlBuf->buf.len);
          GSIM_ENC_U8(m_val, ifType);
          this->m_hdr.len += 1;
@@ -679,7 +679,7 @@ U8* GtpIe::getIeBufPtr
 (
 U8                *pBuf,
 GtpLength_t       len,
-GtpIeType_E       ieType,\
+GtpIeType_t       ieType,\
 GtpInstance_t     inst,
 U32               occr
 )
@@ -1293,7 +1293,7 @@ RETVAL GtpCause::buildIe(IeParamLst *paramLst)
       }
       else if (STRCASECMP(param->paramName, "offending_ie_type") == 0)
       {
-         GtpIeType_E ieType = (GtpIeType_E)gtpConvStrToU32(\
+         GtpIeType_t ieType = (GtpIeType_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
          GTP_ENC_IE_TYPE((m_val + 2), ieType);
          this->m_hdr.len += 1;

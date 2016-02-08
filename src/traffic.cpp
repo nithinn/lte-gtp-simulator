@@ -99,7 +99,7 @@ PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
    GtpTeid_t      teid        = 0;
    UeSession      *pUeSession = NULL;
    U8             *pGtpBuf    = NULL;
-   GtpMsgType_E   msgType     = GTPC_MSG_TYPE_INVALID;
+   GtpMsgType_t   msgType     = GTPC_MSG_TYPE_INVALID;
    
    pGtpBuf = pUdpData->buf.pVal;
    GTP_MSG_GET_TYPE(pGtpBuf, msgType);

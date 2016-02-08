@@ -36,7 +36,7 @@ typedef enum
    GSIM_STAT_UNEXCEPTED_MSG_RECD,
 
    GSIM_STAT_MAX
-} GtpStat_E;
+} GtpStat_t;
 
 /**
  * Statistics Class
@@ -48,13 +48,13 @@ class Stats
 {
    public:
 
-   void static incStats(GtpStat_E   statType);
-   void static decStats(GtpStat_E   statType);
+   void static incStats(GtpStat_t   statType);
+   void static decStats(GtpStat_t   statType);
 
    /**
     * Get the GTP statistics counter values
     */
-   Counter static getStats(GtpStat_E statType);
+   Counter static getStats(GtpStat_t statType);
 
    /**
     * Destructor

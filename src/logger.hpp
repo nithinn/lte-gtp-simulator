@@ -34,7 +34,7 @@ typedef enum
    LOG_LVL_DEBUG,
    LOG_LVL_TRACE,
    LOG_LVL_END
-} LogLevel_E;
+} LogLevel_t;
 
 #define LOG_ENTERFN()                                                   \
 do                                                                      \
@@ -128,13 +128,13 @@ do                                                                   \
 class Logger
 {
    public:
-      static LogLevel_E m_logLevel;
+      static LogLevel_t m_logLevel;
 
       /**
        * Logging function. This function is logger for gtp simulator for
        * debugging purposes
        */
-      static VOID log(LogLevel_E logLvl, const char *fileName,\
+      static VOID log(LogLevel_t logLvl, const char *fileName,\
             const unsigned lineNum, const char *format, ...);
 
       /**
@@ -162,7 +162,7 @@ class Logger
        *    No return value
        */
       static VOID log(const U8 *pMsgName, const U8 *pMsgBuf, U32 msgLen,\
-            MsgAction_E dir, const U8 *pIpAddr, U16 port);
+            MsgAction_t dir, const U8 *pIpAddr, U16 port);
 
       static VOID init(U32 level);
       

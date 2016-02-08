@@ -124,7 +124,7 @@ S8 g_gtpMsgName[GTPC_MSG_TYPE_MAX][GTP_MSG_NAME_LEN] =
    "MBMS Sessn Stop Rsp"
 };
 
-GtpMsgCategory_E g_gtpMsgCat[GTPC_MSG_TYPE_MAX] = \
+GtpMsgCategory_t g_gtpMsgCat[GTPC_MSG_TYPE_MAX] = \
 {
    GTP_MSG_CAT_INV,
    GTP_MSG_CAT_INITIAL,
@@ -720,7 +720,7 @@ S8 g_gtpMsgXmlTag[GTPC_MSG_TYPE_MAX][GTP_MSG_XML_TAG_MAX_LEN] = \
    "msstrsp"
 };
 
-S8* gtpGetMsgName(GtpMsgType_E msgType)
+S8* gtpGetMsgName(GtpMsgType_t msgType)
 {
    S8 *pMsgName = NULL;
 
@@ -735,7 +735,7 @@ S8* gtpGetMsgName(GtpMsgType_E msgType)
    return pMsgName;
 }
 
-GtpIeType_E gtpGetIeType(const S8   *pIeName)
+GtpIeType_t gtpGetIeType(const S8   *pIeName)
 {
    for (U32 ieType = GTP_IE_RESERVED; ieType < GTP_IE_MAX; ieType++)
    {
@@ -745,32 +745,32 @@ GtpIeType_E gtpGetIeType(const S8   *pIeName)
       }
       if (strcasecmp(g_gtpIeName[ieType], pIeName) == 0)
       {
-         return (GtpIeType_E)ieType;
+         return (GtpIeType_t)ieType;
       }
    }
 
    return GTP_IE_MAX;
 }
 
-GtpMsgType_E gtpGetMsgType(const S8 *pXmlMsgTag)
+GtpMsgType_t gtpGetMsgType(const S8 *pXmlMsgTag)
 {
    for (U32 msgType = GTPC_MSG_TYPE_INVALID; msgType < GTPC_MSG_TYPE_MAX;
          msgType++)
    {
       if (strcasecmp(g_gtpMsgXmlTag[msgType], pXmlMsgTag) == 0)
       {
-         return (GtpMsgType_E)msgType;
+         return (GtpMsgType_t)msgType;
       }
    }
 
    return GTPC_MSG_TYPE_INVALID;
 }
 
-GtpMsgCategory_E gtpGetMsgCategory(GtpMsgType_E msgType)
+GtpMsgCategory_t gtpGetMsgCategory(GtpMsgType_t msgType)
 {
    LOG_ENTERFN();
 
-   GtpMsgCategory_E msgCat = GTP_MSG_CAT_INV;
+   GtpMsgCategory_t msgCat = GTP_MSG_CAT_INV;
    if (msgType <= GTPC_MSG_TYPE_MAX)
    {
       msgCat = g_gtpMsgCat[msgType]; 
@@ -878,11 +878,11 @@ PUBLIC U32 gtpConvStrToU32(const S8 *pVal, U32 len)
    LOG_EXITFN(v);
 }
 
-GtpIfType_E gtpConvStrToIfType(const S8 *pVal, U32 len)
+GtpIfType_t gtpConvStrToIfType(const S8 *pVal, U32 len)
 {
    LOG_ENTERFN();
    
-   GtpIfType_E ifType = (GtpIfType_E)gtpConvStrToU32(pVal, len);
+   GtpIfType_t ifType = (GtpIfType_t)gtpConvStrToU32(pVal, len);
    if (ifType >= GTP_IF_INF_INV)
    {
       ifType = GTP_IF_INF_INV;
@@ -1075,7 +1075,7 @@ PUBLIC VOID gtpUtlEncPlmnId(GtpPlmnId_t *pPlmnId, U8* pBuf)
  *
  * @return 
  */
-PUBLIC S8 *gtpGetIeName(GtpIeType_E ieType)
+PUBLIC S8 *gtpGetIeName(GtpIeType_t ieType)
 {
    return g_gtpIeName[ieType];
 }

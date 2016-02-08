@@ -34,7 +34,7 @@ using std::list;
  *
  * @param msgType
  */
-GtpMsg::GtpMsg(GtpMsgType_E msgType)
+GtpMsg::GtpMsg(GtpMsgType_t msgType)
 {
    MEMSET(m_gtpMsgBuf, 0, GTP_MSG_BUF_LEN);
    m_msgHdr.msgType = msgType;
@@ -206,7 +206,7 @@ RETVAL GtpMsg::decode()
    U8          *pMsgBuf = m_gtpMsgBuf;
    while (len > 0)
    {
-      GtpIeType_E    ieType = GTP_IE_RESERVED;
+      GtpIeType_t    ieType = GTP_IE_RESERVED;
       GtpInstance_t  ieInst = 0;
 
       GTP_GET_IE_TYPE(pMsgBuf, ieType);
@@ -298,7 +298,7 @@ VOID GtpMsg::decodeHdr(U8 *pBuf)
    LOG_EXITVOID();
 }
 
-U32 GtpMsg::getIeCount(GtpIeType_E ieType, GtpInstance_t inst)
+U32 GtpMsg::getIeCount(GtpIeType_t ieType, GtpInstance_t inst)
 {
    LOG_ENTERFN();
 
@@ -314,7 +314,7 @@ U32 GtpMsg::getIeCount(GtpIeType_E ieType, GtpInstance_t inst)
    LOG_EXITFN(cnt);
 }
 
-GtpIe* GtpMsg::getIe(GtpIeType_E  ieType, GtpInstance_t  inst, U32 occurance)
+GtpIe* GtpMsg::getIe(GtpIeType_t  ieType, GtpInstance_t  inst, U32 occurance)
 {
    LOG_ENTERFN();
 
@@ -350,7 +350,7 @@ GtpIe* GtpMsg::getIe(GtpIeType_E  ieType, GtpInstance_t  inst, U32 occurance)
  */
 U8* GtpMsg::getIeBufPtr
 (
-GtpIeType_E       ieType,\
+GtpIeType_t       ieType,\
 GtpInstance_t     inst,
 U32               occr
 )

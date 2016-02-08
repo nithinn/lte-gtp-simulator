@@ -25,7 +25,7 @@
 EXTERN RETVAL setupStdinSock();
 
 class Keyboard *Keyboard::m_pKb = NULL;
-KeyboardKey_E Keyboard::key = KB_KEY_INVALID;
+KeyboardKey_t Keyboard::key = KB_KEY_INVALID;
 
 Keyboard* Keyboard::getInstance()
 {
