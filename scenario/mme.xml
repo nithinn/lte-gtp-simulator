@@ -97,6 +97,12 @@
 
   <recv response="mbrsp"> 
   </recv>
-  
+
+  <send request="dsreq">
+   <ie type="ebi" instance="0" value="5"> </ie>
+  </send> 
+
+  <recv response="dsrsp"> 
+  </recv>
 </scenario>
 

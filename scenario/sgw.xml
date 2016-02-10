@@ -51,5 +51,12 @@
       </ie>
    </ie>
   </send>
+
+  <recv request="dsreq">
+  </recv>
+
+  <send response="dsrsp">
+     <ie type="cause" instance="0"> </ie>
+  </send>
 </scenario>
 
