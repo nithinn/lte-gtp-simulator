@@ -28,12 +28,11 @@ typedef enum
 class Keyboard
 {
    public:
-      VOID processKey(S32   kbInput);
       static Keyboard* getInstance();
-      VOID init();
-      VOID abort();
-
-      static KeyboardKey_t    key;
+      static KeyboardKey_t key;
+      VOID   processKey(S32 kbInput);
+      VOID   init();
+      VOID   abort();
       
    private:
       static class Keyboard   *m_pKb;

@@ -20,6 +20,7 @@
 #include "logger.hpp"
 #include "error.hpp"
 #include "transport.hpp"
+#include "sim_cfg.hpp"
 #include "keyboard.hpp" 
 
 EXTERN RETVAL setupStdinSock();
@@ -76,10 +77,32 @@ S32   kbInput
       case 'q':
       {
          key = KB_KEY_SIM_QUIT;
+         break;
+      }
+      case '+':
+      {
+         Config::getInstance()->incrRate(1);
+         break;
+      }
+      case '-':
+      {
+         Config::getInstance()->decrRate(1);
+         break;
+      }
+      case '*':
+      {
+         Config::getInstance()->incrRate(10);
+         break;
+      }
+      case '/':
+      {
+         Config::getInstance()->decrRate(10);
+         break;
       }
       default:
       {
          LOG_DEBUG("Invalid Keyboard Input");
+         break;
       }
    }
 

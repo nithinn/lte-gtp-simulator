@@ -29,6 +29,8 @@ using namespace std;
 #define DFLT_DISP_REFRESH_TIMER  3000    // milli seconds
 #define DFLT_SESSION_RATE_PERIOD 1000    // 1000 milli seconds 
 #define DFLT_SESSION_RATE        1       // 1 session per rate period
+#define DFLT_MIN_SESSION_RATE    1       // 1 session per rate period
+#define DFLT_MAX_SESSION_RATE    1000000 // 1 session per rate period
 #define GSIM_TRACE_MSG_FILE_NAME_LEN   64
 
 typedef enum
@@ -122,6 +124,8 @@ class Config
       string getTraceMsgFile();
       string getImsi();
       VOID setImsi(S8 *pVal, U32 len);
+      VOID incrRate(U32 value);
+      VOID decrRate(U32 value);
 
    private:
       Config();

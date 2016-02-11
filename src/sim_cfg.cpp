@@ -77,34 +77,32 @@ Config* Config::getInstance()
  */
 Config::Config()
 {
-    m_maxSessions = 0;
     MEMSET((VOID *)&(locIpAddr), 0, sizeof(IpAddr));
     MEMSET((VOID *)&(remIpAddr), 0, sizeof(IpAddr));
-    locGtpcPort = DFLT_GTPC_PORT;
-    remGtpcPort = DFLT_GTPC_PORT;
-    locGtpcSndPort = DFLT_GTPC_SEND_PORT;
-    t3Timer = DFLT_T3_TIMER;
-    n3Req = DFLT_N3_REQUESTS;
-    dispTimer = DFLT_DISP_REFRESH_TIMER;
-    dispTarget = DISP_TARGET_SCREEN;
-    m_ssnRatePeriod = DFLT_SESSION_RATE_PERIOD;
-    m_ssnRate = DFLT_SESSION_RATE;
-    m_scnRunIntvl = 1000;
-    m_logLevel = LOG_LVL_ERROR;
-    m_ifType = GTP_IF_INF_INV;
-    m_nodeType = EPC_NODE_INV;
-    m_traceMsg = FALSE;
-
-    pid_t   pid = getpid();
-    S8      tmp[GSIM_TRACE_MSG_FILE_NAME_LEN] = {'\0'};
-    sprintf(tmp, "%d.txt", pid);
-    m_traceMsgFile = tmp;
-
-    errFile = "";
-    scnFile = "";
-    m_logFile = "";
-    dispTargetFile = "";
     m_imsiStr.assign(DFLT_IMSI, STRLEN(DFLT_IMSI));
+    S8 tmp[GSIM_TRACE_MSG_FILE_NAME_LEN] = {'\0'};
+    m_maxSessions                        = 0;
+    locGtpcPort                          = DFLT_GTPC_PORT;
+    remGtpcPort                          = DFLT_GTPC_PORT;
+    locGtpcSndPort                       = DFLT_GTPC_SEND_PORT;
+    t3Timer                              = DFLT_T3_TIMER;
+    n3Req                                = DFLT_N3_REQUESTS;
+    dispTimer                            = DFLT_DISP_REFRESH_TIMER;
+    dispTarget                           = DISP_TARGET_SCREEN;
+    m_ssnRatePeriod                      = DFLT_SESSION_RATE_PERIOD;
+    m_ssnRate                            = DFLT_SESSION_RATE;
+    m_scnRunIntvl                        = 1000;
+    m_logLevel                           = LOG_LVL_ERROR;
+    m_ifType                             = GTP_IF_INF_INV;
+    m_nodeType                           = EPC_NODE_INV;
+    m_traceMsg                           = FALSE;
+    pid_t   pid                          = getpid();
+    sprintf(tmp, "%d.txt", pid);
+    m_traceMsgFile                       = tmp;
+    errFile                              = "";
+    scnFile                              = "";
+    m_logFile                            = "";
+    dispTargetFile                       = "";
 }
 
 // Destructor
@@ -685,4 +683,28 @@ string Config::getImsi()
 VOID Config::setImsi(S8 *pVal, U32 len)
 {
    m_imsiStr.assign(pVal, len);
+}
+
+VOID Config::incrRate(U32 value)
+{
+   if (m_ssnRate + value < DFLT_MAX_SESSION_RATE)
+   {
+      m_ssnRate += value;
+   }
+   else
+   {
+      LOG_ERROR("Maximum Session Rate Breached");
+   }
+}
+
+VOID Config::decrRate(U32 value)
+{
+   if ((m_ssnRate > value) && (m_ssnRate - value >= DFLT_MIN_SESSION_RATE))
+   {
+      m_ssnRate -= value;
+   }
+   else
+   {
+      LOG_ERROR("Minimum Session Rate Breached");
+   }
 }

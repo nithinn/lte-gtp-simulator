@@ -129,7 +129,7 @@ VOID Simulator::genSignallingTraffic()
          break;
       }
 
-      if (KB_KEY_PAUSE_TRAFFIC != Keyboard::key)
+      if (Keyboard::key != KB_KEY_PAUSE_TRAFFIC)
       {
          TaskMgr::resumePausedTasks();
       }
