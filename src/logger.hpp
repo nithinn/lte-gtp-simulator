@@ -36,6 +36,7 @@ typedef enum
    LOG_LVL_END
 } LogLevel_t;
 
+#ifdef DEBUG
 #define LOG_ENTERFN()                                                   \
 do                                                                      \
 {                                                                       \
@@ -45,7 +46,11 @@ do                                                                      \
             __PRETTY_FUNCTION__);                                       \
    }                                                                    \
 } while (0)
+#else
+#define LOG_ENTERFN()
+#endif
 
+#ifdef DEBUG
 #define LOG_EXITFN(_ret)                                                \
 do                                                                      \
 {                                                                       \
@@ -56,7 +61,11 @@ do                                                                      \
    }                                                                    \
    return _ret;                                                         \
 } while (0)
+#else
+#define LOG_EXITFN(_ret)   return (_ret);
+#endif
 
+#ifdef DEBUG
 #define LOG_EXITVOID()                                                  \
 do                                                                      \
 {                                                                       \
@@ -67,6 +76,9 @@ do                                                                      \
    }                                                                    \
    return;                                                              \
 } while (0)
+#else
+#define LOG_EXITVOID()
+#endif
 
 #define LOG_TRACE_MSG(_n, _b, _l, _d, _ip, _port)                    \
 do                                                                   \

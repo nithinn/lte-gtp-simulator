@@ -42,7 +42,6 @@ TrafficTask::TrafficTask()
    m_ratePeriod = Config::getInstance()->getSessionRatePeriod();
    m_rate = Config::getInstance()->getCallRate();
    m_maxSessions = Config::getInstance()->getNumSessions();
-
    string imsi = Config::getInstance()->getImsi();
    m_imsiGen.init(imsi);
 }

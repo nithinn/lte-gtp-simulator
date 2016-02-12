@@ -80,8 +80,6 @@ VOID Simulator::run()
 {
    LOG_ENTERFN();
 
-   TrafficTask *pTTask = NULL;
-
    m_pScn = Scenario::getInstance();
    m_pScn->init(Config::getInstance()->getScnFile());
 
@@ -103,17 +101,18 @@ VOID Simulator::run()
 
    if (SCN_TYPE_INITIATING == m_pScn->getScnType())
    {
-      pTTask = new TrafficTask;
+      TrafficTask *pTTask = new TrafficTask;
+      if (pTTask == NULL)
+      {
+         LOG_ERROR("Traffic Task Init");
+      }
    }
 
    LOG_DEBUG("Generating Signalling traffic");
    genSignallingTraffic();
 
-   delete pTTask;
-   cleanupUeSessions();
-   TaskMgr::deleteAllTasks();
    pKb->abort();
-   pDisp->abort();
+   TaskMgr::deleteAllTasks();
 
    LOG_EXITVOID();
 }
@@ -135,19 +134,29 @@ VOID Simulator::genSignallingTraffic()
          TaskMgr::resumePausedTasks();
       }
 
-      TaskList    *pRunningTasks = TaskMgr::getRunningTasks();
-      TaskListItr nextItr = pRunningTasks->begin();
-
-      while (nextItr != pRunningTasks->end())
+      TaskList *pRunningTasks = TaskMgr::getRunningTasks();
+      TaskListItr itr = pRunningTasks->begin();
+      while (itr != pRunningTasks->end())
       {
-         TaskListItr curItr = nextItr++;
-         (*curItr)->run();
+         Task *t = *itr;
+
+         // increment the iterator here, because after the task is run
+         // it will be paused state which will move the task from running
+         // task list to paused task list.
+         itr++;
+
+         if (FALSE == t->run())
+         {
+            t->stop();
+         }
       }
+
+      TaskMgr::deleteStoppedTasks();
 
       // read the sockets for keyboard events and gtp messages
       socketPoll(1);
    }
-
+ 
    LOG_EXITVOID();
 }
 

@@ -83,6 +83,8 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
  */
 UeSession::~UeSession()
 {
+   s_ueSessionMap.erase(m_imsiKey);
+
    for (U32 i = 0; i < m_nwDataArr.size(); i++)
    {
       delete m_nwDataArr[i];
@@ -134,7 +136,6 @@ BOOL UeSession::run()
 
       Stats::incStats(GSIM_STAT_NUM_SESSIONS_SUCC);
       Stats::decStats(GSIM_STAT_NUM_SESSIONS);
-      deleteUeSession();
       LOG_EXITFN(FALSE);
    }
 
@@ -174,8 +175,7 @@ BOOL UeSession::run()
    
    if (ROK != ret)
    {
-      LOG_DEBUG("Terminating UE Session RUN");
-      deleteUeSession();
+      LOG_ERROR("Terminating UE Session RUN");
       LOG_EXITFN(FALSE);
    }
    else
@@ -309,11 +309,6 @@ RETVAL UeSession::procRecv()
       GtpMsgCategory_t  msgCat = gtpGetMsgCategory(msgType);
       if (msgCat == GTP_MSG_CAT_INITIAL)
       {
-         if (pGtpMsg->getTeid() == 128)
-         {
-            LOG_INFO("");
-         }
-
          LOG_DEBUG("Processing Incoming Request message");
          ret = procIncReqMsg(pGtpMsg);
          if (ROK != ret)
@@ -515,12 +510,6 @@ GtpImsiKey  imsiKey
          pImsi[6], pImsi[7]);
 
    return pUeSsn;
-}
-
-VOID UeSession::deleteUeSession()
-{
-   s_ueSessionMap.erase(m_imsiKey);
-   delete this;
 }
 
 /**

@@ -182,7 +182,6 @@ class UeSession: public Task
       RETVAL            procRecv();
       RETVAL            procIncReqMsg(GtpMsg *pGtpMsg);
       RETVAL            procIncRspMsg(GtpMsg *pGtpMsg);
-      VOID              deleteUeSession();
       GtpcTun*          createCTun(GtpcPdn *pPdn);
 };
 

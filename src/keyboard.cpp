@@ -127,7 +127,7 @@ VOID Keyboard::init()
       throw ERR_KEYBOARD_INIT;
    }
 
-   LOG_EXITFN();
+   LOG_EXITVOID();
 }
 
 VOID Keyboard::abort()

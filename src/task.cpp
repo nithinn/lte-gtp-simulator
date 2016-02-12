@@ -34,25 +34,6 @@ Task::Task()
    m_id = ++s_taskId;
 }
 
-Task::~Task()
-{
-   g_allTasks.erase(m_allTaskItr);
-
-   if (TASK_STATE_RUNNING == m_taskState)
-   {
-      g_runningTasks.erase(m_runningTaskItr);
-   }
-   else if (TASK_STATE_PAUSED == m_taskState)
-   {
-      g_pausedTasks.erase(m_pausedTaskItr);
-   }
-}
-
-VOID Task::abort()
-{
-   delete this;
-}
-
 VOID Task::stop()
 {
    if (TASK_STATE_RUNNING == m_taskState)
@@ -67,12 +48,20 @@ VOID Task::stop()
    m_taskState = TASK_STATE_STOPPED;
 }
 
+VOID Task::abort()
+{
+   this->stop();
+   delete this;
+}
+
 VOID Task::pauseTask()
 {
-   g_runningTasks.erase(m_runningTaskItr);
-   m_taskState = TASK_STATE_PAUSED;
-
-   m_pausedTaskItr = g_pausedTasks.insert(g_pausedTasks.end(), this);
+   if (TASK_STATE_RUNNING == m_taskState)
+   {
+      g_runningTasks.erase(m_runningTaskItr);
+      m_taskState = TASK_STATE_PAUSED;
+      m_pausedTaskItr = g_pausedTasks.insert(g_pausedTasks.end(), this);
+   }
 }
 
 VOID Task::resumeTask()
@@ -93,6 +82,11 @@ TaskList* TaskMgr::getRunningTasks()
 TaskList* TaskMgr::getPausedTasks()
 {
    return &g_pausedTasks;
+}
+
+TaskList* TaskMgr::getAllTasks()
+{
+   return &g_allTasks;
 }
 
 VOID TaskMgr::resumePausedTasks()
@@ -116,15 +110,37 @@ VOID TaskMgr::resumePausedTasks()
 
 VOID TaskMgr::deleteAllTasks()
 {
-   //TaskList *pTasks = getPausedTasks();
-   //for (TaskListItr itr = pTasks->begin(); itr != pTasks->end(); itr++)
-   //{
-   //   delete *itr;
-   //}
+   TaskList *pTasks = getAllTasks();
+   TaskListItr itr = pTasks->begin();
 
-   //pTasks = getRunningTasks();
-   //for (TaskListItr itr = pTasks->begin(); itr != pTasks->end(); itr++)
-   //{
-   //   delete *itr;
-   //}
+   while (itr != pTasks->end())
+   {
+      Task *tmp = *itr;
+      itr = pTasks->erase(itr);
+      tmp->abort();
+   }
+}
+
+VOID TaskMgr::deleteStoppedTasks()
+{
+   LOG_ENTERFN();
+
+   TaskList *pTasks = getAllTasks();
+   TaskListItr itr = pTasks->begin();
+
+   while (itr != pTasks->end())
+   {
+      Task *tmp = *itr;
+      if (tmp->m_taskState == TASK_STATE_STOPPED)
+      {
+         itr = pTasks->erase(itr);
+         tmp->abort();
+      }
+      else
+      {
+         itr++;
+      }
+   }
+
+   LOG_EXITVOID();
 }

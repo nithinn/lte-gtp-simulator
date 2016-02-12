@@ -225,8 +225,3 @@ Time_t Display::wake()
    return m_lastRunTime + m_dispIntvl;
 }
 
-VOID Display::abort()
-{
-   delete this;
-}
-

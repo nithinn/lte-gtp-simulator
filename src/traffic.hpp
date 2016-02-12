@@ -34,6 +34,7 @@ class TrafficTask: public Task
 {
    public:
       TrafficTask();
+      ~TrafficTask() {}
 
       BOOL run();  
       Time_t wake();

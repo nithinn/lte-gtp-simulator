@@ -36,7 +36,9 @@ class TaskMgr
    public:
       static TaskList* getRunningTasks();
       static TaskList* getPausedTasks();
+      static TaskList* getAllTasks();
       static VOID resumePausedTasks();
+      static VOID deleteStoppedTasks();
       static VOID deleteAllTasks();
 };
 
@@ -50,13 +52,14 @@ class Task
    public:
       Task();
 
-      virtual ~Task();
+      virtual ~Task() {};
 
       virtual BOOL run() = 0;
 
       virtual VOID abort();
 
       virtual VOID stop();
+
    protected:
       TaskId_t        m_id;
 

@@ -27,7 +27,6 @@ class Display: virtual public Task
       BOOL run();  
       Time_t wake();
       VOID createMsgDirLst();
-      VOID abort();
 
    private:
       static class Display  *m_pDisp;
