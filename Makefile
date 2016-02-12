@@ -25,6 +25,9 @@ LFLAGS += -pg
 CFLAGS += -pg
 endif
 
+ifeq ($(debug), yes)
+COPTS += -DDEBUG
+endif
 
 SRC=\
 	$(SRC_PATH)/logger.cpp \
