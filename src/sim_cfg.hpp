@@ -116,7 +116,7 @@ class Config
       U32 getLogLevel();
       VOID setConfig (S32 numArgs, S8** cmdLineArgs) throw (ErrCodeEn);
       Time_t getSessionRatePeriod();
-      U8 getNodeType();
+      EpcNodeType_t getNodeType();
       U8 getIfType();
       Counter getNumSessions();
       string getLogFile();
@@ -151,7 +151,7 @@ class Config
       U32                  m_scnRunIntvl;
       Time_t               m_ssnRatePeriod;
       U32                  m_logLevel;
-      U8                   m_nodeType;
+      EpcNodeType_t        m_nodeType;
       U8                   m_ifType;
       Counter              m_maxSessions;
       string               m_remIpAddrStr;

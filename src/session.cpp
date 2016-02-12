@@ -64,7 +64,7 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_retryCnt = 0;
    m_t3time = Config::getInstance()->getT3Timer();
    m_sessionId = ++g_sessionId;
-   m_nodeType = (EpcNodeType_t)Config::getInstance()->getNodeType();
+   m_nodeType = Config::getInstance()->getNodeType();
    m_peerEp.ipAddr = *(Config::getInstance()->getRemoteIpAddr());
    m_peerEp.port = Config::getInstance()->getRemoteGtpcPort();
    m_isWaiting = FALSE;
@@ -309,12 +309,18 @@ RETVAL UeSession::procRecv()
       GtpMsgCategory_t  msgCat = gtpGetMsgCategory(msgType);
       if (msgCat == GTP_MSG_CAT_INITIAL)
       {
+         if (pGtpMsg->getTeid() == 128)
+         {
+            LOG_INFO("");
+         }
+
          LOG_DEBUG("Processing Incoming Request message");
          ret = procIncReqMsg(pGtpMsg);
          if (ROK != ret)
          {
             LOG_ERROR("Processing Incoming Request Message, Error [%d]", ret);
          }
+
       }
       else if (msgCat == GTP_MSG_CAT_TRIG_RSP)
       {
@@ -755,7 +761,6 @@ GtpBearer::~GtpBearer()
 PUBLIC VOID cleanupUeSessions()
 {
    UeSessionMapItr ueItr = s_ueSessionMap.begin();
-
    for (; ueItr != s_ueSessionMap.end(); ueItr++)
    {
       delete ueItr->second;

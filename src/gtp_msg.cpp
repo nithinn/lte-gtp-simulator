@@ -394,3 +394,8 @@ VOID GtpMsg::setImsi(GtpImsiKey *pImsiKey)
 
    LOG_EXITVOID();
 }
+
+GtpTeid_t GtpMsg::getTeid()
+{
+   return m_msgHdr.teid;
+}

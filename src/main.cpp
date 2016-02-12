@@ -20,6 +20,8 @@
 #include "logger.hpp"
 #include "error.hpp"
 #include "help.hpp"
+#include "macros.hpp"
+#include "gtp_types.hpp"
 #include "sim_cfg.hpp"
 #include "task.hpp"
 #include "sim.hpp"

@@ -28,23 +28,24 @@
 }
 
 #define GTP_MSG_GET_SEQN(_buf, _seq)                        \
+do                                                          \
 {                                                           \
    U32 _s = 0;                                              \
    if (GTP_CHK_T_BIT_PRESENT(_buf))                         \
    {                                                        \
-      _s  = (U32)((_buf[8] << 16));                         \
-      _s  = (U32)((_buf[9] << 8));                          \
-      _s  = (U32)((_buf[10]));                              \
-      _seq = (GtpSeqNumber_t)_s;                            \
+      _s |= ((U32)(_buf[8])) << 16;                         \
+      _s |= ((U32)(_buf[9])) << 8;                          \
+      _s |= ((U32)(_buf[10]));                              \
+      (_seq) = (GtpSeqNumber_t)_s;                          \
    }                                                        \
    else                                                     \
    {                                                        \
-      _s  = (U32)((_buf[4] << 16));                         \
-      _s  = (U32)((_buf[5] << 8));                          \
-      _s  = (U32)((_buf[6]));                               \
-      _seq = (GtpSeqNumber_t)_s;                            \
+      _s |= ((U32)(_buf[4])) << 16;                         \
+      _s |= ((U32)(_buf[5])) << 8;                          \
+      _s |= ((U32)(_buf[6]));                               \
+      (_seq) = (GtpSeqNumber_t)_s;                          \
    }                                                        \
-}                     
+} while(0)
 
 #define GTP_SET_MSG_TYPE(_buf, _mtype)    \
 {                                         \

@@ -36,8 +36,8 @@ typedef U64                Time_t;
 typedef U32                TransConnId;
 typedef std::string        HexString;
 
-#define EXTERN          extern
-#define PRIVATE         static
+#define EXTERN             extern
+#define PRIVATE            static
 #define PUBLIC          
 
 #ifndef TRUE

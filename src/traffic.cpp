@@ -23,9 +23,9 @@
 #include "logger.hpp"
 #include "macros.hpp"
 #include "timer.hpp"
-#include "sim_cfg.hpp"
 #include "task.hpp"
 #include "gtp_types.hpp"
+#include "sim_cfg.hpp"
 #include "gtp_macro.hpp"
 #include "gtp_if.hpp"
 #include "gtp_util.hpp"
@@ -55,7 +55,6 @@ BOOL TrafficTask::run()
    LOG_DEBUG("Running TrafficTask, Session Rate [%d]", m_rate);
 
    Time_t currTime = getMilliSeconds();
-   LOG_DEBUG("TTTTT [%d]", currTime - m_lastRunTime);
    m_lastRunTime = currTime;
    Counter numSession = Stats::getStats(GSIM_STAT_NUM_SESSIONS_CREATED);
    for (U32 i = 0; i < m_rate; i++)

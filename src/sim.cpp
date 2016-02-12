@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 
 using std::vector;
 
@@ -111,8 +112,8 @@ VOID Simulator::run()
    delete pTTask;
    cleanupUeSessions();
    TaskMgr::deleteAllTasks();
-   pDisp->abort();
    pKb->abort();
+   pDisp->abort();
 
    LOG_EXITVOID();
 }
@@ -135,8 +136,8 @@ VOID Simulator::genSignallingTraffic()
       }
 
       TaskList    *pRunningTasks = TaskMgr::getRunningTasks();
-
       TaskListItr nextItr = pRunningTasks->begin();
+
       while (nextItr != pRunningTasks->end())
       {
          TaskListItr curItr = nextItr++;

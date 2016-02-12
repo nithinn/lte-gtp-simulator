@@ -18,10 +18,13 @@
 #include <cstdarg>
 #include <iostream>
 #include <string>
+#include <list>
 
 #include "types.hpp"
 #include "error.hpp"
 #include "logger.hpp"
+#include "macros.hpp"
+#include "gtp_types.hpp"
 #include "sim_cfg.hpp"
 
 LogLevel_t  Logger::m_logLevel = LOG_LVL_ERROR;

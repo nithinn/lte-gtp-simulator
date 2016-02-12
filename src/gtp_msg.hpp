@@ -38,6 +38,7 @@ class GtpMsg
       U8*            getIeBufPtr(GtpIeType_t, GtpInstance_t, U32);
       GtpSeqNumber_t seqNumber() {return m_msgHdr.seqN;}
       VOID           setImsi(GtpImsiKey*);
+      GtpTeid_t      getTeid();
 
    private:
       GtpMsgHdr      m_msgHdr;

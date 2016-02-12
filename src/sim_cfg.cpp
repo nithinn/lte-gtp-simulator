@@ -635,7 +635,7 @@ U32 Config::getLogLevel()
    return m_logLevel;
 }
 
-U8 Config::getNodeType()
+EpcNodeType_t Config::getNodeType()
 {
    return m_nodeType;
 }

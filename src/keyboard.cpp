@@ -15,11 +15,14 @@
  */  
 
 #include <exception>
+#include <list>
 
 #include "types.hpp"
 #include "logger.hpp"
 #include "error.hpp"
 #include "transport.hpp"
+#include "macros.hpp"
+#include "gtp_types.hpp"
 #include "sim_cfg.hpp"
 #include "keyboard.hpp" 
 
