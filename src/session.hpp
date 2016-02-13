@@ -143,12 +143,13 @@ class UeSession: public Task
       GtpSeqNumber_t    m_currSeqNum;
       U32               m_currTaskIndx;
       U32               m_lastReqIndx;
-      GtpcNwDataVec     m_nwDataArr;
+      Time_t            m_wakeTime;
+      GtpcNwData        *m_pSentNwData;
       GtpcNwData        *m_pRcvdNwData;
       MsgTask           *m_pCurrTask;
       GtpcPdn           *m_pCurrPdn;
       Scenario          *m_pScn;
-      Time_t            m_wakeTime;
+      TransConnId       m_rcvdReqConnId;
 
       VOID              storeGtpcOutMsg(GtpcPdn *pPdn, GtpMsg  *pGtpMsg);
       VOID              encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\

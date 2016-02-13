@@ -59,7 +59,6 @@ PRIVATE U32 generateSeqNum()
 UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
 {
    m_pScn = pScn;
-   m_nwDataArr = GtpcNwDataVec(pScn->m_msgVec.size());
    m_n3req = Config::getInstance()->getN3Requests();
    m_retryCnt = 0;
    m_t3time = Config::getInstance()->getT3Timer();
@@ -72,6 +71,8 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_currSeqNum = 0;
    m_bitmask = 0;
    m_imsiKey = imsi;
+   m_pRcvdNwData = NULL;
+   m_pSentNwData = NULL;
 
    LOG_DEBUG("Creating UE Session [%d]", m_sessionId);
 }
@@ -83,13 +84,13 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
  */
 UeSession::~UeSession()
 {
-   s_ueSessionMap.erase(m_imsiKey);
+   if (NULL != m_pRcvdNwData)
+      delete m_pRcvdNwData;
 
-   for (U32 i = 0; i < m_nwDataArr.size(); i++)
-   {
-      delete m_nwDataArr[i];
-      m_nwDataArr[i] = NULL;
-   }
+   if (NULL != m_pSentNwData)
+      delete m_pSentNwData;
+
+   s_ueSessionMap.erase(m_imsiKey);
 
    for (GtpcPdnLstItr pPdn = m_pdnLst.begin(); pPdn != m_pdnLst.end(); pPdn++)
    {
@@ -252,7 +253,7 @@ RETVAL UeSession::procSend()
       storeGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg());
 
       LOG_DEBUG("Encoding OUT Message");
-      GtpcNwData     *pNwData = new GtpcNwData;
+      GtpcNwData *pNwData = new GtpcNwData;
       encGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg(), &pNwData->gtpcMsgBuf);
 
       GtpMsgCategory_t msgCat = gtpGetMsgCategory(msgType);
@@ -267,13 +268,19 @@ RETVAL UeSession::procSend()
          /* send the response/triggered message over the same socket
           * over which the request/command is received
           */
-         pNwData->connId = m_nwDataArr[m_lastReqIndx]->connId;
+         pNwData->connId = m_rcvdReqConnId;
          pNwData->peerEp = pPdn->pCTun->m_peerEp;
       }
 
       LOG_DEBUG("Sending GTPC Message [%s]", gtpGetMsgName(msgType));
       sendMsg(pNwData->connId, &pNwData->peerEp, &pNwData->gtpcMsgBuf);
-      m_nwDataArr[m_currTaskIndx] = pNwData;
+
+      if (NULL != m_pSentNwData)
+      {
+         delete m_pSentNwData;
+      }
+
+      m_pSentNwData = pNwData;
       if (GTP_MSG_CAT_INITIAL == msgCat)
       {
          m_lastReqIndx = m_currTaskIndx;
@@ -313,7 +320,6 @@ RETVAL UeSession::procRecv()
          {
             LOG_ERROR("Processing Incoming Request Message, Error [%d]", ret);
          }
-
       }
       else if (msgCat == GTP_MSG_CAT_TRIG_RSP)
       {
@@ -324,14 +330,11 @@ RETVAL UeSession::procRecv()
             LOG_ERROR("Processing Incoming Response Message, Error [%d]", ret);
          }
 
-         /* only message to be sent will be stored in m_nwDataArr
-          * received response messages is deleted after processing
-          */
          GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
-         delete m_pRcvdNwData;
-         m_pRcvdNwData = NULL;
       }
       
+      delete m_pRcvdNwData;
+      m_pRcvdNwData = NULL;
       GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_GTPC_MSG_RCVD);
    }
    else
@@ -356,9 +359,9 @@ RETVAL UeSession::procRecv()
           * after retransmission timeout expiry
           */
          LOG_DEBUG("Retransmissing GTP Message");
-         sendMsg(m_nwDataArr[m_lastReqIndx]->connId,\
-               &m_nwDataArr[m_lastReqIndx]->peerEp,\
-               &m_nwDataArr[m_lastReqIndx]->gtpcMsgBuf);
+         sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp,\
+               &m_pSentNwData->gtpcMsgBuf);
+
          m_pScn->m_msgVec[m_lastReqIndx]->m_numSndRetrans++;
          m_retryCnt++;
          ret = ROK;
@@ -389,15 +392,13 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
           * if there is a match send the corresponding response
           */
 
-         delete m_pRcvdNwData;
-         m_pRcvdNwData = NULL;
          LOG_DEBUG("Retransmitted GTPC Messsage Received");
          LOG_EXITFN(ERR_RETRANS_GTPC_MSG_RCVD);
       }
       else
       {
          m_lastReqIndx = m_currTaskIndx;
-         m_nwDataArr[m_currTaskIndx] = m_pRcvdNwData;
+         m_rcvdReqConnId = m_pRcvdNwData->connId;
          m_pCurrTask->m_numRcv++;
          m_currSeqNum = rcvdSeqNum;
          GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_SEQ_NUM_SET);
