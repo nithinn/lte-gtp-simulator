@@ -180,49 +180,10 @@ BOOL UeSession::run()
       LOG_EXITFN(FALSE);
    }
    
-   updateWakeupTime(taskType);
    UE_SSN_SET_NEXT_TASK(this);
    pauseTask();
 
    return TRUE;
-}
-
-VOID UeSession::updateWakeupTime(MsgTaskType_t taskType)
-{
-   LOG_ENTERFN();
-
-   m_wakeTime = 0;
-
-   switch (taskType)
-   {
-      case MSG_TASK_WAIT:
-      {
-         m_wakeTime = m_lastRunTime + m_wait;
-         break;
-      }
-      case MSG_TASK_RECV:
-      {
-         if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
-         {
-            // if response is not received within T3 timer expiry
-            // wakeup and retransmit request message
-            m_wakeTime = m_lastRunTime + m_t3time;
-         }
-
-         break;
-      }
-      case MSG_TASK_SEND:
-      {
-         m_wakeTime = m_lastRunTime + m_t3time;
-         break;
-      }
-      default:
-      {
-         break;
-      }
-   }
-
-   LOG_EXITVOID();
 }
 
 RETVAL UeSession::procSend()
@@ -287,6 +248,8 @@ RETVAL UeSession::procSend()
          GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
       }
 
+      // update when the task thas to wakeup next time
+      m_wakeTime = m_lastRunTime + m_t3time;
       m_pCurrTask->m_numSnd++;
    }
    catch (ErrCodeEn &e)
@@ -366,6 +329,14 @@ RETVAL UeSession::procRecv()
          m_retryCnt++;
          ret = ROK;
       }
+   }
+
+   m_wakeTime = 0;
+   if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
+   {
+      // if response is not received within T3 timer expiry
+      // wakeup and retransmit request message
+      m_wakeTime = m_lastRunTime + m_t3time;
    }
 
    LOG_EXITFN(ret);
@@ -461,6 +432,7 @@ RETVAL UeSession::procWait()
 
    m_isWaiting = TRUE;
    m_wait = m_pCurrTask->wait();
+   m_wakeTime = m_lastRunTime + m_wait;
 
    LOG_EXITFN(ROK);
 }

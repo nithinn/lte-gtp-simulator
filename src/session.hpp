@@ -163,7 +163,6 @@ class UeSession: public Task
       RETVAL            procIncReqMsg(GtpMsg *pGtpMsg);
       RETVAL            procIncRspMsg(GtpMsg *pGtpMsg);
       GtpcTun*          createCTun(GtpcPdn *pPdn);
-      VOID              updateWakeupTime(MsgTaskType_t taskType);
 };
 
 EXTERN UeSession* getUeSession(const U8* pImsi);
