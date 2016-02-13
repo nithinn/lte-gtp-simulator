@@ -21,7 +21,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define GSIM_UDP_READ_LEN        65536
+#define GSIM_UDP_READ_LEN        2048
 #define GTP_HDR_PEEK_LEN         4
 #define GSIM_MAX_SOCK_CNT        3
 #define GSIM_MAX_POLL_FDS        32
@@ -39,39 +39,6 @@ typedef enum
 
 typedef struct pollfd   GSimPollFd;
 
-class GSimSockBuf
-{
-   public:
-   U32                  len;           /* length of pBuf                */
-   U32                  pendingBytes;  /* bytes to be processed         */
-   U8                   *pBuf;         /* buffer                        */
-   U32                  offset;        /* offset at which processing 
-                                        * has to continue
-                                        */
-   TransConnId          connId;        /* used to identify the socket
-                                        * while sending response msgw
-                                        */
-   IPEndPoint           peerEp;        /* Peer endpoint                 */
-
-   GSimSockBuf()
-   {
-      len          = 0;
-      pBuf         = NULL;
-      offset       = 0;
-      pendingBytes = 0;
-      connId       = 0;
-      MEMSET(&peerEp, 0, sizeof(IPEndPoint));
-   }
-
-   ~GSimSockBuf()
-   {
-      delete[] pBuf;
-   }
-};
-
-typedef std::list<GSimSockBuf *>  GSimSockBufLst;
-typedef GSimSockBufLst::iterator  GSimSockBufLstItr;
-
 class GSimSocket
 {
    public:
@@ -83,20 +50,16 @@ class GSimSocket
       SockType_t        type();
       IpAddrTypeEn      ipAddrType();
       RETVAL            bindSocket();
-      RETVAL            recvMsg();
-      VOID              procSockBuf();
+      RETVAL            recvMsg(UdpData **msg);
 
    private:
       S32               m_fd;
       U32               m_pollFdIndex;
       SockType_t        m_type;
       IPEndPoint        m_ep;
-      RETVAL            recvMsgV6();
-      RETVAL            recvMsgV4();
-      VOID              formUdpData(U8*, U32, GSimSockBuf*, UdpData**);
-      VOID              mergeToNextBuf(GSimSockBuf *pCurr, GSimSockBuf *pNext);
+      RETVAL            recvMsgV6(UdpData **msg);
+      RETVAL            recvMsgV4(UdpData **msg);
       U32               getFullGtpMsgLen(U8* pBuf, U32 len);
-      GSimSockBufLst    m_sockBufLst;
 };
 
 #endif

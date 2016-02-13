@@ -58,29 +58,22 @@ static U8            s_recvBuf[GSIM_UDP_READ_LEN];
  *
  * @return 
  */
-RETVAL GSimSocket::recvMsgV4()
+RETVAL GSimSocket::recvMsgV4(UdpData **msg)
 {
    struct sockaddr_in  fromAddr;
    socklen_t           fromLen = sizeof(sockaddr_in);
 
-   U32 recvLen = recvfrom(m_fd, s_recvBuf, GSIM_UDP_READ_LEN, MSG_DONTWAIT,
-         (struct sockaddr *)&fromAddr, &fromLen);
+   U32 recvLen = recvfrom(m_fd, s_recvBuf, GSIM_UDP_READ_LEN,\
+         MSG_DONTWAIT, (struct sockaddr *)&fromAddr, &fromLen);
    if (recvLen > 0)
    {
-      GSimSockBuf *pSockBuf = new GSimSockBuf;
-   
-      pSockBuf->len = recvLen;
-      pSockBuf->pendingBytes = recvLen;
-      pSockBuf->pBuf = new U8 [recvLen];
-      MEMCPY(pSockBuf->pBuf, s_recvBuf, recvLen);
-
-      pSockBuf->connId = m_pollFdIndex;
-      pSockBuf->peerEp.ipAddr.ipAddrType = IP_ADDR_TYPE_V4;
-      pSockBuf->peerEp.ipAddr.u.ipv4Addr.addr = 
+      *msg = new UdpData;
+      BUFFER_CPY(&(*msg)->buf, s_recvBuf, recvLen);
+      (*msg)->connId = m_pollFdIndex;
+      (*msg)->peerEp.ipAddr.ipAddrType = IP_ADDR_TYPE_V4;
+      (*msg)->peerEp.ipAddr.u.ipv4Addr.addr = 
          ntohl(fromAddr.sin_addr.s_addr);
-      pSockBuf->peerEp.port = ntohs(fromAddr.sin_port);
-
-      m_sockBufLst.push_back(pSockBuf);
+      (*msg)->peerEp.port = ntohs(fromAddr.sin_port);
       return ROK;
    }
 
@@ -96,7 +89,7 @@ RETVAL GSimSocket::recvMsgV4()
  *
  * @return 
  */
-RETVAL GSimSocket::recvMsgV6()
+RETVAL GSimSocket::recvMsgV6(UdpData **msg)
 {
    struct sockaddr_in6 fromAddr;
    socklen_t           fromLen = 0;
@@ -105,26 +98,20 @@ RETVAL GSimSocket::recvMsgV6()
          (struct sockaddr *)&fromAddr, &fromLen);
    if (recvLen > 0)
    {
-      GSimSockBuf *pSockBuf = new GSimSockBuf;
-   
-      pSockBuf->len = recvLen;
-      pSockBuf->pendingBytes = recvLen;
-      pSockBuf->pBuf = new U8 [recvLen];
-      MEMCPY(pSockBuf->pBuf, s_recvBuf, recvLen);
-
-      pSockBuf->connId = m_pollFdIndex;
-      MEMCPY(pSockBuf->peerEp.ipAddr.u.ipv6Addr.addr,
+      *msg = new UdpData;
+      BUFFER_CPY(&(*msg)->buf, s_recvBuf, recvLen);
+      (*msg)->connId = m_pollFdIndex;
+      (*msg)->peerEp.ipAddr.ipAddrType = IP_ADDR_TYPE_V4;
+      MEMCPY((*msg)->peerEp.ipAddr.u.ipv6Addr.addr,
             fromAddr.sin6_addr.s6_addr, IPV6_ADDR_MAX_LEN);
-      pSockBuf->peerEp.port = ntohs(fromAddr.sin6_port);
-
-      m_sockBufLst.push_back(pSockBuf);
+      (*msg)->peerEp.port = ntohs(fromAddr.sin6_port);
       return ROK;
    }
 
    return RFAILED;
 }
 
-RETVAL GSimSocket::recvMsg()
+RETVAL GSimSocket::recvMsg(UdpData **msg)
 {
    LOG_ENTERFN();
 
@@ -132,11 +119,11 @@ RETVAL GSimSocket::recvMsg()
 
    if (IP_ADDR_TYPE_V4 == m_ep.ipAddr.ipAddrType)
    {
-      ret = recvMsgV4();
+      ret = recvMsgV4(msg);
    }
    else
    {
-      ret = recvMsgV6();
+      ret = recvMsgV6(msg);
    }
 
    LOG_EXITFN(ret);
@@ -318,15 +305,13 @@ PRIVATE RETVAL handleGtpcSock(GSimSocket *pSock)
 
    try
    {
-      ret = pSock->recvMsg();
+      UdpData *msg = NULL;
+      ret = pSock->recvMsg(&msg);
       if (ROK == ret)
       {
          LOG_DEBUG("Process the Received messages", pSock->fd());
-
-         /* process all full GTPv2 c message in socket buffer 
-          * any incomplete messages will be processed in next cycle
-          */
-         pSock->procSockBuf();
+         procGtpcMsg(msg);
+         delete msg;
       }
       else
       {
@@ -382,108 +367,6 @@ U32 GSimSocket::getFullGtpMsgLen(U8* pBuf, U32 len)
    }
 
    LOG_EXITFN(msgLen);
-}
-
-/**
- * @brief Allocates memory and forms the UdpData structure
- *    containing the full gtp message buffer, and connection details
- *    on which the message is received
- *
- * @param pBuf pointer to buffer containing gtp message
- * @param msgLen length of gtp message
- * @param pSockBuf socket buffer containing socket connection details
- * @param pData data containing gtp message buffer and socket details
- */
-VOID GSimSocket::formUdpData
-(
-U8*            pBuf,
-U32            msgLen,
-GSimSockBuf    *pSockBuf,
-UdpData        **pData
-)
-{
-   LOG_ENTERFN();
-
-   *pData = new UdpData;
-
-   (*pData)->buf.len  = msgLen;
-   (*pData)->peerEp   = pSockBuf->peerEp;
-   (*pData)->connId   = pSockBuf->connId;
-   (*pData)->buf.pVal = new U8 [msgLen];
-   MEMCPY((*pData)->buf.pVal, pBuf, msgLen);
-
-   LOG_EXITVOID();
-}
-
-/**
- * @brief merges the buffer pointed by pBuf, with the next socket buffer
- *
- * @param pCurr current socket buffer
- * @param pNext next socket buffer, where remaining bytes of curr will be
- *    merged
- */
-VOID GSimSocket::mergeToNextBuf(GSimSockBuf *pCurr, GSimSockBuf  *pNext)
-{
-   LOG_ENTERFN();
-
-   U32 newLen = pCurr->pendingBytes + pNext->len;
-   U8  *pTmpBuf = new U8 [newLen];
-   MEMCPY(pTmpBuf, pCurr->pBuf + pCurr->offset, pCurr->pendingBytes);
-   MEMCPY(pTmpBuf + pCurr->pendingBytes, pNext->pBuf, pNext->len);
-
-   delete []pNext->pBuf;
-   pNext->pBuf = pTmpBuf;
-
-   LOG_EXITVOID();
-}
-
-VOID GSimSocket::procSockBuf()
-{
-   LOG_ENTERFN();
-
-   GSimSockBufLstItr    itr = m_sockBufLst.begin();
-
-   while (itr != m_sockBufLst.end())
-   {
-      GSimSockBuf *pSockBuf = *itr;
-      U8          *pBuf = pSockBuf->pBuf;
-      U32         msgLen = getFullGtpMsgLen(pBuf, pSockBuf->pendingBytes);
-
-      if (msgLen)
-      {
-         UdpData udpData;
- 
-         udpData.connId = pSockBuf->connId;
-         udpData.peerEp = pSockBuf->peerEp;
-         udpData.buf.len = msgLen;
-         udpData.buf.pVal = pBuf;
-
-         procGtpcMsg(&udpData);
-
-         pBuf += msgLen;
-         pSockBuf->pendingBytes -= msgLen;
-         pSockBuf->offset += msgLen;
-      }
-      else
-      {
-         m_sockBufLst.erase(itr);
-
-         if (pSockBuf->pendingBytes)
-         {
-            GSimSockBufLstItr nxtItr = m_sockBufLst.begin();
-            if (nxtItr != m_sockBufLst.end())
-            {
-               mergeToNextBuf(pSockBuf, *nxtItr);
-            }
-         }
-
-         delete pSockBuf;
-      }
-
-      itr = m_sockBufLst.begin();
-   }
-
-   LOG_EXITVOID();
 }
 
 
