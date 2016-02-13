@@ -42,7 +42,7 @@ static UeSessionMap  s_ueSessionMap;
 static U32           g_sessionId = 0;
 static U32           s_seqNum = 0;
 
-#define UE_SSN_SET_NEXT_TASK(_ueSsn)  ((_ueSsn)->m_currTaskIndx++)  
+#define UE_SSN_FINISH_TASK(_ueSsn)  ((_ueSsn)->m_currTaskIndx++)  
 #define IS_SCN_COMPLETED() (m_currTaskIndx == m_pScn->m_msgVec.size())
 
 PRIVATE U32 generateSeqNum()
@@ -149,23 +149,26 @@ BOOL UeSession::run()
       {
          LOG_TRACE("Processing Send() Task");
          ret = procSend();
+         if (ROK == ret)
+         {
+            UE_SSN_FINISH_TASK(this);
+            pauseTask();
+         }
+
          break;
       }
-
       case MSG_TASK_WAIT:
       {
          LOG_TRACE("Processing Wait() Task");
          ret = procWait();
          break;
       }
-
       case MSG_TASK_RECV:
       {
          LOG_TRACE("Processing Recv() Task");
          ret = procRecv();
          break;
       }
-
       default:
       {
          ret = RFAILED;
@@ -180,10 +183,7 @@ BOOL UeSession::run()
       LOG_EXITFN(FALSE);
    }
    
-   UE_SSN_SET_NEXT_TASK(this);
-   pauseTask();
-
-   return TRUE;
+   LOG_EXITFN(TRUE);
 }
 
 RETVAL UeSession::procSend()
@@ -266,6 +266,7 @@ RETVAL UeSession::procRecv()
    LOG_ENTERFN();
 
    RETVAL ret = ROK;
+   m_wakeTime = 0;
 
    if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_GTPC_MSG_RCVD))
    {
@@ -299,6 +300,7 @@ RETVAL UeSession::procRecv()
       delete m_pRcvdNwData;
       m_pRcvdNwData = NULL;
       GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_GTPC_MSG_RCVD);
+      UE_SSN_FINISH_TASK(this);
    }
    else
    {
@@ -327,16 +329,13 @@ RETVAL UeSession::procRecv()
 
          m_pScn->m_msgVec[m_lastReqIndx]->m_numSndRetrans++;
          m_retryCnt++;
+
+         // if response is not received within T3 timer expiry
+         // wakeup and retransmit request message
+         m_wakeTime = m_lastRunTime + m_t3time;
+         pauseTask();
          ret = ROK;
       }
-   }
-
-   m_wakeTime = 0;
-   if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
-   {
-      // if response is not received within T3 timer expiry
-      // wakeup and retransmit request message
-      m_wakeTime = m_lastRunTime + m_t3time;
    }
 
    LOG_EXITFN(ret);
@@ -423,7 +422,6 @@ PUBLIC RETVAL UeSession::procIncRspMsg(GtpMsg *pGtpMsg)
    LOG_EXITFN(ret);
 }
 
-
 RETVAL UeSession::procWait()
 {
    LOG_ENTERFN();
@@ -433,6 +431,10 @@ RETVAL UeSession::procWait()
    m_isWaiting = TRUE;
    m_wait = m_pCurrTask->wait();
    m_wakeTime = m_lastRunTime + m_wait;
+   UE_SSN_FINISH_TASK(this);
+
+   // pause this task until wakeup time
+   pauseTask();   
 
    LOG_EXITFN(ROK);
 }
