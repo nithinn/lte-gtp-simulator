@@ -63,10 +63,6 @@ GtpMsg::GtpMsg(Buffer *pBuf)
    }
 }
 
-/**
- * @brief
- *    destructor
- */
 GtpMsg::~GtpMsg()
 {
    for (GtpIeLstItr itr = m_ieLst.begin(); itr != m_ieLst.end(); itr++)

@@ -121,7 +121,6 @@ struct UdpData
    IPEndPoint     peerEp; 
 };
 
-
 #define BUFFER_CPY(_buf, _src, _sz)                     \
 do                                                      \
 {                                                       \

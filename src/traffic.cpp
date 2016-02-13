@@ -85,13 +85,6 @@ BOOL TrafficTask::run()
    LOG_EXITFN(TRUE);
 }
 
-#if 0
-Time_t TrafficTask::wake()
-{
-   return m_lastRunTime + m_ratePeriod; 
-}
-#endif
-
 PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
 {
    LOG_ENTERFN();

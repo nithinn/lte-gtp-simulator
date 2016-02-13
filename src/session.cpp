@@ -203,6 +203,8 @@ VOID UeSession::updateWakeupTime(MsgTaskType_t taskType)
       {
          if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
          {
+            // if response is not received within T3 timer expiry
+            // wakeup and retransmit request message
             m_wakeTime = m_lastRunTime + m_t3time;
          }
 
@@ -300,13 +302,13 @@ RETVAL UeSession::procRecv()
       /* Receive task is run because a GTPC message is received for this
        * session
        */
-      GtpMsg            *pGtpMsg = new GtpMsg(&m_pRcvdNwData->gtpcMsgBuf);
-      GtpMsgType_t      msgType = pGtpMsg->type();
-      GtpMsgCategory_t  msgCat = gtpGetMsgCategory(msgType);
+      GtpMsg gtpMsg(&m_pRcvdNwData->gtpcMsgBuf);
+      GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg.type());
+
       if (msgCat == GTP_MSG_CAT_INITIAL)
       {
          LOG_DEBUG("Processing Incoming Request message");
-         ret = procIncReqMsg(pGtpMsg);
+         ret = procIncReqMsg(&gtpMsg);
          if (ROK != ret)
          {
             LOG_ERROR("Processing Incoming Request Message, Error [%d]", ret);
@@ -316,7 +318,7 @@ RETVAL UeSession::procRecv()
       else if (msgCat == GTP_MSG_CAT_TRIG_RSP)
       {
          LOG_DEBUG("Processing Incoming Response message");
-         ret = procIncRspMsg(pGtpMsg);
+         ret = procIncRspMsg(&gtpMsg);
          if (ROK != ret)
          {
             LOG_ERROR("Processing Incoming Response Message, Error [%d]", ret);
@@ -630,10 +632,8 @@ const IPEndPoint  *pPeerEp
       }
    }
 
-   delete pGtpMsg;
    LOG_EXITVOID();
 }
-
 
 VOID UeSession::encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
    Buffer *pGtpBuf)
