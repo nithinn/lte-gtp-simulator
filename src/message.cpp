@@ -68,12 +68,3 @@ GtpMsg* MsgTask::getGtpMsg()
    return m_pGtpMsg;
 }
 
-MsgTaskType_t MsgTask::type()
-{
-   return m_type;
-}
-
-Time_t MsgTask::wait()
-{
-   return m_wait;
-}

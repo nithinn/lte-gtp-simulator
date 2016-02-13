@@ -85,35 +85,36 @@ BOOL TrafficTask::run()
    LOG_EXITFN(TRUE);
 }
 
+#if 0
 Time_t TrafficTask::wake()
 {
    return m_lastRunTime + m_ratePeriod; 
 }
+#endif
 
 PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
 {
    LOG_ENTERFN();
 
-   GtpTeid_t      teid        = 0;
-   UeSession      *pUeSession = NULL;
-   U8             *pGtpBuf    = NULL;
-   GtpMsgType_t   msgType     = GTPC_MSG_TYPE_INVALID;
+   UeSession      *ueSsn     = NULL;
+   U8             *gtpMsgBuf = NULL;
+   GtpMsgType_t   msgType    = GTPC_MSG_TYPE_INVALID;
    
-   pGtpBuf = pUdpData->buf.pVal;
-   GTP_MSG_GET_TYPE(pGtpBuf, msgType);
+   gtpMsgBuf = pUdpData->buf.pVal;
+   GTP_MSG_GET_TYPE(gtpMsgBuf, msgType);
 
    if (GTPC_MSG_CS_REQ == msgType || GTPC_MSG_FR_REQ == msgType)
    {
-      U8 *pImsiBuf = getImsiBufPtr(&pUdpData->buf);
+      U8 *imsiBuf = getImsiBufPtr(&pUdpData->buf);
 
       GtpImsiKey  imsiKey;
-      GTP_GET_IE_LEN(pImsiBuf, imsiKey.len);
-      MEMCPY(imsiKey.val, pImsiBuf + GTP_IE_HDR_LEN, imsiKey.len);
+      GTP_GET_IE_LEN(imsiBuf, imsiKey.len);
+      MEMCPY(imsiKey.val, imsiBuf + GTP_IE_HDR_LEN, imsiKey.len);
 
-      pUeSession = UeSession::getUeSession(imsiKey);
-      if (NULL == pUeSession)
+      ueSsn = UeSession::getUeSession(imsiKey);
+      if (NULL == ueSsn)
       {
-         pUeSession = UeSession::createUeSession(imsiKey);
+         ueSsn = UeSession::createUeSession(imsiKey);
       }
       else
       {
@@ -122,10 +123,11 @@ PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
    }
    else
    {
-      GTP_MSG_DEC_TEID(pGtpBuf, teid);
+      GtpTeid_t teid = 0;
+      GTP_MSG_DEC_TEID(gtpMsgBuf, teid);
       if (0 != teid)
       {
-         pUeSession = UeSession::getUeSession(teid);
+         ueSsn = UeSession::getUeSession(teid);
       }
       else
       {
@@ -133,18 +135,11 @@ PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
       }
    }
 
-   if (NULL != pUeSession)
+   if (NULL != ueSsn)
    {
-      pUeSession->storeRcvdMsg(&pUdpData->buf, pUdpData->connId,\
-            pUdpData->peerEp);
-      pUeSession->run();
+      ueSsn->storeRcvdMsg(pUdpData);
+      ueSsn->run();
    }
-   else
-   {
-      delete []pUdpData->buf.pVal;
-   }
-
-   delete pUdpData;
 
    LOG_EXITVOID();
 }

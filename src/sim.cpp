@@ -147,11 +147,9 @@ VOID Simulator::genSignallingTraffic()
 
          if (FALSE == t->run())
          {
-            t->stop();
+            t->abort();
          }
       }
-
-      TaskMgr::deleteStoppedTasks();
 
       // read the sockets for keyboard events and gtp messages
       socketPoll(1);

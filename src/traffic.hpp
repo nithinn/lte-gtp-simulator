@@ -35,9 +35,12 @@ class TrafficTask: public Task
    public:
       TrafficTask();
       ~TrafficTask() {}
-
       BOOL run();  
-      Time_t wake();
+
+      inline Time_t wake()
+      {
+         return m_lastRunTime + m_ratePeriod;
+      }
 
    private:
       U32               m_rate;

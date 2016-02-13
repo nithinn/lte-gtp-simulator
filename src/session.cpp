@@ -42,7 +42,7 @@ static UeSessionMap  s_ueSessionMap;
 static U32           g_sessionId = 0;
 static U32           s_seqNum = 0;
 
-#define UE_SSN_FINISH_TASK(_ueSsn)  ((_ueSsn)->m_currTaskIndx++)  
+#define UE_SSN_SET_NEXT_TASK(_ueSsn)  ((_ueSsn)->m_currTaskIndx++)  
 #define IS_SCN_COMPLETED() (m_currTaskIndx == m_pScn->m_msgVec.size())
 
 PRIVATE U32 generateSeqNum()
@@ -140,7 +140,7 @@ BOOL UeSession::run()
    }
 
    m_pCurrTask = m_pScn->m_msgVec[m_currTaskIndx];
-   MsgTaskType_t  taskType = m_pCurrTask->type();
+   MsgTaskType_t taskType = m_pCurrTask->type();
 
    switch (taskType)
    {
@@ -178,51 +178,48 @@ BOOL UeSession::run()
       LOG_ERROR("Terminating UE Session RUN");
       LOG_EXITFN(FALSE);
    }
-   else
-   {
-      pauseTask();
-   }
+   
+   updateWakeupTime(taskType);
+   UE_SSN_SET_NEXT_TASK(this);
+   pauseTask();
 
    return TRUE;
 }
 
-Time_t UeSession::wake()
+VOID UeSession::updateWakeupTime(MsgTaskType_t taskType)
 {
-   Time_t         wakeTime = 0;
-   MsgTaskType_t  taskType = MSG_TASK_INV;
+   LOG_ENTERFN();
 
-   taskType = m_pCurrTask->type();
+   m_wakeTime = 0;
+
    switch (taskType)
    {
       case MSG_TASK_WAIT:
       {
-         wakeTime = m_lastRunTime + m_wait;
+         m_wakeTime = m_lastRunTime + m_wait;
          break;
       }
-
       case MSG_TASK_RECV:
       {
          if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
          {
-            wakeTime = m_lastRunTime + m_t3time;
+            m_wakeTime = m_lastRunTime + m_t3time;
          }
 
          break;
       }
-
       case MSG_TASK_SEND:
       {
-         wakeTime = m_lastRunTime + m_t3time;
+         m_wakeTime = m_lastRunTime + m_t3time;
          break;
       }
-
       default:
       {
          break;
       }
    }
 
-   return wakeTime;
+   LOG_EXITVOID();
 }
 
 RETVAL UeSession::procSend()
@@ -282,7 +279,6 @@ RETVAL UeSession::procSend()
       }
 
       m_pCurrTask->m_numSnd++;
-      UE_SSN_FINISH_TASK(this);
    }
    catch (ErrCodeEn &e)
    {
@@ -423,7 +419,6 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
    }
 
    decAndStoreGtpcIncMsg(pPdn, pGtpMsg, &m_pRcvdNwData->peerEp);
-   UE_SSN_FINISH_TASK(this);
 
    LOG_EXITFN(ROK);
 }
@@ -450,7 +445,6 @@ PUBLIC RETVAL UeSession::procIncRspMsg(GtpMsg *pGtpMsg)
     * details */
    pGtpMsg->decode();
    decAndStoreGtpcIncMsg(m_pCurrPdn, pGtpMsg, &m_pRcvdNwData->peerEp);
-   UE_SSN_FINISH_TASK(this);
 
    LOG_EXITFN(ret);
 }
@@ -468,17 +462,15 @@ RETVAL UeSession::procWait()
    LOG_EXITFN(ROK);
 }
 
-VOID UeSession::storeRcvdMsg(Buffer *pBuf, TransConnId connId,\
-      IPEndPoint peerEp)
+VOID UeSession::storeRcvdMsg(UdpData *rcvdData)
 {
    LOG_ENTERFN();
 
    m_pRcvdNwData = new GtpcNwData;
-   m_pRcvdNwData->gtpcMsgBuf.len = pBuf->len;
-   m_pRcvdNwData->gtpcMsgBuf.pVal = pBuf->pVal;
-   m_pRcvdNwData->peerEp = peerEp;
-   m_pRcvdNwData->connId = connId;
-
+   BUFFER_CPY(&m_pRcvdNwData->gtpcMsgBuf, rcvdData->buf.pVal,\
+         rcvdData->buf.len);
+   m_pRcvdNwData->peerEp = rcvdData->peerEp;
+   m_pRcvdNwData->connId = rcvdData->connId;
    GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_GTPC_MSG_RCVD);
 
    LOG_EXITVOID();

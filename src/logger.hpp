@@ -97,6 +97,7 @@ do                                                                   \
    }                                                                 \
 }
 
+#ifdef DEBUG
 #define LOG_DEBUG(...)                                               \
 {                                                                    \
    if (LOG_LVL_DEBUG <= Logger::m_logLevel)                          \
@@ -104,6 +105,9 @@ do                                                                   \
       Logger::log(LOG_LVL_DEBUG, __FILE__, __LINE__, __VA_ARGS__);   \
    }                                                                 \
 }
+#else
+#define LOG_DEBUG(...)
+#endif
 
 #define LOG_TRACE(...)                                               \
 {                                                                    \

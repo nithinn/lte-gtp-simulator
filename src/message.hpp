@@ -33,12 +33,13 @@ typedef enum
 class MsgTask
 {
    public:
-      GtpMsg*        getGtpMsg();
-      MsgTaskType_t  type();
-      Time_t         wait();
       MsgTask();
-      MsgTask(GtpMsg*, MsgTaskType_t);
       ~MsgTask();
+      MsgTask(GtpMsg*, MsgTaskType_t);
+
+      GtpMsg*        getGtpMsg();
+      inline MsgTaskType_t type() { return m_type; }
+      inline Time_t wait() { return m_wait; }
 
       Counter        m_numSnd;
       Counter        m_numRcv;

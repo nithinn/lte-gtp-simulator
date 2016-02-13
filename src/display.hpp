@@ -25,7 +25,7 @@ class Display: virtual public Task
       static Display* getInstance();
       ~Display();
       BOOL run();  
-      Time_t wake();
+      inline Time_t wake() { return m_lastRunTime + m_dispIntvl; }
       VOID createMsgDirLst();
 
    private:

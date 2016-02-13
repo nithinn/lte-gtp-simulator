@@ -220,8 +220,3 @@ Counter Display::getStats(GtpStat_t type)
    return m_pStats->getStats(type);
 }
 
-Time_t Display::wake()
-{
-   return m_lastRunTime + m_dispIntvl;
-}
-

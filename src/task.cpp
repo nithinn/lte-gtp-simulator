@@ -51,6 +51,7 @@ VOID Task::stop()
 VOID Task::abort()
 {
    this->stop();
+   g_allTasks.erase(m_allTaskItr);
    delete this;
 }
 
@@ -91,19 +92,18 @@ TaskList* TaskMgr::getAllTasks()
 
 VOID TaskMgr::resumePausedTasks()
 {
-   TaskList *pPausedTasks = getPausedTasks();
-
    Time_t currTime = getMilliSeconds();
+   TaskList *pPausedTasks = getPausedTasks();
+   TaskListItr itr = pPausedTasks->begin();
 
-   TaskListItr nextItr = pPausedTasks->begin();
-   while (nextItr != pPausedTasks->end())
+   while (itr != pPausedTasks->end())
    {
-      TaskListItr curItr = nextItr++;
-      Task *pTask = *curItr;
+      Task *t = *itr;
+      itr++;
 
-      if (pTask->wake() <= currTime)
+      if (t->wake() <= currTime)
       {
-         pTask->resumeTask();
+         t->resumeTask();
       }
    }
 }
@@ -116,31 +116,7 @@ VOID TaskMgr::deleteAllTasks()
    while (itr != pTasks->end())
    {
       Task *tmp = *itr;
-      itr = pTasks->erase(itr);
+      itr++;
       tmp->abort();
    }
-}
-
-VOID TaskMgr::deleteStoppedTasks()
-{
-   LOG_ENTERFN();
-
-   TaskList *pTasks = getAllTasks();
-   TaskListItr itr = pTasks->begin();
-
-   while (itr != pTasks->end())
-   {
-      Task *tmp = *itr;
-      if (tmp->m_taskState == TASK_STATE_STOPPED)
-      {
-         itr = pTasks->erase(itr);
-         tmp->abort();
-      }
-      else
-      {
-         itr++;
-      }
-   }
-
-   LOG_EXITVOID();
 }

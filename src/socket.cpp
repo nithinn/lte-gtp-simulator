@@ -445,16 +445,20 @@ VOID GSimSocket::procSockBuf()
 
    while (itr != m_sockBufLst.end())
    {
-      GSimSockBuf    *pSockBuf = *itr;
-      U8             *pBuf = pSockBuf->pBuf;
-      U32            msgLen = getFullGtpMsgLen(pBuf, pSockBuf->pendingBytes);
+      GSimSockBuf *pSockBuf = *itr;
+      U8          *pBuf = pSockBuf->pBuf;
+      U32         msgLen = getFullGtpMsgLen(pBuf, pSockBuf->pendingBytes);
 
       if (msgLen)
       {
-         UdpData *pUdpData = NULL;
+         UdpData udpData;
+ 
+         udpData.connId = pSockBuf->connId;
+         udpData.peerEp = pSockBuf->peerEp;
+         udpData.buf.len = msgLen;
+         udpData.buf.pVal = pBuf;
 
-         formUdpData(pBuf, msgLen, pSockBuf, &pUdpData);
-         procGtpcMsg(pUdpData);
+         procGtpcMsg(&udpData);
 
          pBuf += msgLen;
          pSockBuf->pendingBytes -= msgLen;

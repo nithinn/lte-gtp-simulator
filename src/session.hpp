@@ -83,30 +83,6 @@ typedef GtpcPdnLst::iterator        GtpcPdnLstItr;
 typedef std::list<GtpBearer *>      GtpBearerLst;
 typedef GtpBearerLst::iterator      GtpBearerLstItr;
 
-#if 0
-class GtpcTun
-{
-   public:
-      GtpcTun(GtpcPdn *pPdn, GtpTeid_t);
-
-      GtpTeid_t   m_locTeid;
-      GtpTeid_t   m_remTeid;
-
-      IPEndPoint  m_localEp;
-      IPEndPoint  m_peerEp;
-
-      UeSession   *m_pUeSession;
-      GtpcPdn     *m_pPdn;
-
-      U32         m_refCount; /* On S11 and S4 interface the multiple PDNs
-                               * will point to same GtpcTun object, while
-                               * while assigning the cTun to a particular PDN
-                               * and when deleting check the refcount
-                               */
-   friend class UeSession;
-};
-#endif
-
 /**
  * @struct GTP-C message received from peer or sent to the peer
  */
@@ -134,7 +110,9 @@ class UeSession: public Task
       ~UeSession();
 
       BOOL              run();  
-      Time_t            wake();
+
+      inline Time_t wake() { return m_wakeTime; }
+
       static UeSession* createUeSession(GtpImsiKey);
       static UeSession* getUeSession(GtpTeid_t);
       static UeSession* getUeSession(GtpImsiKey);
@@ -143,7 +121,7 @@ class UeSession: public Task
       GtpcPdn*          createPdn();
       VOID              deletePdn();
       GtpcPdnLst*       getPdnList();
-      VOID              storeRcvdMsg(Buffer*, TransConnId, IPEndPoint);
+      VOID              storeRcvdMsg(UdpData*);
 
    private:
 #define GSIM_UE_SSN_WAITING_FOR_RSP       (1 << 0)
@@ -170,6 +148,7 @@ class UeSession: public Task
       MsgTask           *m_pCurrTask;
       GtpcPdn           *m_pCurrPdn;
       Scenario          *m_pScn;
+      Time_t            m_wakeTime;
 
       VOID              storeGtpcOutMsg(GtpcPdn *pPdn, GtpMsg  *pGtpMsg);
       VOID              encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
@@ -183,6 +162,7 @@ class UeSession: public Task
       RETVAL            procIncReqMsg(GtpMsg *pGtpMsg);
       RETVAL            procIncRspMsg(GtpMsg *pGtpMsg);
       GtpcTun*          createCTun(GtpcPdn *pPdn);
+      VOID              updateWakeupTime(MsgTaskType_t taskType);
 };
 
 EXTERN UeSession* getUeSession(const U8* pImsi);

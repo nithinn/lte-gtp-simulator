@@ -38,7 +38,6 @@ class TaskMgr
       static TaskList* getPausedTasks();
       static TaskList* getAllTasks();
       static VOID resumePausedTasks();
-      static VOID deleteStoppedTasks();
       static VOID deleteAllTasks();
 };
 
