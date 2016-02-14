@@ -125,8 +125,7 @@ class UeSession: public Task
 
    private:
 #define GSIM_UE_SSN_WAITING_FOR_RSP       (1 << 0)
-#define GSIM_UE_SSN_GTPC_MSG_RCVD         (1 << 1)
-#define GSIM_UE_SSN_SEQ_NUM_SET           (1 << 2)
+#define GSIM_UE_SSN_SEQ_NUM_SET           (1 << 1)
       U32               m_bitmask;
       GtpImsiKey        m_imsiKey;
       U32               m_n3req;
@@ -142,7 +141,6 @@ class UeSession: public Task
       GtpBearerLst      m_bearerLst;
       GtpSeqNumber_t    m_currSeqNum;
       U32               m_currTaskIndx;
-      U32               m_lastReqIndx;
       Time_t            m_wakeTime;
       GtpcNwData        *m_pSentNwData;
       GtpcNwData        *m_pRcvdNwData;
@@ -163,6 +161,10 @@ class UeSession: public Task
       RETVAL            procIncReqMsg(GtpMsg *pGtpMsg);
       RETVAL            procIncRspMsg(GtpMsg *pGtpMsg);
       GtpcTun*          createCTun(GtpcPdn *pPdn);
+      RETVAL            procOutRspMsg(GtpMsg *gtpMsg);
+      RETVAL            procOutReqMsg(GtpMsg *gtpMsg);
+      RETVAL            procOutReqTimeout();
+      MsgTaskType_t     nextTaskType();
 };
 
 EXTERN UeSession* getUeSession(const U8* pImsi);

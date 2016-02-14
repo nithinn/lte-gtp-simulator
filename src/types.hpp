@@ -119,6 +119,11 @@ struct UdpData
    Buffer         buf;
    TransConnId    connId;
    IPEndPoint     peerEp; 
+
+   ~UdpData()
+   {
+      delete[] buf.pVal;
+   }
 };
 
 #define BUFFER_CPY(_buf, _src, _sz)                     \

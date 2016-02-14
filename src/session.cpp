@@ -84,13 +84,13 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
  */
 UeSession::~UeSession()
 {
+   s_ueSessionMap.erase(m_imsiKey);
+
    if (NULL != m_pRcvdNwData)
       delete m_pRcvdNwData;
 
    if (NULL != m_pSentNwData)
       delete m_pSentNwData;
-
-   s_ueSessionMap.erase(m_imsiKey);
 
    for (GtpcPdnLstItr pPdn = m_pdnLst.begin(); pPdn != m_pdnLst.end(); pPdn++)
    {
@@ -149,12 +149,6 @@ BOOL UeSession::run()
       {
          LOG_TRACE("Processing Send() Task");
          ret = procSend();
-         if (ROK == ret)
-         {
-            UE_SSN_FINISH_TASK(this);
-            pauseTask();
-         }
-
          break;
       }
       case MSG_TASK_WAIT:
@@ -190,75 +184,193 @@ RETVAL UeSession::procSend()
 {
    LOG_ENTERFN();
 
+   RETVAL   ret = ROK;
+
+   if GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP)
+   {
+      LOG_DEBUG("Processing Request Timeout")
+      ret = procOutReqTimeout();
+   }
+   else
+   {
+      GtpMsg *gtpMsg = m_pCurrTask->getGtpMsg();
+      GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg->type());
+      if (GTP_MSG_CAT_INITIAL == msgCat)
+      {
+         ret = procOutReqMsg(gtpMsg);
+         if (ROK != ret)
+         {
+            LOG_ERROR("Sending request message to peer, Error [%d]", ret);
+         }
+      }
+      else
+      {
+         ret = procOutRspMsg(gtpMsg);
+         if (ROK != ret)
+         {
+            LOG_ERROR("Sending response message to peer, Error [%d]", ret);
+         }
+      }
+   }
+
+   LOG_EXITFN(ret);
+}
+
+RETVAL UeSession::procOutReqMsg(GtpMsg *gtpMsg)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
    GtpcPdn  *pPdn = NULL;
 
-   try
+   if (GTPC_MSG_CS_REQ == gtpMsg->type())
    {
-      GtpMsgType_t msgType = m_pCurrTask->getGtpMsg()->type();
+      LOG_DEBUG("Creating PDN Connection");
+      Stats::incStats(GSIM_STAT_NUM_SESSIONS_CREATED);
+      Stats::incStats(GSIM_STAT_NUM_SESSIONS);
+      pPdn = createPdn();
+      m_pdnLst.push_back(pPdn);
+      m_pCurrPdn = pPdn;
+   }
+   else
+   {
+      pPdn = m_pCurrPdn;
+   }
 
-      if (GTPC_MSG_CS_REQ == msgType)
-      {
-         LOG_DEBUG("Creating PDN Connection");
-         Stats::incStats(GSIM_STAT_NUM_SESSIONS_CREATED);
-         Stats::incStats(GSIM_STAT_NUM_SESSIONS);
-         pPdn = createPdn();
-         m_pdnLst.push_back(pPdn);
-         m_pCurrPdn = pPdn;
-      }
-      else
-      {
-         pPdn = m_pCurrPdn;
-      }
+   LOG_DEBUG("Storing OUT Message");
+   storeGtpcOutMsg(pPdn, gtpMsg);
 
-      LOG_DEBUG("Storing OUT Message");
-      storeGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg());
+   LOG_DEBUG("Encoding OUT Message");
+   GtpcNwData *pNwData = new GtpcNwData;
+   encGtpcOutMsg(pPdn, gtpMsg, &pNwData->gtpcMsgBuf);
 
-      LOG_DEBUG("Encoding OUT Message");
-      GtpcNwData *pNwData = new GtpcNwData;
-      encGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg(), &pNwData->gtpcMsgBuf);
+   /* initial message, send the message over default send socket */
+   pNwData->connId = 0;
+   pNwData->peerEp = m_peerEp;
 
-      GtpMsgCategory_t msgCat = gtpGetMsgCategory(msgType);
-      if (GTP_MSG_CAT_INITIAL == msgCat)
-      {
-         /* initial message, send the message over default send socket */
-         pNwData->connId = 0;
-         pNwData->peerEp = m_peerEp;
-      }
-      else
-      {
-         /* send the response/triggered message over the same socket
-          * over which the request/command is received
-          */
-         pNwData->connId = m_rcvdReqConnId;
-         pNwData->peerEp = pPdn->pCTun->m_peerEp;
-      }
+   LOG_DEBUG("Sending GTPC Message [%s]", gtpGetMsgName(msgType));
+   sendMsg(pNwData->connId, &pNwData->peerEp, &pNwData->gtpcMsgBuf);
+   m_pCurrTask->m_numSnd++;
 
-      LOG_DEBUG("Sending GTPC Message [%s]", gtpGetMsgName(msgType));
-      sendMsg(pNwData->connId, &pNwData->peerEp, &pNwData->gtpcMsgBuf);
+   if (NULL != m_pSentNwData)
+   {
+      delete m_pSentNwData;
+      m_pSentNwData = NULL;
+   }
 
-      if (NULL != m_pSentNwData)
-      {
-         delete m_pSentNwData;
-      }
+   m_pSentNwData = pNwData;
+   GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
 
-      m_pSentNwData = pNwData;
-      if (GTP_MSG_CAT_INITIAL == msgCat)
-      {
-         m_lastReqIndx = m_currTaskIndx;
-         GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
-      }
+   // update when the task thas to wakeup next time
+   m_wakeTime = m_lastRunTime + m_t3time;
+   pauseTask();
 
-      // update when the task thas to wakeup next time
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief Request timeout handler. If maximum retries exceeds returns
+ *    failure, so that the session is terminated. otherwise resends
+ *    the request message and sets the next wakeup time
+ * 
+ * @return 
+ */
+RETVAL UeSession::procOutReqTimeout()
+{
+   LOG_ENTERFN();
+
+   RETVAL ret = ROK;
+
+   /* Recived task is run because GTP-C message request timedout
+    * waiting for a response, retransmit the request message
+    */
+   if (m_retryCnt >= m_n3req)
+   {
+      LOG_DEBUG("Maximum Retries reached");
+      m_pCurrTask->m_numTimeOut++;
+      Stats::incStats(GSIM_STAT_NUM_SESSIONS_FAIL);
+
+      delete m_pSentNwData;
+      m_pSentNwData = NULL;
+      ret = ERR_MAX_RETRY_EXCEEDED;
+   }
+   else
+   {
+      /* we have already processed this message, the task is run again
+       * after retransmission timeout expiry
+       */
+      LOG_DEBUG("Retransmissing GTP Message");
+      sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp,\
+            &m_pSentNwData->gtpcMsgBuf);
+
+      m_pCurrTask->m_numSndRetrans++;
+      m_retryCnt++;
+
+      // if response is not received within T3 timer expiry
+      // wakeup and retransmit request message
       m_wakeTime = m_lastRunTime + m_t3time;
-      m_pCurrTask->m_numSnd++;
-   }
-   catch (ErrCodeEn &e)
-   {
-      LOG_ERROR("GTP send() processing, error [%d]", e);
-      return e;
+      pauseTask();
    }
 
-   LOG_EXITFN(ROK);
+   LOG_EXITFN(ret);
+}
+
+RETVAL UeSession::procOutRspMsg(GtpMsg *gtpMsg)
+{
+   LOG_ENTERFN();
+
+   RETVAL   ret = ROK;
+   GtpcPdn  *pPdn = m_pCurrPdn;
+   
+   LOG_DEBUG("Encoding OUT Message");
+   GtpcNwData *pNwData = new GtpcNwData;
+   encGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg(), &pNwData->gtpcMsgBuf);
+
+   /* send the response/triggered message over the same socket
+    * over which the request/command is received
+    */
+   pNwData->connId = m_rcvdReqConnId;
+   pNwData->peerEp = pPdn->pCTun->m_peerEp;
+
+   LOG_DEBUG("Sending GTPC Message [%s]", gtpGetMsgName(msgType));
+   sendMsg(pNwData->connId, &pNwData->peerEp, &pNwData->gtpcMsgBuf);
+   m_pCurrTask->m_numSnd++;
+
+   if (NULL != m_pSentNwData)
+   {
+      delete m_pSentNwData;
+   }
+
+   m_wakeTime = 0;
+   m_pSentNwData = pNwData;
+
+   /* if the next task is a recieve task type is receive, then
+    * stop this task until a message is received from network
+    */
+   if (MSG_TASK_RECV == nextTaskType())
+   {
+      stop();
+   }
+
+   UE_SSN_FINISH_TASK(this);
+   LOG_EXITFN(ret);
+}
+
+/**
+ * @brief returns the type of next task to be scheduled
+ *
+ * @return 
+ */
+MsgTaskType_t UeSession::nextTaskType()
+{
+   MsgTaskType_t taskType = MSG_TASK_INV;
+
+   if (m_currTaskIndx + 1 < m_pScn->m_msgVec.size())
+   {
+      taskType = m_pScn->m_msgVec[m_currTaskIndx + 1]->type();
+   }
+
+   return taskType;
 }
 
 RETVAL UeSession::procRecv()
@@ -266,77 +378,38 @@ RETVAL UeSession::procRecv()
    LOG_ENTERFN();
 
    RETVAL ret = ROK;
+
+   /* Receive task is run because a GTPC message is received for this
+    * session
+    */
+   GtpMsg gtpMsg(&m_pRcvdNwData->gtpcMsgBuf);
+   GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg.type());
+
+   if (msgCat == GTP_MSG_CAT_INITIAL)
+   {
+      LOG_DEBUG("Processing Incoming Request message");
+      ret = procIncReqMsg(&gtpMsg);
+      if (ROK != ret)
+      {
+         LOG_ERROR("Processing Incoming Request Message, Error [%d]", ret);
+      }
+   }
+   else if (msgCat == GTP_MSG_CAT_TRIG_RSP)
+   {
+      LOG_DEBUG("Processing Incoming Response message");
+      ret = procIncRspMsg(&gtpMsg);
+      if (ROK != ret)
+      {
+         LOG_ERROR("Processing Incoming Response Message, Error [%d]", ret);
+      }
+
+      GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
+   }
+
+   delete m_pRcvdNwData;
+   m_pRcvdNwData = NULL;
    m_wakeTime = 0;
-
-   if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_GTPC_MSG_RCVD))
-   {
-      /* Receive task is run because a GTPC message is received for this
-       * session
-       */
-      GtpMsg gtpMsg(&m_pRcvdNwData->gtpcMsgBuf);
-      GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg.type());
-
-      if (msgCat == GTP_MSG_CAT_INITIAL)
-      {
-         LOG_DEBUG("Processing Incoming Request message");
-         ret = procIncReqMsg(&gtpMsg);
-         if (ROK != ret)
-         {
-            LOG_ERROR("Processing Incoming Request Message, Error [%d]", ret);
-         }
-      }
-      else if (msgCat == GTP_MSG_CAT_TRIG_RSP)
-      {
-         LOG_DEBUG("Processing Incoming Response message");
-         ret = procIncRspMsg(&gtpMsg);
-         if (ROK != ret)
-         {
-            LOG_ERROR("Processing Incoming Response Message, Error [%d]", ret);
-         }
-
-         GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
-      }
-      
-      delete m_pRcvdNwData;
-      m_pRcvdNwData = NULL;
-      GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_GTPC_MSG_RCVD);
-      UE_SSN_FINISH_TASK(this);
-   }
-   else
-   {
-      /* Recived task is run because GTP-C message request timedout
-       * waiting for a response, retransmit the request message
-       */
-      if (m_retryCnt >= m_n3req)
-      {
-         LOG_DEBUG("Maximum Retries reached");
-
-         m_lastReqIndx = 0;
-         GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
-         m_pScn->m_msgVec[m_lastReqIndx]->m_numTimeOut++;
-         Stats::incStats(GSIM_STAT_NUM_SESSIONS_FAIL);
-         ret = ERR_MAX_RETRY_EXCEEDED;
-      }
-
-      if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
-      {
-         /* we have already processed this message, the task is run again
-          * after retransmission timeout expiry
-          */
-         LOG_DEBUG("Retransmissing GTP Message");
-         sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp,\
-               &m_pSentNwData->gtpcMsgBuf);
-
-         m_pScn->m_msgVec[m_lastReqIndx]->m_numSndRetrans++;
-         m_retryCnt++;
-
-         // if response is not received within T3 timer expiry
-         // wakeup and retransmit request message
-         m_wakeTime = m_lastRunTime + m_t3time;
-         pauseTask();
-         ret = ROK;
-      }
-   }
+   UE_SSN_FINISH_TASK(this);
 
    LOG_EXITFN(ret);
 }
@@ -367,7 +440,6 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
       }
       else
       {
-         m_lastReqIndx = m_currTaskIndx;
          m_rcvdReqConnId = m_pRcvdNwData->connId;
          m_pCurrTask->m_numRcv++;
          m_currSeqNum = rcvdSeqNum;
@@ -376,7 +448,7 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
    }
 
    pGtpMsg->decode();
-   GtpcPdn  *pPdn = NULL;
+   GtpcPdn *pPdn = NULL;
    if (GTPC_MSG_CS_REQ == rcvdMsgType)
    {
       LOG_DEBUG("Creating PDN Connection");
@@ -448,7 +520,15 @@ VOID UeSession::storeRcvdMsg(UdpData *rcvdData)
          rcvdData->buf.len);
    m_pRcvdNwData->peerEp = rcvdData->peerEp;
    m_pRcvdNwData->connId = rcvdData->connId;
-   GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_GTPC_MSG_RCVD);
+
+   if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
+   {
+      /* a response is received while waiting for response.
+       * finish the current task (request sending task) and move
+       * to response handling task
+       */
+      UE_SSN_FINISH_TASK(this);
+   }
 
    LOG_EXITVOID();
 }
@@ -542,11 +622,7 @@ GtpcPdn* UeSession::createPdn()
    LOG_EXITFN(pPdn);
 }
 
-VOID UeSession::storeGtpcOutMsg\
-(
-GtpcPdn     *pPdn,
-GtpMsg      *pGtpMsg
-)
+VOID UeSession::storeGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg)
 {
    LOG_ENTERFN();
 

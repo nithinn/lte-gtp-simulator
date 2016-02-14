@@ -71,8 +71,13 @@ VOID Task::resumeTask()
    {
       g_pausedTasks.erase(m_pausedTaskItr);
       m_runningTaskItr = g_runningTasks.insert(g_runningTasks.end(), this);
-      m_taskState = TASK_STATE_RUNNING;
    }
+   else if (TASK_STATE_STOPPED == m_taskState)
+   {
+      m_runningTaskItr = g_runningTasks.insert(g_runningTasks.end(), this);
+   }
+
+   m_taskState = TASK_STATE_RUNNING;
 }
 
 TaskList* TaskMgr::getRunningTasks()

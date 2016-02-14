@@ -147,9 +147,7 @@ PRIVATE RETVAL sendMsgV4(GSimSocket *pSock, IPEndPoint *pDst, UdpData *pData)
       LOG_EXITFN(ERR_SYS_SOCK_SEND);
    }
 
-   delete []pData->buf.pVal;
    delete pData;
-
    LOG_EXITFN(ROK);
 }
 
@@ -169,6 +167,7 @@ PRIVATE RETVAL sendMsgV6(GSimSocket *pSock, IPEndPoint *pDst, UdpData *pData)
       return ROK;
    }
 
+   delete pData;
    return RFAILED;
 }
 
