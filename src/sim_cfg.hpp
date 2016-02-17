@@ -101,7 +101,7 @@ class Config
       VOID setTraceMsg(BOOL);
       VOID setTraceMsgFile(string);
 
-      const IpAddr* getRemoteIpAddr();
+      IpAddr getRemoteIpAddr();
       string getRemIpAddrStr();
       const IpAddr* getLocalIpAddr();
       U32 getN3Requests();

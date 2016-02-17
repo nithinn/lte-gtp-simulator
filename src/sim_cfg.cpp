@@ -584,9 +584,9 @@ VOID Config::setConfig(S32 numArgs, S8** cmdLineArgs) throw (ErrCodeEn)
    }
 }
 
-const IpAddr* Config::getRemoteIpAddr()
+IpAddr Config::getRemoteIpAddr()
 {
-    return &(this->remIpAddr);
+    return this->remIpAddr;
 }
 
 const IpAddr* Config::getLocalIpAddr()
