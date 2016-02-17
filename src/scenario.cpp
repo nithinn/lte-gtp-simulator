@@ -109,7 +109,6 @@ VOID Scenario::init(const S8 *pScnFile) throw (ErrCodeEn)
  */
 BOOL Scenario::run()
 {
-   std::cout << "Running Scenario Task" << std::endl;
    return true;
 }
 
