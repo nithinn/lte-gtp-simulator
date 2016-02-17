@@ -132,7 +132,7 @@ VOID Display::init()
    CLEAR_SCREEN();
 }
 
-BOOL Display::run()
+RETVAL Display::run()
 {
    LOG_ENTERFN();
 
@@ -140,7 +140,7 @@ BOOL Display::run()
    disp();
    pauseTask();
 
-   LOG_EXITFN(TRUE);
+   LOG_EXITFN(ROK);
 }
 
 VOID Display::disp()

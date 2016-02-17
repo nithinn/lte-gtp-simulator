@@ -274,3 +274,5 @@ do                                                 \
 {                                                  \
    GSIM_ENC_U32(_buf, _v);                         \
 } while (0);
+
+#define GTP_SET_SEQN_MSB(_v)  ((_v) |= (1 << 15))

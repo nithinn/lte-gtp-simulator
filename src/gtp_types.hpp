@@ -136,9 +136,10 @@ typedef enum
 typedef enum
 {
    GTP_MSG_CAT_INV,
-   GTP_MSG_CAT_INITIAL,
-   GTP_MSG_CAT_TRIG,
-   GTP_MSG_CAT_TRIG_RSP,
+   GTP_MSG_CAT_REQ,
+   GTP_MSG_CAT_TRIG_REQ,
+   GTP_MSG_CAT_CMD,
+   GTP_MSG_CAT_RSP,
    GTP_MSG_CAT_MAX
 } GtpMsgCategory_t;
 
