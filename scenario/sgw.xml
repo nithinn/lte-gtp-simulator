@@ -56,7 +56,9 @@
   </recv>
 
   <send response="dsrsp">
-     <ie type="cause" instance="0"> </ie>
+     <ie type="cause" instance="0">
+        <param type="cause_value" value="16"> </param>
+     </ie>
   </send>
 </scenario>
 
