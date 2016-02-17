@@ -1263,7 +1263,7 @@ RETVAL GtpCause::buildIe(IeParamLst *paramLst)
    {
       IeParam *param = *b;
 
-      if (STRCASECMP(param->paramName, "value") == 0)
+      if (STRCASECMP(param->paramName, "cause_value") == 0)
       {
          GtpCause_t cause = (GtpCause_t)gtpConvStrToU32(\
                (const S8*)param->buf.pVal, param->buf.len);
@@ -1321,11 +1321,9 @@ RETVAL GtpCause::buildIe(IeParamLst *paramLst)
       delete *b;
    }
 
-   if (!errPres)
-   {
-      GSIM_ENC_U8((m_val + 1), errPres);
-      this->m_hdr.len += 1;
-   }
+   /* encode pce, bce, and cs bits */
+   GSIM_ENC_U8((m_val + 1), errPres);
+   this->m_hdr.len += 1;
 
    delete paramLst;
    LOG_EXITFN(ret);

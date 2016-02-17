@@ -39,6 +39,7 @@ using std::vector;
 #include "keyboard.hpp"
 #include "display.hpp"
 #include "scenario.hpp"
+#include "gtp_peer.hpp"
 #include "sim.hpp"
 
 EXTERN VOID cleanupUeSessions();
@@ -106,10 +107,18 @@ VOID Simulator::run()
       {
          LOG_ERROR("Traffic Task Init");
       }
+
+      /* peer information is maintianed to managing sequence numbers
+       * and ordering of message
+       */
+      IPEndPoint peer;
+      peer.ipAddr = Config::getInstance()->getRemoteIpAddr();
+      peer.port = Config::getInstance()->getRemoteGtpcPort();
+      addPeerData(peer);
    }
 
    LOG_DEBUG("Generating Signalling traffic");
-   genSignallingTraffic();
+   startScheduler();
 
    pKb->abort();
    TaskMgr::deleteAllTasks();
@@ -117,7 +126,7 @@ VOID Simulator::run()
    LOG_EXITVOID();
 }
 
-VOID Simulator::genSignallingTraffic()
+VOID Simulator::startScheduler()
 {
    LOG_ENTERFN();
 
@@ -145,7 +154,7 @@ VOID Simulator::genSignallingTraffic()
          // task list to paused task list.
          itr++;
 
-         if (FALSE == t->run())
+         if (ROK != t->run())
          {
             t->abort();
          }

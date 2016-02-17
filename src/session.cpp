@@ -34,21 +34,17 @@
 #include "sim_cfg.hpp"
 #include "message.hpp"
 #include "gtp_stats.hpp"
+#include "gtp_peer.hpp"
 #include "scenario.hpp"
 #include "tunnel.hpp"
+#include "traffic.hpp"
 #include "session.hpp"
 
 static UeSessionMap  s_ueSessionMap;
 static U32           g_sessionId = 0;
-static U32           s_seqNum = 0;
 
 #define UE_SSN_FINISH_TASK(_ueSsn)  ((_ueSsn)->m_currTaskIndx++)  
 #define IS_SCN_COMPLETED() (m_currTaskIndx == m_pScn->m_msgVec.size())
-
-PRIVATE U32 generateSeqNum()
-{
-   return ++s_seqNum;
-}
 
 /**
  * @brief
@@ -64,7 +60,7 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_t3time = Config::getInstance()->getT3Timer();
    m_sessionId = ++g_sessionId;
    m_nodeType = Config::getInstance()->getNodeType();
-   m_peerEp.ipAddr = *(Config::getInstance()->getRemoteIpAddr());
+   m_peerEp.ipAddr = Config::getInstance()->getRemoteIpAddr();
    m_peerEp.port = Config::getInstance()->getRemoteGtpcPort();
    m_isWaiting = FALSE;
    m_currTaskIndx = 0;
@@ -118,7 +114,7 @@ UeSession::~UeSession()
    LOG_DEBUG("Deleting UE Session [%d]", m_sessionId);
 }
 
-BOOL UeSession::run()
+RETVAL UeSession::run()
 {
    RETVAL         ret = ROK;
 
@@ -137,7 +133,7 @@ BOOL UeSession::run()
 
       Stats::incStats(GSIM_STAT_NUM_SESSIONS_SUCC);
       Stats::decStats(GSIM_STAT_NUM_SESSIONS);
-      LOG_EXITFN(FALSE);
+      LOG_EXITFN(ROK_OVER);
    }
 
    m_pCurrTask = m_pScn->m_msgVec[m_currTaskIndx];
@@ -153,6 +149,7 @@ BOOL UeSession::run()
       }
       case MSG_TASK_WAIT:
       {
+
          LOG_TRACE("Processing Wait() Task");
          ret = procWait();
          break;
@@ -171,36 +168,58 @@ BOOL UeSession::run()
       }
    }
    
-   if (ROK != ret)
-   {
-      LOG_ERROR("Terminating UE Session RUN");
-      LOG_EXITFN(FALSE);
-   }
-   
-   LOG_EXITFN(TRUE);
+   LOG_EXITFN(ret);
 }
 
 RETVAL UeSession::procSend()
 {
    LOG_ENTERFN();
 
-   RETVAL   ret = ROK;
+   RETVAL ret = ROK;
 
    if GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP)
    {
       LOG_DEBUG("Processing Request Timeout")
       ret = procOutReqTimeout();
+      if (ERR_MAX_RETRY_EXCEEDED == ret)
+      {
+         m_pCurrTask->m_numTimeOut++;
+         Stats::incStats(GSIM_STAT_NUM_SESSIONS_FAIL);
+         delete m_pSentNwData;
+         m_pSentNwData = NULL;
+
+         /* request retry exceeded n3-requests. terminate the 
+          * UE session Task
+          */
+         ret = ROK_OVER;
+      }
    }
    else
    {
       GtpMsg *gtpMsg = m_pCurrTask->getGtpMsg();
       GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg->type());
-      if (GTP_MSG_CAT_INITIAL == msgCat)
+      if (GTP_MSG_CAT_REQ == msgCat)
       {
+         /* a request task gets over only when a timeout occurs after
+          * maximum n3-request retris, or when an associated response
+          * message is received. so after processing sending the request
+          * out do not finish the task
+          */
          ret = procOutReqMsg(gtpMsg);
          if (ROK != ret)
          {
+            /* sending a request message failed, terminate the UE
+             * Session Task
+             */
+            ret = ROK_OVER;
             LOG_ERROR("Sending request message to peer, Error [%d]", ret);
+         }
+         else
+         {
+            /* pausing this task until next wakeup time, for retransmissing
+             * the request message
+             */
+            pauseTask();
          }
       }
       else
@@ -208,7 +227,16 @@ RETVAL UeSession::procSend()
          ret = procOutRspMsg(gtpMsg);
          if (ROK != ret)
          {
+            /* sending a response message failed, terminate the UE
+             * Session Task
+             */
+            ret = ROK_OVER;
             LOG_ERROR("Sending response message to peer, Error [%d]", ret);
+         }
+         else
+         {
+            UE_SSN_FINISH_TASK(this);
+            this->stop();
          }
       }
    }
@@ -242,7 +270,8 @@ RETVAL UeSession::procOutReqMsg(GtpMsg *gtpMsg)
 
    LOG_DEBUG("Encoding OUT Message");
    GtpcNwData *pNwData = new GtpcNwData;
-   encGtpcOutMsg(pPdn, gtpMsg, &pNwData->gtpcMsgBuf);
+   m_currSeqNum = generateSeqNum(&m_peerEp, GTP_MSG_CAT_REQ);
+   encGtpcOutMsg(pPdn, gtpMsg, &pNwData->gtpcMsgBuf, &m_peerEp);
 
    /* initial message, send the message over default send socket */
    pNwData->connId = 0;
@@ -263,7 +292,6 @@ RETVAL UeSession::procOutReqMsg(GtpMsg *gtpMsg)
 
    // update when the task thas to wakeup next time
    m_wakeTime = m_lastRunTime + m_t3time;
-   pauseTask();
 
    LOG_EXITFN(ret);
 }
@@ -287,11 +315,6 @@ RETVAL UeSession::procOutReqTimeout()
    if (m_retryCnt >= m_n3req)
    {
       LOG_DEBUG("Maximum Retries reached");
-      m_pCurrTask->m_numTimeOut++;
-      Stats::incStats(GSIM_STAT_NUM_SESSIONS_FAIL);
-
-      delete m_pSentNwData;
-      m_pSentNwData = NULL;
       ret = ERR_MAX_RETRY_EXCEEDED;
    }
    else
@@ -324,7 +347,8 @@ RETVAL UeSession::procOutRspMsg(GtpMsg *gtpMsg)
    
    LOG_DEBUG("Encoding OUT Message");
    GtpcNwData *pNwData = new GtpcNwData;
-   encGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg(), &pNwData->gtpcMsgBuf);
+   encGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg(), &pNwData->gtpcMsgBuf,\
+         &m_peerEp);
 
    /* send the response/triggered message over the same socket
     * over which the request/command is received
@@ -344,33 +368,7 @@ RETVAL UeSession::procOutRspMsg(GtpMsg *gtpMsg)
    m_wakeTime = 0;
    m_pSentNwData = pNwData;
 
-   /* if the next task is a recieve task type is receive, then
-    * stop this task until a message is received from network
-    */
-   if (MSG_TASK_RECV == nextTaskType())
-   {
-      stop();
-   }
-
-   UE_SSN_FINISH_TASK(this);
    LOG_EXITFN(ret);
-}
-
-/**
- * @brief returns the type of next task to be scheduled
- *
- * @return 
- */
-MsgTaskType_t UeSession::nextTaskType()
-{
-   MsgTaskType_t taskType = MSG_TASK_INV;
-
-   if (m_currTaskIndx + 1 < m_pScn->m_msgVec.size())
-   {
-      taskType = m_pScn->m_msgVec[m_currTaskIndx + 1]->type();
-   }
-
-   return taskType;
 }
 
 RETVAL UeSession::procRecv()
@@ -385,7 +383,7 @@ RETVAL UeSession::procRecv()
    GtpMsg gtpMsg(&m_pRcvdNwData->gtpcMsgBuf);
    GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg.type());
 
-   if (msgCat == GTP_MSG_CAT_INITIAL)
+   if (msgCat == GTP_MSG_CAT_REQ)
    {
       LOG_DEBUG("Processing Incoming Request message");
       ret = procIncReqMsg(&gtpMsg);
@@ -394,7 +392,7 @@ RETVAL UeSession::procRecv()
          LOG_ERROR("Processing Incoming Request Message, Error [%d]", ret);
       }
    }
-   else if (msgCat == GTP_MSG_CAT_TRIG_RSP)
+   else if (msgCat == GTP_MSG_CAT_RSP)
    {
       LOG_DEBUG("Processing Incoming Response message");
       ret = procIncRspMsg(&gtpMsg);
@@ -418,51 +416,62 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
 {
    LOG_ENTERFN();
 
-   GtpMsg *pExpctdGtpMsg = m_pCurrTask->getGtpMsg();
-
    GtpMsgType_t rcvdMsgType = pGtpMsg->type();
+   GtpSeqNumber_t rcvdSeqNum = pGtpMsg->seqNumber();
    LOG_DEBUG("Received Message: [%s]", gtpGetMsgName(rcvdMsgType));
-   if (rcvdMsgType == pExpctdGtpMsg->type())
+
+   // this is an old request message
+   if (rcvdSeqNum <= m_currSeqNum)
    {
-      GtpSeqNumber_t rcvdSeqNum = pGtpMsg->seqNumber();
-      if ((GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_SEQ_NUM_SET)) && \
-          (m_currSeqNum >= rcvdSeqNum))
+      if ((rcvdSeqNum == m_lastRcvdReq.seqNumber) && \
+         (rcvdMsgType == m_lastRcvdReq.reqType))
       {
-         m_pCurrTask->m_numRcvRetrans++;
-
-         /* TODO: compare req type, ip, port, teid and seq number
-          * of this req message with preivously received messgaes
-          * if there is a match send the corresponding response
-          */
-
-         LOG_DEBUG("Retransmitted GTPC Messsage Received");
-         LOG_EXITFN(ERR_RETRANS_GTPC_MSG_RCVD);
+         m_pScn->m_msgVec[m_lastRcvdReq.taskIndx]->m_numRcvRetrans++;
       }
       else
       {
-         m_rcvdReqConnId = m_pRcvdNwData->connId;
-         m_pCurrTask->m_numRcv++;
-         m_currSeqNum = rcvdSeqNum;
-         GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_SEQ_NUM_SET);
+         m_pCurrTask->m_numUnexp++;
       }
+
+      LOG_EXITFN(ROK);
    }
 
-   pGtpMsg->decode();
    GtpcPdn *pPdn = NULL;
-   if (GTPC_MSG_CS_REQ == rcvdMsgType)
+   GtpMsg *pExpctdGtpMsg = m_pCurrTask->getGtpMsg();
+   if (rcvdMsgType == pExpctdGtpMsg->type())
    {
-      LOG_DEBUG("Creating PDN Connection");
-      Stats::incStats(GSIM_STAT_NUM_SESSIONS_CREATED);
-      Stats::incStats(GSIM_STAT_NUM_SESSIONS);
-      pPdn = createPdn();
-      m_pdnLst.push_back(pPdn);
-      m_pCurrPdn = pPdn;
+      m_rcvdReqConnId = m_pRcvdNwData->connId;
+      m_pCurrTask->m_numRcv++;
+      m_currSeqNum = rcvdSeqNum;
+      if (m_pCurrTask->m_numRcv > 1500)
+      {
+         LOG_ERROR("%d", 1);
+      }
+
+      pGtpMsg->decode();
+      if (GTPC_MSG_CS_REQ == rcvdMsgType)
+      {
+         LOG_DEBUG("Creating PDN Connection");
+         Stats::incStats(GSIM_STAT_NUM_SESSIONS_CREATED);
+         Stats::incStats(GSIM_STAT_NUM_SESSIONS);
+         pPdn = createPdn();
+         m_pdnLst.push_back(pPdn);
+         m_pCurrPdn = pPdn;
+      }
+      else
+      {
+         pPdn = m_pCurrPdn;
+      }
    }
    else
    {
-      pPdn = m_pCurrPdn;
+      LOG_EXITFN(ROK);
    }
 
+   m_lastRcvdReq.reqType = rcvdMsgType;
+   m_lastRcvdReq.seqNumber = rcvdSeqNum;
+   m_lastRcvdReq.taskIndx = m_currTaskIndx;
+   updatePeerSeqNumber(&m_pRcvdNwData->peerEp, m_currSeqNum);
    decAndStoreGtpcIncMsg(pPdn, pGtpMsg, &m_pRcvdNwData->peerEp);
 
    LOG_EXITFN(ROK);
@@ -505,8 +514,8 @@ RETVAL UeSession::procWait()
    m_wakeTime = m_lastRunTime + m_wait;
    UE_SSN_FINISH_TASK(this);
 
-   // pause this task until wakeup time
-   pauseTask();   
+   /* pause the task until wake up time */
+   pauseTask();
 
    LOG_EXITFN(ROK);
 }
@@ -543,10 +552,7 @@ VOID UeSession::storeRcvdMsg(UdpData *rcvdData)
  *
  * @return 
  */
-UeSession* UeSession::createUeSession
-(
-GtpImsiKey  imsiKey
-)
+UeSession* UeSession::createUeSession(GtpImsiKey imsiKey)
 {
    U8    *pImsi = imsiKey.val;
 
@@ -687,7 +693,7 @@ const IPEndPoint  *pPeerEp
 }
 
 VOID UeSession::encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
-   Buffer *pGtpBuf)
+   Buffer *pGtpBuf, IPEndPoint *peerEp)
 {
    LOG_ENTERFN();
 
@@ -697,7 +703,7 @@ VOID UeSession::encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
    /* Modify the header parameters dynamically */
    GtpMsgHdr msgHdr;
    msgHdr.teid = pPdn->pCTun->m_remTeid;
-   msgHdr.seqN = generateSeqNum();
+   msgHdr.seqN = m_currSeqNum;
    GSIM_SET_MASK(msgHdr.pres, GTP_MSG_HDR_TEID_PRES);
    GSIM_SET_MASK(msgHdr.pres, GTP_MSG_HDR_SEQ_PRES);
    pGtpMsg->setMsgHdr(&msgHdr);
