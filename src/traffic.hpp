@@ -35,7 +35,7 @@ class TrafficTask: public Task
    public:
       TrafficTask();
       ~TrafficTask() {}
-      BOOL run();  
+      RETVAL run();  
 
       inline Time_t wake()
       {
@@ -54,7 +54,7 @@ class TrafficTask: public Task
 class GtpcEcho: public Task
 {
    public:
-      BOOL run();
+      RETVAL run();
       Time_t  wake();
 
    private:

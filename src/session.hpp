@@ -98,6 +98,13 @@ struct GtpcNwData
    }
 };
 
+typedef struct
+{
+   GtpMsgType_t   reqType;
+   GtpSeqNumber_t seqNumber;
+   U32            taskIndx;
+} LastRcvdReq;
+
 /**< stores the Message sent and received in a send and receive MsgTsk
  * respectively
  */
@@ -109,7 +116,7 @@ class UeSession: public Task
       UeSession(Scenario *pScn, GtpImsiKey);
       ~UeSession();
 
-      BOOL              run();  
+      RETVAL              run();  
 
       inline Time_t wake() { return m_wakeTime; }
 
@@ -148,10 +155,11 @@ class UeSession: public Task
       GtpcPdn           *m_pCurrPdn;
       Scenario          *m_pScn;
       TransConnId       m_rcvdReqConnId;
+      LastRcvdReq       m_lastRcvdReq;
 
       VOID              storeGtpcOutMsg(GtpcPdn *pPdn, GtpMsg  *pGtpMsg);
       VOID              encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
-                              Buffer *pBuf);
+                              Buffer *pBuf, IPEndPoint *ep);
       VOID              decAndStoreGtpcIncMsg(GtpcPdn*, GtpMsg*,\
                               const IPEndPoint*);
       GtpBearer*        getBearer(GtpEbi_t ebi);
@@ -164,7 +172,6 @@ class UeSession: public Task
       RETVAL            procOutRspMsg(GtpMsg *gtpMsg);
       RETVAL            procOutReqMsg(GtpMsg *gtpMsg);
       RETVAL            procOutReqTimeout();
-      MsgTaskType_t     nextTaskType();
 };
 
 EXTERN UeSession* getUeSession(const U8* pImsi);

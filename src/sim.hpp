@@ -33,7 +33,7 @@ class Simulator
 
    private:
       Simulator();
-      VOID genSignallingTraffic();
+      VOID startScheduler();
 
       static class Simulator  *pSim;
       class Scenario          *m_pScn;

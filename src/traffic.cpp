@@ -35,7 +35,10 @@
 #include "gtp_stats.hpp"
 #include "tunnel.hpp"
 #include "session.hpp"
+#include "gtp_peer.hpp"
 #include "traffic.hpp"
+
+EXTERN BOOL g_serverMode;
 
 TrafficTask::TrafficTask()
 {
@@ -46,7 +49,7 @@ TrafficTask::TrafficTask()
    m_imsiGen.init(imsi);
 }
 
-BOOL TrafficTask::run()
+RETVAL TrafficTask::run()
 {
    LOG_ENTERFN();
 
@@ -82,7 +85,7 @@ BOOL TrafficTask::run()
       pauseTask();
    }
 
-   LOG_EXITFN(TRUE);
+   LOG_EXITFN(ROK);
 }
 
 PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
@@ -107,11 +110,8 @@ PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
       ueSsn = UeSession::getUeSession(imsiKey);
       if (NULL == ueSsn)
       {
+         addPeerData(pUdpData->peerEp); 
          ueSsn = UeSession::createUeSession(imsiKey);
-      }
-      else
-      {
-         LOG_ERROR("Unhandled Incoming GTP Message");
       }
    }
    else

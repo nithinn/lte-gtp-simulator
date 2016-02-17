@@ -53,7 +53,7 @@ class Task
 
       virtual ~Task() {};
 
-      virtual BOOL run() = 0;
+      virtual RETVAL run() = 0;
 
       virtual VOID abort();
 
@@ -71,8 +71,7 @@ class Task
       /* When should this Task wake up? */
       virtual Time_t wake() = 0;
 
-      /* Is this Task paused or running? */
-      BOOL running;
+      BOOL isRunning() {return m_taskState == TASK_STATE_RUNNING;}
 
    private:
 

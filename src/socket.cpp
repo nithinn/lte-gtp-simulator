@@ -426,7 +426,7 @@ PUBLIC RETVAL initTransport()
    {
       LOG_FATAL("Binding to GTP Listener Socket");
    }
-   
+
    LOG_EXITFN(ret);
 }
 

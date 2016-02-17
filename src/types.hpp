@@ -49,7 +49,8 @@ typedef std::string        HexString;
 #endif
 
 #define ROK             0
-#define RFAILED         1
+#define ROK_OVER        1
+#define RFAILED         2
 
 #define MEMSET          memset
 #define MEMCPY          memcpy
