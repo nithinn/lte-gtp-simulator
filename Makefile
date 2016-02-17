@@ -48,6 +48,7 @@ SRC=\
 	$(SRC_PATH)/session.cpp \
 	$(SRC_PATH)/task.cpp \
 	$(SRC_PATH)/display.cpp \
+	$(SRC_PATH)/gtp_peer.cpp \
 	$(SRC_PATH)/sim.cpp \
 	$(SRC_PATH)/help.cpp \
 	$(SRC_PATH)/tunnel.cpp \
