@@ -32,19 +32,15 @@ using std::vector;
 
 static PeerDataVec g_peerData;
 
-BOOL validateSeqNumber(PeerData *peerData, Buffer *gtpMsg)
+PUBLIC BOOL isOldReq(PeerData *peer, Buffer *gtpMsg)
 {
    LOG_ENTERFN();
 
    BOOL              isOld     = FALSE;
    GtpSeqNumber_t    seqNumber = 0;
-   GtpMsgType_t      msgType   = GTPC_MSG_TYPE_INVALID;
 
    GTP_MSG_GET_SEQN(gtpMsg->pVal, seqNumber);
-   GTP_MSG_GET_TYPE(gtpMsg->pVal, msgType);
-   GtpMsgCategory_t msgCat = gtpGetMsgCategory(msgType);
-
-   if (peerData->seqNumber < seqNumber && msgCat == GTP_MSG_CAT_REQ)
+   if (peer->seqNumber > seqNumber)
    {
       isOld = TRUE;
    }

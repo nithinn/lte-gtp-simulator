@@ -416,6 +416,8 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
 {
    LOG_ENTERFN();
 
+   RETVAL ret = ROK;
+
    GtpMsgType_t rcvdMsgType = pGtpMsg->type();
    GtpSeqNumber_t rcvdSeqNum = pGtpMsg->seqNumber();
    LOG_DEBUG("Received Message: [%s]", gtpGetMsgName(rcvdMsgType));
@@ -426,14 +428,19 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
       if ((rcvdSeqNum == m_lastRcvdReq.seqNumber) && \
          (rcvdMsgType == m_lastRcvdReq.reqType))
       {
+         /* resend the response that was sent earlier */
+         sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp,\
+               &m_pSentNwData->gtpcMsgBuf);
          m_pScn->m_msgVec[m_lastRcvdReq.taskIndx]->m_numRcvRetrans++;
+         ret = ROK;
       }
       else
       {
          m_pCurrTask->m_numUnexp++;
+         ret = RFAILED;
       }
 
-      LOG_EXITFN(ROK);
+      LOG_EXITFN(ret);
    }
 
    GtpcPdn *pPdn = NULL;

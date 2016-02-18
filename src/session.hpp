@@ -26,9 +26,10 @@ class UeSession;
 
 struct CompareImsiKey
 {
-   BOOL  operator() (const GtpImsiKey& left, const GtpImsiKey& right) const
+   bool operator() (const GtpImsiKey& left, const GtpImsiKey& right) const
    {
-      return (BOOL)MEMCMP(left.val, right.val, left.len);
+      //return (bool)MEMCMP(left.val, right.val, left.len);
+      return MEMCMP(left.val, right.val, left.len) < 0;
    }
 };
 
@@ -134,7 +135,6 @@ class UeSession: public Task
 #define GSIM_UE_SSN_WAITING_FOR_RSP       (1 << 0)
 #define GSIM_UE_SSN_SEQ_NUM_SET           (1 << 1)
       U32               m_bitmask;
-      GtpImsiKey        m_imsiKey;
       U32               m_n3req;
       Time_t            m_t3time;
       Time_t            m_lastRunTime;
@@ -156,6 +156,7 @@ class UeSession: public Task
       Scenario          *m_pScn;
       TransConnId       m_rcvdReqConnId;
       LastRcvdReq       m_lastRcvdReq;
+      GtpImsiKey        m_imsiKey;
 
       VOID              storeGtpcOutMsg(GtpcPdn *pPdn, GtpMsg  *pGtpMsg);
       VOID              encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\

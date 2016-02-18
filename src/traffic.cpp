@@ -110,8 +110,19 @@ PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
       ueSsn = UeSession::getUeSession(imsiKey);
       if (NULL == ueSsn)
       {
-         addPeerData(pUdpData->peerEp); 
-         ueSsn = UeSession::createUeSession(imsiKey);
+         PeerData *peer = addPeerData(pUdpData->peerEp); 
+         if (!isOldReq(peer, &pUdpData->buf))
+         {
+            ueSsn = UeSession::createUeSession(imsiKey);
+         }
+         else
+         {
+            cleanupUeSessions();
+         }
+      }
+      else
+      {
+         LOG_ERROR("Unhandled Message Received");
       }
    }
    else
