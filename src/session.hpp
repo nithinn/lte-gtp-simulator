@@ -28,8 +28,7 @@ struct CompareImsiKey
 {
    bool operator() (const GtpImsiKey& left, const GtpImsiKey& right) const
    {
-      //return (bool)MEMCMP(left.val, right.val, left.len);
-      return MEMCMP(left.val, right.val, left.len) < 0;
+      return (MEMCMP(left.val, right.val, left.len) < 0);
    }
 };
 
@@ -84,21 +83,6 @@ typedef GtpcPdnLst::iterator        GtpcPdnLstItr;
 typedef std::list<GtpBearer *>      GtpBearerLst;
 typedef GtpBearerLst::iterator      GtpBearerLstItr;
 
-/**
- * @struct GTP-C message received from peer or sent to the peer
- */
-struct GtpcNwData
-{
-   Buffer         gtpcMsgBuf;
-   IPEndPoint     peerEp;
-   TransConnId    connId;
-
-   ~GtpcNwData()
-   {
-      delete[] gtpcMsgBuf.pVal;
-   }
-};
-
 typedef struct
 {
    GtpMsgType_t   reqType;
@@ -106,18 +90,13 @@ typedef struct
    U32            taskIndx;
 } LastRcvdReq;
 
-/**< stores the Message sent and received in a send and receive MsgTsk
- * respectively
- */
-typedef vector<GtpcNwData *>  GtpcNwDataVec;
-
 class UeSession: public Task
 {
    public:
       UeSession(Scenario *pScn, GtpImsiKey);
       ~UeSession();
 
-      RETVAL              run();  
+      RETVAL              run(VOID *arg = NULL);  
 
       inline Time_t wake() { return m_wakeTime; }
 
@@ -129,7 +108,7 @@ class UeSession: public Task
       GtpcPdn*          createPdn();
       VOID              deletePdn();
       GtpcPdnLst*       getPdnList();
-      VOID              storeRcvdMsg(UdpData*);
+      VOID              storeRcvdMsg(UdpData_t*);
 
    private:
 #define GSIM_UE_SSN_WAITING_FOR_RSP       (1 << 0)
@@ -140,8 +119,6 @@ class UeSession: public Task
       Time_t            m_lastRunTime;
       U32               m_retryCnt;
       U32               m_sessionId;
-      Time_t            m_wait;
-      BOOL              m_isWaiting;
       IPEndPoint        m_peerEp;
       EpcNodeType_t     m_nodeType; 
       GtpcPdnLst        m_pdnLst;     
@@ -149,16 +126,16 @@ class UeSession: public Task
       GtpSeqNumber_t    m_currSeqNum;
       U32               m_currTaskIndx;
       Time_t            m_wakeTime;
-      GtpcNwData        *m_pSentNwData;
-      GtpcNwData        *m_pRcvdNwData;
+      UdpData_t         *m_pSentNwData;
+      UdpData_t         *m_pRcvdNwData;
       MsgTask           *m_pCurrTask;
       GtpcPdn           *m_pCurrPdn;
       Scenario          *m_pScn;
-      TransConnId       m_rcvdReqConnId;
       LastRcvdReq       m_lastRcvdReq;
       GtpImsiKey        m_imsiKey;
+      TransConnId       m_reqConnId; 
 
-      VOID              storeGtpcOutMsg(GtpcPdn *pPdn, GtpMsg  *pGtpMsg);
+      VOID              createBearers(GtpcPdn *pPdn, GtpMsg  *pGtpMsg);
       VOID              encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
                               Buffer *pBuf, IPEndPoint *ep);
       VOID              decAndStoreGtpcIncMsg(GtpcPdn*, GtpMsg*,\
@@ -173,6 +150,7 @@ class UeSession: public Task
       RETVAL            procOutRspMsg(GtpMsg *gtpMsg);
       RETVAL            procOutReqMsg(GtpMsg *gtpMsg);
       RETVAL            procOutReqTimeout();
+      MsgTaskType_t     nextTaskType();
 };
 
 EXTERN UeSession* getUeSession(const U8* pImsi);

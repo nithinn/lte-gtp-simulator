@@ -113,18 +113,27 @@ struct Buffer
 {
    U32      len;
    U8       *pVal;
+
+   Buffer() {len = 0; pVal = NULL;}
+
+   Buffer(const Buffer &b)
+   {
+      len = b.len;
+      pVal = new U8[len];
+      MEMCPY(pVal, b.pVal, len);
+   }
+
+   ~Buffer()
+   {
+      delete []pVal;
+   }
 };
 
-struct UdpData
+struct UdpData_t
 {
    Buffer         buf;
    TransConnId    connId;
    IPEndPoint     peerEp; 
-
-   ~UdpData()
-   {
-      delete[] buf.pVal;
-   }
 };
 
 #define BUFFER_CPY(_buf, _src, _sz)                     \

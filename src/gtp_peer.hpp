@@ -29,4 +29,5 @@ PUBLIC BOOL isOldReq(PeerData *peer, Buffer *gtpMsg);
 PeerData *addPeerData(IPEndPoint ep);
 VOID updatePeerSeqNumber(IPEndPoint *ep, GtpSeqNumber_t seqNumber);
 PUBLIC GtpSeqNumber_t generateSeqNum(IPEndPoint *peer, GtpMsgCategory_t cat);
+PUBLIC VOID deletePeerTable();
 #endif

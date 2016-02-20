@@ -53,7 +53,7 @@ class Task
 
       virtual ~Task() {};
 
-      virtual RETVAL run() = 0;
+      virtual RETVAL run(VOID *arg = NULL) = 0;
 
       virtual VOID abort();
 

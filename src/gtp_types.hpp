@@ -375,11 +375,6 @@ struct IeParam
 #define           IE_PARAM_NAME_MAX_LEN        64
    S8             paramName[IE_PARAM_NAME_MAX_LEN];
    Buffer         buf;
-
-   ~IeParam()
-   {
-      delete[] buf.pVal;
-   }
 };
 
 struct IeParam;

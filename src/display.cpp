@@ -132,7 +132,7 @@ VOID Display::init()
    CLEAR_SCREEN();
 }
 
-RETVAL Display::run()
+RETVAL Display::run(VOID *arg)
 {
    LOG_ENTERFN();
 

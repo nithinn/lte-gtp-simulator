@@ -77,7 +77,7 @@ Simulator::~Simulator()
    delete m_pScn;
 }
 
-VOID Simulator::run()
+VOID Simulator::run(VOID *arg)
 {
    LOG_ENTERFN();
 
@@ -122,6 +122,7 @@ VOID Simulator::run()
 
    pKb->abort();
    TaskMgr::deleteAllTasks();
+   deletePeerTable();
 
    LOG_EXITVOID();
 }

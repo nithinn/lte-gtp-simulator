@@ -35,7 +35,7 @@ class TrafficTask: public Task
    public:
       TrafficTask();
       ~TrafficTask() {}
-      RETVAL run();  
+      RETVAL run(VOID *arg = NULL);  
 
       inline Time_t wake()
       {
@@ -54,7 +54,7 @@ class TrafficTask: public Task
 class GtpcEcho: public Task
 {
    public:
-      RETVAL run();
+      RETVAL run(VOID *arg = NULL);
       Time_t  wake();
 
    private:
@@ -62,5 +62,5 @@ class GtpcEcho: public Task
       Time_t   m_ratePeriod;   
 };
 
-PUBLIC VOID procGtpcMsg(UdpData *pData);
+PUBLIC VOID procGtpcMsg(UdpData_t *data);
 #endif

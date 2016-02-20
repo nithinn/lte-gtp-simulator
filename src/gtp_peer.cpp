@@ -118,4 +118,10 @@ PUBLIC GtpSeqNumber_t generateSeqNum(IPEndPoint *ep, GtpMsgCategory_t cat)
    LOG_EXITFN(seqNumber);
 }
 
-
+PUBLIC VOID deletePeerTable()
+{
+   for (U32 i = 0; i < g_peerData.size(); i++)
+   {
+      delete g_peerData[i];
+   }
+}

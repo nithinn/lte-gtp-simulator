@@ -62,7 +62,6 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_nodeType = Config::getInstance()->getNodeType();
    m_peerEp.ipAddr = Config::getInstance()->getRemoteIpAddr();
    m_peerEp.port = Config::getInstance()->getRemoteGtpcPort();
-   m_isWaiting = FALSE;
    m_currTaskIndx = 0;
    m_currSeqNum = 0;
    m_bitmask = 0;
@@ -114,12 +113,11 @@ UeSession::~UeSession()
    LOG_DEBUG("Deleting UE Session [%d]", m_sessionId);
 }
 
-RETVAL UeSession::run()
+RETVAL UeSession::run(VOID *arg)
 {
    RETVAL         ret = ROK;
 
    LOG_TRACE("Running UeSession [%d]", m_sessionId);
-
    m_lastRunTime = getMilliSeconds();
    resumeTask();
 
@@ -131,43 +129,49 @@ RETVAL UeSession::run()
             m_imsiKey.val[3], m_imsiKey.val[4], m_imsiKey.val[5],\
             m_imsiKey.val[6], m_imsiKey.val[7]);
 
+      if (arg != NULL)
+      {
+         delete (UdpData_t*)arg;
+      }
+
       Stats::incStats(GSIM_STAT_NUM_SESSIONS_SUCC);
       Stats::decStats(GSIM_STAT_NUM_SESSIONS);
       LOG_EXITFN(ROK_OVER);
    }
 
-   m_pCurrTask = m_pScn->m_msgVec[m_currTaskIndx];
-   MsgTaskType_t taskType = m_pCurrTask->type();
-
-   switch (taskType)
+   if (NULL != arg)
    {
-      case MSG_TASK_SEND:
+      if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
+      {
+         /* a response is received while waiting for response.
+          * finish the current task (request sending task) and move
+          * to response handling task
+          */
+         UE_SSN_FINISH_TASK(this);
+      }
+
+      LOG_TRACE("Processing Recv() Task");
+      m_pRcvdNwData = (UdpData_t*)arg;
+      m_pCurrTask = m_pScn->m_msgVec[m_currTaskIndx];
+      ret = procRecv();
+   }
+   else
+   {
+      m_pCurrTask = m_pScn->m_msgVec[m_currTaskIndx];
+      MsgTaskType_t taskType = m_pCurrTask->type();
+
+      if (taskType == MSG_TASK_SEND)
       {
          LOG_TRACE("Processing Send() Task");
          ret = procSend();
-         break;
       }
-      case MSG_TASK_WAIT:
+      else if (taskType == MSG_TASK_WAIT)
       {
-
          LOG_TRACE("Processing Wait() Task");
          ret = procWait();
-         break;
-      }
-      case MSG_TASK_RECV:
-      {
-         LOG_TRACE("Processing Recv() Task");
-         ret = procRecv();
-         break;
-      }
-      default:
-      {
-         ret = RFAILED;
-         LOG_ERROR("Unhandled Task Type");
-         break;
       }
    }
-   
+
    LOG_EXITFN(ret);
 }
 
@@ -266,19 +270,20 @@ RETVAL UeSession::procOutReqMsg(GtpMsg *gtpMsg)
    }
 
    LOG_DEBUG("Storing OUT Message");
-   storeGtpcOutMsg(pPdn, gtpMsg);
+   createBearers(pPdn, gtpMsg);
 
    LOG_DEBUG("Encoding OUT Message");
-   GtpcNwData *pNwData = new GtpcNwData;
+   UdpData_t *pNwData = new UdpData_t;
    m_currSeqNum = generateSeqNum(&m_peerEp, GTP_MSG_CAT_REQ);
-   encGtpcOutMsg(pPdn, gtpMsg, &pNwData->gtpcMsgBuf, &m_peerEp);
+   encGtpcOutMsg(pPdn, gtpMsg, &pNwData->buf, &m_peerEp);
 
    /* initial message, send the message over default send socket */
    pNwData->connId = 0;
    pNwData->peerEp = m_peerEp;
 
    LOG_DEBUG("Sending GTPC Message [%s]", gtpGetMsgName(msgType));
-   sendMsg(pNwData->connId, &pNwData->peerEp, &pNwData->gtpcMsgBuf);
+   Buffer *buf = new Buffer(pNwData->buf);
+   sendMsg(pNwData->connId, &pNwData->peerEp, buf);
    m_pCurrTask->m_numSnd++;
 
    if (NULL != m_pSentNwData)
@@ -323,8 +328,8 @@ RETVAL UeSession::procOutReqTimeout()
        * after retransmission timeout expiry
        */
       LOG_DEBUG("Retransmissing GTP Message");
-      sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp,\
-            &m_pSentNwData->gtpcMsgBuf);
+      Buffer *buf = new Buffer(m_pSentNwData->buf);
+      sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp, buf);
 
       m_pCurrTask->m_numSndRetrans++;
       m_retryCnt++;
@@ -346,18 +351,19 @@ RETVAL UeSession::procOutRspMsg(GtpMsg *gtpMsg)
    GtpcPdn  *pPdn = m_pCurrPdn;
    
    LOG_DEBUG("Encoding OUT Message");
-   GtpcNwData *pNwData = new GtpcNwData;
-   encGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg(), &pNwData->gtpcMsgBuf,\
+   UdpData_t *pNwData = new UdpData_t;
+   encGtpcOutMsg(pPdn, m_pCurrTask->getGtpMsg(), &pNwData->buf,\
          &m_peerEp);
 
    /* send the response/triggered message over the same socket
     * over which the request/command is received
     */
-   pNwData->connId = m_rcvdReqConnId;
+   pNwData->connId = m_reqConnId;
    pNwData->peerEp = pPdn->pCTun->m_peerEp;
 
    LOG_DEBUG("Sending GTPC Message [%s]", gtpGetMsgName(msgType));
-   sendMsg(pNwData->connId, &pNwData->peerEp, &pNwData->gtpcMsgBuf);
+   Buffer *buf = new Buffer(pNwData->buf);
+   sendMsg(pNwData->connId, &pNwData->peerEp, buf);
    m_pCurrTask->m_numSnd++;
 
    if (NULL != m_pSentNwData)
@@ -365,7 +371,6 @@ RETVAL UeSession::procOutRspMsg(GtpMsg *gtpMsg)
       delete m_pSentNwData;
    }
 
-   m_wakeTime = 0;
    m_pSentNwData = pNwData;
 
    LOG_EXITFN(ret);
@@ -380,7 +385,7 @@ RETVAL UeSession::procRecv()
    /* Receive task is run because a GTPC message is received for this
     * session
     */
-   GtpMsg gtpMsg(&m_pRcvdNwData->gtpcMsgBuf);
+   GtpMsg gtpMsg(&m_pRcvdNwData->buf);
    GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg.type());
 
    if (msgCat == GTP_MSG_CAT_REQ)
@@ -412,6 +417,18 @@ RETVAL UeSession::procRecv()
    LOG_EXITFN(ret);
 }
 
+MsgTaskType_t UeSession::nextTaskType()
+{
+   MsgTaskType_t  taskType = MSG_TASK_INV;
+
+   if (m_currTaskIndx + 1 < m_pScn->m_msgVec.size())
+   {
+      taskType = m_pScn->m_msgVec[m_currTaskIndx + 1]->type();
+   }
+
+   return taskType;
+}
+
 RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
 {
    LOG_ENTERFN();
@@ -429,8 +446,8 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
          (rcvdMsgType == m_lastRcvdReq.reqType))
       {
          /* resend the response that was sent earlier */
-         sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp,\
-               &m_pSentNwData->gtpcMsgBuf);
+         Buffer *buf = new Buffer(m_pSentNwData->buf);
+         sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp, buf);
          m_pScn->m_msgVec[m_lastRcvdReq.taskIndx]->m_numRcvRetrans++;
          ret = ROK;
       }
@@ -447,7 +464,6 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
    GtpMsg *pExpctdGtpMsg = m_pCurrTask->getGtpMsg();
    if (rcvdMsgType == pExpctdGtpMsg->type())
    {
-      m_rcvdReqConnId = m_pRcvdNwData->connId;
       m_pCurrTask->m_numRcv++;
       m_currSeqNum = rcvdSeqNum;
       if (m_pCurrTask->m_numRcv > 1500)
@@ -478,6 +494,7 @@ RETVAL UeSession::procIncReqMsg(GtpMsg *pGtpMsg)
    m_lastRcvdReq.reqType = rcvdMsgType;
    m_lastRcvdReq.seqNumber = rcvdSeqNum;
    m_lastRcvdReq.taskIndx = m_currTaskIndx;
+   m_reqConnId = m_pRcvdNwData->connId;
    updatePeerSeqNumber(&m_pRcvdNwData->peerEp, m_currSeqNum);
    decAndStoreGtpcIncMsg(pPdn, pGtpMsg, &m_pRcvdNwData->peerEp);
 
@@ -514,11 +531,7 @@ RETVAL UeSession::procWait()
 {
    LOG_ENTERFN();
 
-   LOG_DEBUG("Executing Wait");
-
-   m_isWaiting = TRUE;
-   m_wait = m_pCurrTask->wait();
-   m_wakeTime = m_lastRunTime + m_wait;
+   m_wakeTime = m_lastRunTime + m_pCurrTask->wait();
    UE_SSN_FINISH_TASK(this);
 
    /* pause the task until wake up time */
@@ -527,24 +540,9 @@ RETVAL UeSession::procWait()
    LOG_EXITFN(ROK);
 }
 
-VOID UeSession::storeRcvdMsg(UdpData *rcvdData)
+VOID UeSession::storeRcvdMsg(UdpData_t *rcvdData)
 {
    LOG_ENTERFN();
-
-   m_pRcvdNwData = new GtpcNwData;
-   BUFFER_CPY(&m_pRcvdNwData->gtpcMsgBuf, rcvdData->buf.pVal,\
-         rcvdData->buf.len);
-   m_pRcvdNwData->peerEp = rcvdData->peerEp;
-   m_pRcvdNwData->connId = rcvdData->connId;
-
-   if (GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP))
-   {
-      /* a response is received while waiting for response.
-       * finish the current task (request sending task) and move
-       * to response handling task
-       */
-      UE_SSN_FINISH_TASK(this);
-   }
 
    LOG_EXITVOID();
 }
@@ -635,7 +633,7 @@ GtpcPdn* UeSession::createPdn()
    LOG_EXITFN(pPdn);
 }
 
-VOID UeSession::storeGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg)
+VOID UeSession::createBearers(GtpcPdn *pPdn, GtpMsg *pGtpMsg)
 {
    LOG_ENTERFN();
 

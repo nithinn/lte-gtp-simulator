@@ -37,9 +37,9 @@
 #include "gtp_macro.hpp"
 
 /******************* Function Declarations ***********************************/
-EXTERN VOID procGtpcMsg(UdpData *pRcvdMsg);
-PRIVATE RETVAL sendMsgV4(GSimSocket *pSock, IPEndPoint *pDst, UdpData *pData);
-PRIVATE RETVAL sendMsgV6(GSimSocket *pSock, IPEndPoint *pDst, UdpData *pData);
+EXTERN VOID procGtpcMsg(UdpData_t *data);
+PRIVATE RETVAL sendMsgV4(GSimSocket *pSock, IPEndPoint *pDst, Buffer *data);
+PRIVATE RETVAL sendMsgV6(GSimSocket *pSock, IPEndPoint *pDst, Buffer *data);
 PRIVATE RETVAL handleGtpcSock(GSimSocket     *pSock);
 PRIVATE RETVAL handleGtpuSock(GSimSocket     *pSock);
 PRIVATE VOID handleStdinSock(GSimSocket     *pSock);
@@ -58,7 +58,7 @@ static U8            s_recvBuf[GSIM_UDP_READ_LEN];
  *
  * @return 
  */
-RETVAL GSimSocket::recvMsgV4(UdpData **msg)
+RETVAL GSimSocket::recvMsgV4(UdpData_t **msg)
 {
    struct sockaddr_in  fromAddr;
    socklen_t           fromLen = sizeof(sockaddr_in);
@@ -67,7 +67,7 @@ RETVAL GSimSocket::recvMsgV4(UdpData **msg)
          MSG_DONTWAIT, (struct sockaddr *)&fromAddr, &fromLen);
    if (recvLen > 0)
    {
-      *msg = new UdpData;
+      *msg = new UdpData_t;
       BUFFER_CPY(&(*msg)->buf, s_recvBuf, recvLen);
       (*msg)->connId = m_pollFdIndex;
       (*msg)->peerEp.ipAddr.ipAddrType = IP_ADDR_TYPE_V4;
@@ -83,13 +83,13 @@ RETVAL GSimSocket::recvMsgV4(UdpData **msg)
 /**
  * @brief 
  *    Peeks the gtp message, and reads the message of gtp msg length
- *    and fills the udpData structre from IPv6 socket
+ *    and fills the UdpData_t structre from IPv6 socket
  *
- * @param pData
+ * @param data
  *
  * @return 
  */
-RETVAL GSimSocket::recvMsgV6(UdpData **msg)
+RETVAL GSimSocket::recvMsgV6(UdpData_t **msg)
 {
    struct sockaddr_in6 fromAddr;
    socklen_t           fromLen = 0;
@@ -98,7 +98,7 @@ RETVAL GSimSocket::recvMsgV6(UdpData **msg)
          (struct sockaddr *)&fromAddr, &fromLen);
    if (recvLen > 0)
    {
-      *msg = new UdpData;
+      *msg = new UdpData_t;
       BUFFER_CPY(&(*msg)->buf, s_recvBuf, recvLen);
       (*msg)->connId = m_pollFdIndex;
       (*msg)->peerEp.ipAddr.ipAddrType = IP_ADDR_TYPE_V4;
@@ -111,7 +111,7 @@ RETVAL GSimSocket::recvMsgV6(UdpData **msg)
    return RFAILED;
 }
 
-RETVAL GSimSocket::recvMsg(UdpData **msg)
+RETVAL GSimSocket::recvMsg(UdpData_t **msg)
 {
    LOG_ENTERFN();
 
@@ -129,7 +129,7 @@ RETVAL GSimSocket::recvMsg(UdpData **msg)
    LOG_EXITFN(ret);
 }
 
-PRIVATE RETVAL sendMsgV4(GSimSocket *pSock, IPEndPoint *pDst, UdpData *pData)
+PRIVATE RETVAL sendMsgV4(GSimSocket *pSock, IPEndPoint *pDst, Buffer *data)
 {
    LOG_ENTERFN();
 
@@ -140,19 +140,19 @@ PRIVATE RETVAL sendMsgV4(GSimSocket *pSock, IPEndPoint *pDst, UdpData *pData)
    destAddr.sin_port = htons(pDst->port);
    MEMSET(destAddr.sin_zero, '\0', sizeof(destAddr.sin_zero));
 
-   if (sendto(pSock->fd(), (VOID *)pData->buf.pVal, (size_t)pData->buf.len,
+   if (sendto(pSock->fd(), (VOID *)data->pVal, (size_t)data->len,
             MSG_DONTWAIT, (struct sockaddr *)&destAddr, sizeof(destAddr)) < 0)
    {
       LOG_FATAL("Socket sendto() failed, [%s]", strerror(errno));
       LOG_EXITFN(ERR_SYS_SOCK_SEND);
    }
 
-   delete pData;
+   delete data;
    LOG_EXITFN(ROK);
 }
 
 
-PRIVATE RETVAL sendMsgV6(GSimSocket *pSock, IPEndPoint *pDst, UdpData *pData)
+PRIVATE RETVAL sendMsgV6(GSimSocket *pSock, IPEndPoint *pDst, Buffer *data)
 {
    struct sockaddr_in6  destAddr;
 
@@ -161,13 +161,13 @@ PRIVATE RETVAL sendMsgV6(GSimSocket *pSock, IPEndPoint *pDst, UdpData *pData)
    destAddr.sin6_family = AF_INET6;
    destAddr.sin6_port = htons(pDst->port);
 
-   if (sendto(pSock->fd(), pData->buf.pVal, pData->buf.len,
+   if (sendto(pSock->fd(), data->pVal, data->len,
          MSG_DONTWAIT, (struct sockaddr *)&destAddr, sizeof(destAddr)) > 0)
    {
       return ROK;
    }
 
-   delete pData;
+   delete data;
    return RFAILED;
 }
 
@@ -304,13 +304,12 @@ PRIVATE RETVAL handleGtpcSock(GSimSocket *pSock)
 
    try
    {
-      UdpData *msg = NULL;
+      UdpData_t *msg = NULL;
       ret = pSock->recvMsg(&msg);
       if (ROK == ret)
       {
          LOG_DEBUG("Process the Received messages", pSock->fd());
          procGtpcMsg(msg);
-         delete msg;
       }
       else
       {
@@ -320,7 +319,7 @@ PRIVATE RETVAL handleGtpcSock(GSimSocket *pSock)
    }
    catch (exception &e)
    {
-      LOG_FATAL("Memory Allocation, UdpData");
+      LOG_FATAL("Memory Allocation, UdpData_t");
       ret = ERR_MEMORY_ALLOC;
    }
 
@@ -581,26 +580,23 @@ PUBLIC RETVAL sendMsg
 (
 TransConnId          connId,               
 IPEndPoint           *pDst,
-Buffer               *pBuf
+Buffer               *data
 )
 {
    LOG_ENTERFN();
 
    RETVAL   ret = ROK;
 
-   UdpData  *pData = new UdpData;
-   BUFFER_CPY(&pData->buf, pBuf->pVal, pBuf->len);
-
    GSimSocket  *pSock = g_gsimSockArr[connId];
    if (NULL != pSock)
    {
       if (pDst->ipAddr.ipAddrType == IP_ADDR_TYPE_V4)
       {
-         ret = sendMsgV4(pSock, pDst, pData);
+         ret = sendMsgV4(pSock, pDst, data);
       }
       else
       {
-         ret = sendMsgV6(pSock, pDst, pData);
+         ret = sendMsgV6(pSock, pDst, data);
       }
    }
 

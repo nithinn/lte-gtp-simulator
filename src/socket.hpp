@@ -50,15 +50,15 @@ class GSimSocket
       SockType_t        type();
       IpAddrTypeEn      ipAddrType();
       RETVAL            bindSocket();
-      RETVAL            recvMsg(UdpData **msg);
+      RETVAL            recvMsg(UdpData_t **msg);
 
    private:
       S32               m_fd;
       U32               m_pollFdIndex;
       SockType_t        m_type;
       IPEndPoint        m_ep;
-      RETVAL            recvMsgV6(UdpData **msg);
-      RETVAL            recvMsgV4(UdpData **msg);
+      RETVAL            recvMsgV6(UdpData_t **msg);
+      RETVAL            recvMsgV4(UdpData_t **msg);
       U32               getFullGtpMsgLen(U8* pBuf, U32 len);
 };
 

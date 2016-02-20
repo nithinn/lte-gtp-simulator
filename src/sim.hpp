@@ -28,7 +28,7 @@ class Simulator
       ~Simulator();
       static Simulator* getInstance();
 
-      void run();
+      void run(VOID *arg = NULL);
       void postEvent();
 
    private:

@@ -49,7 +49,7 @@ TrafficTask::TrafficTask()
    m_imsiGen.init(imsi);
 }
 
-RETVAL TrafficTask::run()
+RETVAL TrafficTask::run(VOID *arg)
 {
    LOG_ENTERFN();
 
@@ -88,7 +88,7 @@ RETVAL TrafficTask::run()
    LOG_EXITFN(ROK);
 }
 
-PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
+PUBLIC VOID procGtpcMsg(UdpData_t *data)
 {
    LOG_ENTERFN();
 
@@ -96,12 +96,12 @@ PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
    U8             *gtpMsgBuf = NULL;
    GtpMsgType_t   msgType    = GTPC_MSG_TYPE_INVALID;
    
-   gtpMsgBuf = pUdpData->buf.pVal;
+   gtpMsgBuf = data->buf.pVal;
    GTP_MSG_GET_TYPE(gtpMsgBuf, msgType);
 
    if (GTPC_MSG_CS_REQ == msgType || GTPC_MSG_FR_REQ == msgType)
    {
-      U8 *imsiBuf = getImsiBufPtr(&pUdpData->buf);
+      U8 *imsiBuf = getImsiBufPtr(&data->buf);
 
       GtpImsiKey  imsiKey;
       GTP_GET_IE_LEN(imsiBuf, imsiKey.len);
@@ -110,19 +110,16 @@ PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
       ueSsn = UeSession::getUeSession(imsiKey);
       if (NULL == ueSsn)
       {
-         PeerData *peer = addPeerData(pUdpData->peerEp); 
-         if (!isOldReq(peer, &pUdpData->buf))
+         PeerData *peer = addPeerData(data->peerEp); 
+         if (!isOldReq(peer, &data->buf))
          {
             ueSsn = UeSession::createUeSession(imsiKey);
          }
          else
          {
-            cleanupUeSessions();
+            LOG_ERROR("Received an old message");
+            delete data;
          }
-      }
-      else
-      {
-         LOG_ERROR("Unhandled Message Received");
       }
    }
    else
@@ -132,22 +129,26 @@ PUBLIC VOID procGtpcMsg(UdpData *pUdpData)
       if (0 != teid)
       {
          ueSsn = UeSession::getUeSession(teid);
+         if (NULL == ueSsn)
+         {
+            LOG_ERROR("GTPC Message received with unknown TEID [%d]", teid);
+            delete data;
+         }
       }
       else
       {
          LOG_ERROR("Unhandled Incoming GTP Message");
+         delete data;
       }
    }
 
    if (NULL != ueSsn)
    {
-      ueSsn->storeRcvdMsg(pUdpData);
-      ueSsn->run();
+      ueSsn->run(data);
    }
 
    LOG_EXITVOID();
 }
-
 
 GtpImsiGenerator::GtpImsiGenerator()
 {
