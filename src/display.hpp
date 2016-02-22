@@ -20,7 +20,6 @@
 class Display: virtual public Task
 {
    public:
-      VOID disp();
       VOID init();
       static Display* getInstance();
       ~Display();
@@ -28,10 +27,12 @@ class Display: virtual public Task
       inline Time_t wake() { return m_lastRunTime + m_dispIntvl; }
       VOID createMsgDirLst();
 
+      static void displayStats();
    private:
       static class Display  *m_pDisp;
 
-      Counter  getStats(GtpStat_t type);
+      VOID              disp();
+      Counter           getStats(GtpStat_t type);
 
       Time_t            m_lastRunTime;
       Time_t            m_dispIntvl;

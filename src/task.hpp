@@ -63,7 +63,7 @@ class Task
       TaskId_t        m_id;
 
       /* Put us to sleep (we must be running). */
-      VOID pauseTask();
+      VOID pause();
 
       /* Wake this up, if we are not already awake. */
       VOID resumeTask();

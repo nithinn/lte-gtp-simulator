@@ -36,6 +36,7 @@
 #include "tunnel.hpp"
 #include "session.hpp"
 #include "gtp_peer.hpp"
+#include "display.hpp"
 #include "traffic.hpp"
 
 EXTERN BOOL g_serverMode;
@@ -76,13 +77,15 @@ RETVAL TrafficTask::run(VOID *arg)
       }
    }
 
+   Display::displayStats();
+
    if (abortTraffiTask)
    {
       stop();
    }
    else
    {
-      pauseTask();
+      pause();
    }
 
    LOG_EXITFN(ROK);
@@ -110,16 +113,8 @@ PUBLIC VOID procGtpcMsg(UdpData_t *data)
       ueSsn = UeSession::getUeSession(imsiKey);
       if (NULL == ueSsn)
       {
-         PeerData *peer = addPeerData(data->peerEp); 
-         if (!isOldReq(peer, &data->buf))
-         {
-            ueSsn = UeSession::createUeSession(imsiKey);
-         }
-         else
-         {
-            LOG_ERROR("Received an old message");
-            delete data;
-         }
+         addPeerData(data->peerEp); 
+         ueSsn = UeSession::createUeSession(imsiKey);
       }
    }
    else

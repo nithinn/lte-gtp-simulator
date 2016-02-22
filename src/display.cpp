@@ -138,7 +138,7 @@ RETVAL Display::run(VOID *arg)
 
    m_lastRunTime = getMilliSeconds();
    disp();
-   pauseTask();
+   pause();
 
    LOG_EXITFN(ROK);
 }
@@ -220,3 +220,7 @@ Counter Display::getStats(GtpStat_t type)
    return m_pStats->getStats(type);
 }
 
+VOID Display::displayStats()
+{
+   Display::getInstance()->disp();
+}

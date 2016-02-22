@@ -31,7 +31,8 @@ using namespace std;
 #define DFLT_SESSION_RATE        1       // 1 session per rate period
 #define DFLT_MIN_SESSION_RATE    1       // 1 session per rate period
 #define DFLT_MAX_SESSION_RATE    1000000 // 1 session per rate period
-#define GSIM_TRACE_MSG_FILE_NAME_LEN   64
+#define DFLT_TRACE_MSG_FILE_NAME_LEN   64
+#define DFLT_DEAD_CALL_WAIT      20000    // milli seconds
 
 typedef enum
 {
@@ -126,6 +127,7 @@ class Config
       VOID setImsi(S8 *pVal, U32 len);
       VOID incrRate(U32 value);
       VOID decrRate(U32 value);
+      Time_t getDeadCallWait();
 
    private:
       Config();
@@ -158,6 +160,7 @@ class Config
       BOOL                 m_traceMsg;
       string               m_traceMsgFile;
       string               m_imsiStr;
+      Time_t               m_deadCallWait;
 };
 
 #endif

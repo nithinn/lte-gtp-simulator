@@ -55,11 +55,16 @@ VOID Task::abort()
    delete this;
 }
 
-VOID Task::pauseTask()
+VOID Task::pause()
 {
    if (TASK_STATE_RUNNING == m_taskState)
    {
       g_runningTasks.erase(m_runningTaskItr);
+      m_taskState = TASK_STATE_PAUSED;
+      m_pausedTaskItr = g_pausedTasks.insert(g_pausedTasks.end(), this);
+   }
+   else if (TASK_STATE_STOPPED == m_taskState)
+   {
       m_taskState = TASK_STATE_PAUSED;
       m_pausedTaskItr = g_pausedTasks.insert(g_pausedTasks.end(), this);
    }

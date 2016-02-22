@@ -90,6 +90,16 @@ typedef struct
    U32            taskIndx;
 } LastRcvdReq;
 
+typedef struct
+{
+   GtpSeqNumber_t    seqNumber;
+   GtpMsgType_t      reqType;
+   GtpMsgType_t      rspType;
+   TransConnId       connId;
+   UdpData_t         *sentMsg;
+   MsgTask           *procTask;
+} Procedure_t;
+
 class UeSession: public Task
 {
    public:
@@ -109,10 +119,11 @@ class UeSession: public Task
       VOID              deletePdn();
       GtpcPdnLst*       getPdnList();
       VOID              storeRcvdMsg(UdpData_t*);
+      GtpImsiKey        m_imsiKey;
 
    private:
 #define GSIM_UE_SSN_WAITING_FOR_RSP       (1 << 0)
-#define GSIM_UE_SSN_SEQ_NUM_SET           (1 << 1)
+#define GSIM_UE_SSN_SCN_COMPLETE          (1 << 1)
       U32               m_bitmask;
       U32               m_n3req;
       Time_t            m_t3time;
@@ -123,19 +134,26 @@ class UeSession: public Task
       EpcNodeType_t     m_nodeType; 
       GtpcPdnLst        m_pdnLst;     
       GtpBearerLst      m_bearerLst;
-      GtpSeqNumber_t    m_currSeqNum;
-      U32               m_currTaskIndx;
       Time_t            m_wakeTime;
       UdpData_t         *m_pSentNwData;
       UdpData_t         *m_pRcvdNwData;
-      MsgTask           *m_pCurrTask;
       GtpcPdn           *m_pCurrPdn;
       Scenario          *m_pScn;
-      LastRcvdReq       m_lastRcvdReq;
-      GtpImsiKey        m_imsiKey;
-      TransConnId       m_reqConnId; 
 
-      VOID              createBearers(GtpcPdn *pPdn, GtpMsg  *pGtpMsg);
+      U32               m_currTaskIndx;
+      MsgTask           *m_currTask;
+      GtpSeqNumber_t    m_currSeqNum;
+      TransConnId       m_currConnId;
+      GtpMsgType_t      m_currReqType;
+      Procedure_t       m_prevProc;
+      Time_t            m_deadCallWait;
+
+      BOOL              isExpectedRsp(GtpMsg *rspMsg);
+      BOOL              isExpectedReq(GtpMsg *rspMsg);
+      BOOL              isPrevProcRsp(GtpMsg *rspMsg);
+      BOOL              isPrevProcReq(GtpMsg *rspMsg);
+      VOID              createBearers(GtpcPdn *pPdn, GtpMsg  *pGtpMsg,\
+                              GtpInstance_t instance);
       VOID              encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
                               Buffer *pBuf, IPEndPoint *ep);
       VOID              decAndStoreGtpcIncMsg(GtpcPdn*, GtpMsg*,\
@@ -143,18 +161,20 @@ class UeSession: public Task
       GtpBearer*        getBearer(GtpEbi_t ebi);
       RETVAL            procSend();
       RETVAL            procWait();
-      RETVAL            procRecv();
-      RETVAL            procIncReqMsg(GtpMsg *pGtpMsg);
-      RETVAL            procIncRspMsg(GtpMsg *pGtpMsg);
+      RETVAL            handleRecv(UdpData_t* data);
+      RETVAL            procIncReqMsg(GtpMsg *pGtpMsg, UdpData_t *rcvdData);
+      RETVAL            procIncRspMsg(GtpMsg *pGtpMsg, UdpData_t *rcvdData);
       GtpcTun*          createCTun(GtpcPdn *pPdn);
       RETVAL            procOutRspMsg(GtpMsg *gtpMsg);
       RETVAL            procOutReqMsg(GtpMsg *gtpMsg);
       RETVAL            procOutReqTimeout();
       MsgTaskType_t     nextTaskType();
+      RETVAL            handleDeadCall(VOID *arg);
 };
 
 EXTERN UeSession* getUeSession(const U8* pImsi);
 EXTERN VOID       cleanupUeSessions();
 EXTERN GtpcTun*   getS11S4CTun(UeSession *pUeSession);
+PUBLIC VOID       printAllUes();
 
 #endif

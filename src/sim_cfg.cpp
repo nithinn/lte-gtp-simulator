@@ -80,7 +80,7 @@ Config::Config()
     MEMSET((VOID *)&(locIpAddr), 0, sizeof(IpAddr));
     MEMSET((VOID *)&(remIpAddr), 0, sizeof(IpAddr));
     m_imsiStr.assign(DFLT_IMSI, STRLEN(DFLT_IMSI));
-    S8 tmp[GSIM_TRACE_MSG_FILE_NAME_LEN] = {'\0'};
+    S8 tmp[DFLT_TRACE_MSG_FILE_NAME_LEN] = {'\0'};
     m_maxSessions                        = 0;
     locGtpcPort                          = DFLT_GTPC_PORT;
     remGtpcPort                          = DFLT_GTPC_PORT;
@@ -91,6 +91,7 @@ Config::Config()
     dispTarget                           = DISP_TARGET_SCREEN;
     m_ssnRatePeriod                      = DFLT_SESSION_RATE_PERIOD;
     m_ssnRate                            = DFLT_SESSION_RATE;
+    m_deadCallWait                       = DFLT_DEAD_CALL_WAIT;
     m_scnRunIntvl                        = 1000;
     m_logLevel                           = LOG_LVL_ERROR;
     m_ifType                             = GTP_IF_INF_INV;
@@ -210,18 +211,7 @@ VOID Config::setT3TimerSeconds(U32 val)
 
 VOID Config::setN3Requests(U32 n)
 {
-#if 0
-    if (0 == n)
-    {
-        LOG_FATAL("Invalid N3 Requests value");
-        LOG_INFO("N3 Requests is default value of 3");
-    }
-    else
-    {
-    }
-#else
-        pCfg->n3Req = n;
-#endif
+   pCfg->n3Req = n;
 }
 
 U32 Config::getN3Requests()
@@ -707,4 +697,9 @@ VOID Config::decrRate(U32 value)
    {
       LOG_ERROR("Minimum Session Rate Breached");
    }
+}
+
+Time_t Config::getDeadCallWait()
+{
+   return m_deadCallWait;
 }
