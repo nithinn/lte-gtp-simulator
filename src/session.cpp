@@ -80,10 +80,6 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_deadCallWait = Config::getInstance()->getDeadCallWait();
 
    LOG_DEBUG("Creating UE Session [%d]", m_sessionId);
-   LOG_ERROR("New UE, IMSI [%02x%02x%02x%02x%02x%02x%02x%02x]",\
-         m_imsiKey.val[0], m_imsiKey.val[1], m_imsiKey.val[2],\
-         m_imsiKey.val[3], m_imsiKey.val[4], m_imsiKey.val[5],\
-         m_imsiKey.val[6], m_imsiKey.val[7]);
 }
 
 
@@ -974,16 +970,4 @@ GtpcTun* UeSession::createCTun(GtpcPdn *pPdn)
    LOG_EXITFN(pCTun);
 }
 
-PUBLIC VOID printAllUes()
-{
-   UeSessionMapItr ueItr = s_ueSessionMap.begin();
-   for (; ueItr != s_ueSessionMap.end(); ueItr++)
-   {
-      UeSession *ssn = ueItr->second;
-      GtpImsiKey m_imsiKey = ssn->m_imsiKey;
-      LOG_ERROR("New UE, IMSI [%02x%02x%02x%02x%02x%02x%02x%02x]",\
-            m_imsiKey.val[0], m_imsiKey.val[1], m_imsiKey.val[2],\
-            m_imsiKey.val[3], m_imsiKey.val[4], m_imsiKey.val[5],\
-            m_imsiKey.val[6], m_imsiKey.val[7]);
-   }
-}
+

@@ -63,7 +63,7 @@ RETVAL GSimSocket::recvMsgV4(UdpData_t **msg)
    struct sockaddr_in  fromAddr;
    socklen_t           fromLen = sizeof(sockaddr_in);
 
-   U32 recvLen = recvfrom(m_fd, s_recvBuf, GSIM_UDP_READ_LEN,\
+   S32 recvLen = recvfrom(m_fd, s_recvBuf, GSIM_UDP_READ_LEN,\
          MSG_DONTWAIT, (struct sockaddr *)&fromAddr, &fromLen);
    if (recvLen > 0)
    {
@@ -300,9 +300,10 @@ PRIVATE RETVAL handleGtpcSock(GSimSocket *pSock)
 {
    LOG_ENTERFN();
 
-   RETVAL      ret = ROK;
+   RETVAL   ret = ROK;
+   U32      loops = GSIM_MAX_RECV_LOOPS;
 
-   try
+   while (loops && (ROK == ret))
    {
       UdpData_t *msg = NULL;
       ret = pSock->recvMsg(&msg);
@@ -311,19 +312,11 @@ PRIVATE RETVAL handleGtpcSock(GSimSocket *pSock)
          LOG_DEBUG("Process the Received messages", pSock->fd());
          procGtpcMsg(msg);
       }
-      else
-      {
-         LOG_ERROR("Socket recv Message fd [%d]", pSock->fd());
-         ret = ERR_SYS_SOCK_READ;
-      }
-   }
-   catch (exception &e)
-   {
-      LOG_FATAL("Memory Allocation, UdpData_t");
-      ret = ERR_MEMORY_ALLOC;
-   }
 
-   LOG_EXITFN(ret);
+      loops--;
+   };
+
+   LOG_EXITFN(ROK);
 }
 
 /**
@@ -429,7 +422,7 @@ PUBLIC RETVAL initTransport()
    LOG_EXITFN(ret);
 }
 
-GSimSocket::GSimSocket(SockType_t   sockType)
+GSimSocket::GSimSocket(SockType_t sockType)
 {
    if (SOCK_TYPE_STDIN == sockType)
    {
@@ -481,6 +474,20 @@ GSimSocket::GSimSocket(SockType_t sockType, IPEndPoint ep)
       s_pollFdArr[m_pollFdIndex].fd = m_fd;
       s_pollFdArr[m_pollFdIndex].events  = POLLIN | POLLERR;
       s_pollFdArr[m_pollFdIndex].revents = 0;
+
+      U32 sockRecvBuf = GSIM_MAX_SOCKET_RECV_BUF;
+      if (setsockopt(m_fd, SOL_SOCKET, SO_RCVBUF, &sockRecvBuf,\
+            sizeof(sockRecvBuf)) < 0)
+      {
+         LOG_ERROR("setsockopt() Failed, [%s]", strerror(errno));
+      }
+
+      U32 sockSendBuf = GSIM_MAX_SOCKET_SEND_BUF;
+      if (setsockopt(m_fd, SOL_SOCKET, SO_RCVBUF, &sockSendBuf,\
+            sizeof(sockSendBuf)) < 0)
+      {
+         LOG_ERROR("setsockopt() Failed, [%s]", strerror(errno));
+      }
    }
    else
    {
@@ -545,7 +552,7 @@ RETVAL GSimSocket::bindSocket()
 
    if (ret < 0)
    {
-      LOG_FATAL("Socket Binding Failed, [%d]", strerror(errno));
+      LOG_FATAL("Socket Binding Failed, [%s]", strerror(errno));
       return ERR_SYS_SOCKET_BIND;
    }
 

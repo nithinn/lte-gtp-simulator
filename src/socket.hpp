@@ -26,6 +26,8 @@
 #define GSIM_MAX_SOCK_CNT        3
 #define GSIM_MAX_POLL_FDS        32
 #define GSIM_MAX_RECV_LOOPS      1000
+#define GSIM_MAX_SOCKET_RECV_BUF (1 << 20)
+#define GSIM_MAX_SOCKET_SEND_BUF (1 << 20)
 
 typedef enum
 {
