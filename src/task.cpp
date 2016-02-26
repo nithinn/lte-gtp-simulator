@@ -23,8 +23,8 @@
 
 static TaskId_t   s_taskId = 0;
 TaskList          g_runningTasks;
-TaskList          g_pausedTasks;
 TaskList          g_allTasks;
+TimeWheel         pausedTasks;
 
 Task::Task()
 {
@@ -42,7 +42,7 @@ VOID Task::stop()
    }
    else if (TASK_STATE_PAUSED == m_taskState)
    {
-      g_pausedTasks.erase(m_pausedTaskItr);
+      pausedTasks.removeTask(this);
    }
 
    m_taskState = TASK_STATE_STOPPED;
@@ -61,12 +61,12 @@ VOID Task::pause()
    {
       g_runningTasks.erase(m_runningTaskItr);
       m_taskState = TASK_STATE_PAUSED;
-      m_pausedTaskItr = g_pausedTasks.insert(g_pausedTasks.end(), this);
+      pausedTasks.addTask(this);
    }
    else if (TASK_STATE_STOPPED == m_taskState)
    {
       m_taskState = TASK_STATE_PAUSED;
-      m_pausedTaskItr = g_pausedTasks.insert(g_pausedTasks.end(), this);
+      pausedTasks.addTask(this);
    }
 }
 
@@ -74,7 +74,7 @@ VOID Task::resumeTask()
 {
    if (TASK_STATE_PAUSED == m_taskState)
    {
-      g_pausedTasks.erase(m_pausedTaskItr);
+      pausedTasks.removeTask(this);
       m_runningTaskItr = g_runningTasks.insert(g_runningTasks.end(), this);
    }
    else if (TASK_STATE_STOPPED == m_taskState)
@@ -90,9 +90,10 @@ TaskList* TaskMgr::getRunningTasks()
    return &g_runningTasks;
 }
 
-TaskList* TaskMgr::getPausedTasks()
+VOID Task::addToRunQueue()
 {
-   return &g_pausedTasks;
+   m_runningTaskItr = g_runningTasks.insert(g_runningTasks.end(), this);
+   m_taskState = TASK_STATE_RUNNING;
 }
 
 TaskList* TaskMgr::getAllTasks()
@@ -102,6 +103,7 @@ TaskList* TaskMgr::getAllTasks()
 
 VOID TaskMgr::resumePausedTasks()
 {
+#if 0
    Time_t currTime = getMilliSeconds();
    TaskList *pPausedTasks = getPausedTasks();
    TaskListItr itr = pPausedTasks->begin();
@@ -116,6 +118,8 @@ VOID TaskMgr::resumePausedTasks()
          t->resumeTask();
       }
    }
+#endif
+   pausedTasks.resumePausedTasks();
 }
 
 VOID TaskMgr::deleteAllTasks()
@@ -129,4 +133,9 @@ VOID TaskMgr::deleteAllTasks()
       itr++;
       tmp->abort();
    }
+}
+
+VOID Task::recalcWheel()
+{
+   pausedTasks.addTask(this);
 }

@@ -140,8 +140,9 @@ PRIVATE RETVAL sendMsgV4(GSimSocket *pSock, IPEndPoint *pDst, Buffer *data)
    destAddr.sin_port = htons(pDst->port);
    MEMSET(destAddr.sin_zero, '\0', sizeof(destAddr.sin_zero));
 
-   if (sendto(pSock->fd(), (VOID *)data->pVal, (size_t)data->len,
-            MSG_DONTWAIT, (struct sockaddr *)&destAddr, sizeof(destAddr)) < 0)
+   S32 ret = sendto(pSock->fd(), (VOID *)data->pVal, (size_t)data->len,\
+         MSG_DONTWAIT, (struct sockaddr *)&destAddr, sizeof(destAddr));
+   if (ret < 0)
    {
       LOG_FATAL("Socket sendto() failed, [%s]", strerror(errno));
       LOG_EXITFN(ERR_SYS_SOCK_SEND);

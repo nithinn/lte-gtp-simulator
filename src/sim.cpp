@@ -133,6 +133,7 @@ VOID Simulator::startScheduler()
 
    for (;;)
    {
+      getMilliSeconds();
       if (KB_KEY_SIM_QUIT == Keyboard::key)
       {
          LOG_INFO("Exiting Simulator");
@@ -160,6 +161,8 @@ VOID Simulator::startScheduler()
             t->abort();
          }
       }
+
+      getMilliSeconds();
 
       // read the sockets for keyboard events and gtp messages
       socketPoll(1);

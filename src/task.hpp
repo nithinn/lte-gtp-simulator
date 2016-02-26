@@ -35,7 +35,6 @@ class TaskMgr
 {
    public:
       static TaskList* getRunningTasks();
-      static TaskList* getPausedTasks();
       static TaskList* getAllTasks();
       static VOID resumePausedTasks();
       static VOID deleteAllTasks();
@@ -73,14 +72,19 @@ class Task
 
       BOOL isRunning() {return m_taskState == TASK_STATE_RUNNING;}
 
+      VOID addToRunQueue();
    private:
+
+      VOID              recalcWheel();
 
       TaskListItr       m_allTaskItr;
       TaskListItr       m_runningTaskItr;
       TaskListItr       m_pausedTaskItr;
+      TaskList          *m_pausedTaskList;
       TaskState_t       m_taskState;
       
       friend class TaskMgr;
+      friend class TimeWheel;
 };
 
 #endif
