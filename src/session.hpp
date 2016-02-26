@@ -90,7 +90,7 @@ typedef struct
    U32            taskIndx;
 } LastRcvdReq;
 
-typedef struct
+typedef struct _procedure_t_
 {
    GtpSeqNumber_t    seqNumber;
    GtpMsgType_t      reqType;
@@ -98,6 +98,12 @@ typedef struct
    TransConnId       connId;
    UdpData_t         *sentMsg;
    MsgTask           *procTask;
+
+   _procedure_t_()
+   {
+      sentMsg = NULL;
+      procTask = NULL;
+   }
 } Procedure_t;
 
 class UeSession: public Task

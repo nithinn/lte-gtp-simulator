@@ -94,6 +94,9 @@ UeSession::~UeSession()
    if (NULL != m_pSentNwData)
       delete m_pSentNwData;
 
+   if (NULL != m_prevProc.sentMsg)
+      delete m_prevProc.sentMsg;
+
    for (GtpcPdnLstItr pPdn = m_pdnLst.begin(); pPdn != m_pdnLst.end(); pPdn++)
    {
       /* delete the c-plane tunnels */
@@ -277,9 +280,9 @@ RETVAL UeSession::procOutReqMsg(GtpMsg *gtpMsg)
    createBearers(pPdn, gtpMsg, 0);
 
    LOG_DEBUG("Encoding OUT Message");
-   UdpData_t *pNwData = new UdpData_t;
    m_currSeqNum = generateSeqNum(&m_peerEp, GTP_MSG_CAT_REQ);
    m_currReqType = gtpMsg->type();
+   UdpData_t *pNwData = new UdpData_t;
    encGtpcOutMsg(pPdn, gtpMsg, &pNwData->buf, &m_peerEp);
 
    /* initial message, send the message over default send socket */
@@ -366,6 +369,7 @@ RETVAL UeSession::procOutRspMsg(GtpMsg *gtpMsg)
    sendMsg(pNwData->connId, &pNwData->peerEp, buf);
    m_currTask->m_numSnd++;
 
+   delete m_prevProc.sentMsg;
    m_prevProc.sentMsg = pNwData;
    m_prevProc.rspType = gtpMsg->type();
 
