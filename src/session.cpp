@@ -78,6 +78,11 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_imsiKey = imsi;
    m_pSentNwData = NULL;
    m_deadCallWait = Config::getInstance()->getDeadCallWait();
+   m_bearerVec.reserve(GTP_MAX_BEARERS);
+   for (U32 i = 0; i < GTP_MAX_BEARERS; i++)
+   {
+      m_bearerVec[i] = NULL;
+   }
 
    LOG_DEBUG("Creating UE Session [%d]", m_sessionId);
 }
@@ -107,13 +112,16 @@ UeSession::~UeSession()
          pCTun = NULL;
       }
       
-      GtpBearerLstItr bearer;
-      for (bearer = m_bearerLst.begin(); bearer != m_bearerLst.end(); bearer++)
+      for (U32 i = 0; i < GTP_MAX_BEARERS; i++)
       {
-         if (GSIM_CHK_BEARER_MASK((*pPdn)->bearerMask, (*bearer)->getEbi()))
+         GtpBearer *bearer = m_bearerVec[i];
+         if (NULL != bearer)
          {
-            GSIM_UNSET_BEARER_MASK((*pPdn)->bearerMask, (*bearer)->getEbi());
-            delete *bearer;
+            if (GSIM_CHK_BEARER_MASK((*pPdn)->bearerMask, bearer->getEbi()))
+            {
+               GSIM_UNSET_BEARER_MASK((*pPdn)->bearerMask, bearer->getEbi());
+               delete bearer;
+            }
          }
       }
 
@@ -148,12 +156,12 @@ RETVAL UeSession::run(VOID *arg)
          if (taskType == MSG_TASK_SEND)
          {
             LOG_TRACE("Processing Send() Task");
-            ret = procSend();
+            ret = handleSend();
          }
          else if (taskType == MSG_TASK_WAIT)
          {
             LOG_TRACE("Processing Wait() Task");
-            ret = procWait();
+            ret = handleWait();
          }
       }
 
@@ -183,7 +191,7 @@ RETVAL UeSession::run(VOID *arg)
    LOG_EXITFN(ret);
 }
 
-RETVAL UeSession::procSend()
+RETVAL UeSession::handleSend()
 {
    LOG_ENTERFN();
 
@@ -192,7 +200,7 @@ RETVAL UeSession::procSend()
    if GSIM_CHK_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP)
    {
       LOG_DEBUG("Processing Request Timeout")
-      ret = procOutReqTimeout();
+      ret = handleOutReqTimeout();
       if (ERR_MAX_RETRY_EXCEEDED == ret)
       {
          m_currTask->m_numTimeOut++;
@@ -217,7 +225,7 @@ RETVAL UeSession::procSend()
           * message is received. so after processing sending the request
           * out do not finish the task
           */
-         ret = procOutReqMsg(gtpMsg);
+         ret = handleOutReqMsg(gtpMsg);
          if (ROK != ret)
          {
             /* sending a request message failed, terminate the UE
@@ -236,7 +244,7 @@ RETVAL UeSession::procSend()
       }
       else
       {
-         ret = procOutRspMsg(gtpMsg);
+         ret = handleOutRspMsg(gtpMsg);
          if (ROK != ret)
          {
             /* sending a response message failed, terminate the UE
@@ -255,7 +263,7 @@ RETVAL UeSession::procSend()
    LOG_EXITFN(ret);
 }
 
-RETVAL UeSession::procOutReqMsg(GtpMsg *gtpMsg)
+RETVAL UeSession::handleOutReqMsg(GtpMsg *gtpMsg)
 {
    LOG_ENTERFN();
 
@@ -310,7 +318,7 @@ RETVAL UeSession::procOutReqMsg(GtpMsg *gtpMsg)
  * 
  * @return 
  */
-RETVAL UeSession::procOutReqTimeout()
+RETVAL UeSession::handleOutReqTimeout()
 {
    LOG_ENTERFN();
 
@@ -347,7 +355,7 @@ RETVAL UeSession::procOutReqTimeout()
    LOG_EXITFN(ret);
 }
 
-RETVAL UeSession::procOutRspMsg(GtpMsg *gtpMsg)
+RETVAL UeSession::handleOutRspMsg(GtpMsg *gtpMsg)
 {
    LOG_ENTERFN();
 
@@ -393,7 +401,7 @@ RETVAL UeSession::handleRecv(UdpData_t *data)
    if (msgCat == GTP_MSG_CAT_REQ)
    {
       LOG_DEBUG("Processing Incoming Request message");
-      ret = procIncReqMsg(&gtpMsg, data);
+      ret = handleIncReqMsg(&gtpMsg, data);
       if (ROK != ret)
       {
          LOG_ERROR("Processing Incoming Request Message, Error [%d]", ret);
@@ -402,7 +410,7 @@ RETVAL UeSession::handleRecv(UdpData_t *data)
    else if (msgCat == GTP_MSG_CAT_RSP)
    {
       LOG_DEBUG("Processing Incoming Response message");
-      ret = procIncRspMsg(&gtpMsg, data);
+      ret = handleIncRspMsg(&gtpMsg, data);
       if (ROK != ret)
       {
          LOG_ERROR("Processing Incoming Response Message, Error [%d]", ret);
@@ -426,7 +434,7 @@ MsgTaskType_t UeSession::nextTaskType()
    return taskType;
 }
 
-RETVAL UeSession::procIncReqMsg(GtpMsg *rcvdReq, UdpData_t *rcvdData)
+RETVAL UeSession::handleIncReqMsg(GtpMsg *rcvdReq, UdpData_t *rcvdData)
 {
    LOG_ENTERFN();
 
@@ -549,7 +557,7 @@ BOOL UeSession::isPrevProcReq(GtpMsg *reqMsg)
    LOG_EXITFN(prevProcReq);
 }
 
-PUBLIC RETVAL UeSession::procIncRspMsg(GtpMsg *rspMsg, UdpData_t *rcvdData)
+PUBLIC RETVAL UeSession::handleIncRspMsg(GtpMsg *rspMsg, UdpData_t *rcvdData)
 {
    LOG_ENTERFN();
 
@@ -588,7 +596,7 @@ PUBLIC RETVAL UeSession::procIncRspMsg(GtpMsg *rspMsg, UdpData_t *rcvdData)
    LOG_EXITFN(ROK);
 }
 
-RETVAL UeSession::procWait()
+RETVAL UeSession::handleWait()
 {
    LOG_ENTERFN();
 
@@ -723,7 +731,7 @@ VOID UeSession::createBearers
 
          GtpBearer *pBearer = new GtpBearer(pPdn, ebi);
          GSIM_SET_BEARER_MASK(pPdn->bearerMask, ebi);
-         m_bearerLst.push_back(pBearer);
+         m_bearerVec[GTP_BEARER_INDEX(ebi)] = pBearer;
       }
    }
 
@@ -789,8 +797,7 @@ VOID UeSession::encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
          throw ret;
       }
    }
-
-   if (GTPC_MSG_CS_RSP == msgType)
+   else if (GTPC_MSG_CS_RSP == msgType)
    {
       RETVAL ret = pGtpMsg->setSenderFteid(pPdn->pCTun->m_locTeid, \
             &pPdn->pCTun->m_localEp.ipAddr);
@@ -868,15 +875,7 @@ GtpBearer* UeSession::getBearer(GtpEbi_t ebi)
 {
    LOG_ENTERFN();
 
-   GtpBearer *pBearer = NULL;
-   for (GtpBearerLstItr b = m_bearerLst.begin(); b != m_bearerLst.end(); b++)
-   {
-      if ((*b)->getEbi() == ebi)
-      {
-         pBearer = *b;
-         break;
-      }
-   }
+   GtpBearer *pBearer = m_bearerVec[GTP_BEARER_INDEX(ebi)];
 
    LOG_EXITFN(pBearer);
 }

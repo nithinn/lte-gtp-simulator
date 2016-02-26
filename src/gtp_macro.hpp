@@ -276,3 +276,5 @@ do                                                 \
 } while (0);
 
 #define GTP_SET_SEQN_MSB(_v)  ((_v) |= (1 << 15))
+
+#define GTP_BEARER_INDEX(_v)  ((_v) - 5)

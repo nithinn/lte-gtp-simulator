@@ -26,6 +26,7 @@
 #define SND_MSG_WAIT_TIMER                0     /* time to wait before 
                                                  * sending a msg */
 #define GTP_MSG_BUF_LEN                   1024
+#define GTP_MAX_BEARERS                   11
 
 typedef U8           GtpVersion_t;
 typedef U32          GtpTeid_t;

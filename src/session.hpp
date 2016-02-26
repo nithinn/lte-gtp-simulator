@@ -80,8 +80,7 @@ class GtpBearer
 typedef std::list<GtpcPdn *>        GtpcPdnLst;
 typedef GtpcPdnLst::iterator        GtpcPdnLstItr;
 
-typedef std::list<GtpBearer *>      GtpBearerLst;
-typedef GtpBearerLst::iterator      GtpBearerLstItr;
+typedef std::vector<GtpBearer*>     GtpBearerVec;
 
 typedef struct
 {
@@ -139,7 +138,7 @@ class UeSession: public Task
       IPEndPoint        m_peerEp;
       EpcNodeType_t     m_nodeType; 
       GtpcPdnLst        m_pdnLst;     
-      GtpBearerLst      m_bearerLst;
+      GtpBearerVec      m_bearerVec;
       Time_t            m_wakeTime;
       UdpData_t         *m_pSentNwData;
       UdpData_t         *m_pRcvdNwData;
@@ -165,15 +164,15 @@ class UeSession: public Task
       VOID              decAndStoreGtpcIncMsg(GtpcPdn*, GtpMsg*,\
                               const IPEndPoint*);
       GtpBearer*        getBearer(GtpEbi_t ebi);
-      RETVAL            procSend();
-      RETVAL            procWait();
+      RETVAL            handleSend();
+      RETVAL            handleWait();
       RETVAL            handleRecv(UdpData_t* data);
-      RETVAL            procIncReqMsg(GtpMsg *pGtpMsg, UdpData_t *rcvdData);
-      RETVAL            procIncRspMsg(GtpMsg *pGtpMsg, UdpData_t *rcvdData);
+      RETVAL            handleIncReqMsg(GtpMsg *pGtpMsg, UdpData_t *rcvdData);
+      RETVAL            handleIncRspMsg(GtpMsg *pGtpMsg, UdpData_t *rcvdData);
       GtpcTun*          createCTun(GtpcPdn *pPdn);
-      RETVAL            procOutRspMsg(GtpMsg *gtpMsg);
-      RETVAL            procOutReqMsg(GtpMsg *gtpMsg);
-      RETVAL            procOutReqTimeout();
+      RETVAL            handleOutRspMsg(GtpMsg *gtpMsg);
+      RETVAL            handleOutReqMsg(GtpMsg *gtpMsg);
+      RETVAL            handleOutReqTimeout();
       MsgTaskType_t     nextTaskType();
       RETVAL            handleDeadCall(VOID *arg);
 };
