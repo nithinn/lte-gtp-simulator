@@ -49,36 +49,36 @@ XmlParser::XmlParser(const S8 *pXmlFile) throw (ErrCodeEn)
    }
 }
 
-MsgVec* XmlParser::parseXmlDoc()
+JobSequence* XmlParser::parseXmlDoc()
 {
    xml_node root = m_xmlDoc.first_child();
    LOG_INFO("%s", root.name());
    LOG_INFO("%s", root.attribute("name").value());
 
-   MsgVec *pMsgVec = NULL;
+   JobSequence *jobSeq = NULL;
 
    try
    {
-      pMsgVec = new MsgVec;
+      jobSeq = new JobSequence;
       for (xml_node node = root.first_child(); node;\
             node = node.next_sibling())
       {
-         MsgTask  *pMsgTask = NULL;
+         Job  *job = NULL;
 
          if (0 == strcmp(node.name(), "send"))
          {
-            pMsgTask = procSend(&node);
-            pMsgVec->push_back(pMsgTask);
+            job = procSend(&node);
+            jobSeq->push_back(job);
          }
          else if (0 == strcmp(node.name(), "recv"))
          {
-            pMsgTask = procRecv(&node);
-            pMsgVec->push_back(pMsgTask);
+            job = procRecv(&node);
+            jobSeq->push_back(job);
          }
          else if (0 == strcmp(node.name(), "wait"))
          {
-            pMsgTask = procWait(&node);
-            pMsgVec->push_back(pMsgTask);
+            job = procWait(&node);
+            jobSeq->push_back(job);
          }
          else
          {
@@ -95,7 +95,7 @@ MsgVec* XmlParser::parseXmlDoc()
       throw ERR_XML_PROCESSING;
    }
 
-   LOG_EXITFN(pMsgVec);
+   LOG_EXITFN(jobSeq);
 }
  
 /**
@@ -119,12 +119,12 @@ XmlParser::~XmlParser()
  *    ROK if processed successfully
  *    RFAILED otherwise
  */
-MsgTask* XmlParser::procSend(xml_node *pSend)
+Job* XmlParser::procSend(xml_node *pSend)
 {
    LOG_ENTERFN();
 
    GtpIeLst ieLst;
-   MsgTask  *pMsgTask = NULL;
+   Job  *job = NULL;
 
    try
    {
@@ -154,7 +154,7 @@ MsgTask* XmlParser::procSend(xml_node *pSend)
       GtpMsg *pGtpMsg = new GtpMsg(gtpGetMsgType(pMsgName));
       pGtpMsg->encode(&ieLst);
 
-      pMsgTask = new MsgTask(pGtpMsg, MSG_TASK_SEND);
+      job = new Job(pGtpMsg, JOB_TYPE_SEND);
    }
    catch (std::exception &m)
    {
@@ -165,7 +165,7 @@ MsgTask* XmlParser::procSend(xml_node *pSend)
       throw ERR_XML_PROCESSING;
    }
 
-   LOG_EXITFN(pMsgTask);
+   LOG_EXITFN(job);
 }
 
 /**
@@ -179,11 +179,11 @@ MsgTask* XmlParser::procSend(xml_node *pSend)
  *    ROK if processed successfully
  *    RFAILED otherwise
  */
-MsgTask* XmlParser::procRecv(xml_node *pRecv)
+Job* XmlParser::procRecv(xml_node *pRecv)
 {
    LOG_ENTERFN();
 
-   MsgTask     *pMsgTask = NULL;
+   Job     *job = NULL;
 
    try
    {
@@ -213,7 +213,7 @@ MsgTask* XmlParser::procRecv(xml_node *pRecv)
       }
 
       GtpMsg *pGtpMsg = new GtpMsg(gtpGetMsgType(pMsgName));
-      pMsgTask = new MsgTask(pGtpMsg, MSG_TASK_RECV);
+      job = new Job(pGtpMsg, JOB_TYPE_RECV);
    }
    catch (std::exception &m)
    {
@@ -224,16 +224,16 @@ MsgTask* XmlParser::procRecv(xml_node *pRecv)
       throw ERR_XML_PROCESSING;
    }
 
-   LOG_EXITFN(pMsgTask);
+   LOG_EXITFN(job);
 }
 
-MsgTask* XmlParser::procWait(xml_node *pWait)
+Job* XmlParser::procWait(xml_node *pWait)
 {
    LOG_ENTERFN();
 
-   MsgTask* pMsgTask = NULL;
+   Job* job = NULL;
 
-   LOG_EXITFN(pMsgTask);
+   LOG_EXITFN(job);
 }
 
 /**
@@ -424,7 +424,7 @@ RETVAL XmlParser::procGroupedIe(GtpIe *pIe, xml_node *pXmlIe)
    LOG_EXITFN(ret);
 }
 
-PUBLIC VOID parseXmlScenario(const S8 *pScnFile, MsgVec *pMsgVec) \
+PUBLIC VOID parseXmlScenario(const S8 *pScnFile, JobSequence *jobSeq) \
       throw (ErrCodeEn)
 {
    LOG_ENTERFN();
@@ -433,20 +433,20 @@ PUBLIC VOID parseXmlScenario(const S8 *pScnFile, MsgVec *pMsgVec) \
    {
       XmlParser parser(pScnFile);
       
-      MsgVec *pTmpMskVec = parser.parseXmlDoc();
-      if (NULL == pMsgVec)
+      JobSequence *tmpJobSeq = parser.parseXmlDoc();
+      if (NULL == jobSeq)
       {
          throw ERR_XML_PARSING;
       }
       else
       {
-         for (U32 i = 0; i < pTmpMskVec->size(); i++)
+         for (U32 i = 0; i < tmpJobSeq->size(); i++)
          {
-            MsgTask *pMsgTask = (*pTmpMskVec)[i];
-            pMsgVec->push_back(pMsgTask);
+            Job *job = (*tmpJobSeq)[i];
+            jobSeq->push_back(job);
          }
 
-         delete pTmpMskVec;
+         delete tmpJobSeq;
       }
    }
    catch (ErrCodeEn &e)

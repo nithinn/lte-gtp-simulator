@@ -119,8 +119,8 @@ VOID Display::init()
    STRCPY(m_remIpAddrStr, (Config::getInstance()->\
          getRemIpAddrStr()).c_str());
 
-   m_pMsgVec = &(Scenario::getInstance()->m_msgVec);
-   m_msgVecLen = m_pMsgVec->size();
+   m_jobSeq = &(Scenario::getInstance()->m_jobSeq);
+   m_jobSeqLen = m_jobSeq->size();
 
    /* Map exit handlers to curses reset procedure */
    memset(&action_quit, 0, sizeof(action_quit));
@@ -174,25 +174,25 @@ VOID Display::disp()
    fprintf(stdout,"                                 "\
            "Messages  Retrans   Timeout   Unexpected-Msg\r\n");
 
-   for (U32 i = 0; i < m_msgVecLen; i++)
+   for (U32 i = 0; i < m_jobSeqLen; i++)
    {
-      MsgTask *pMsgTask = (*m_pMsgVec)[i];
-      fprintf(stdout, "%s  ", pMsgTask->m_msgName);
+      Job *job = (*m_jobSeq)[i];
+      fprintf(stdout, "%s  ", job->m_msgName);
 
-      if (pMsgTask->type() == MSG_TASK_SEND)
+      if (job->type() == JOB_TYPE_SEND)
       {
          fprintf(stdout, "\t--->");
-         fprintf(stdout, " \t%9d", pMsgTask->m_numSnd);
-         fprintf(stdout, "%9d", pMsgTask->m_numSndRetrans);
-         fprintf(stdout, " %9d", pMsgTask->m_numTimeOut);
+         fprintf(stdout, " \t%9d", job->m_numSnd);
+         fprintf(stdout, "%9d", job->m_numSndRetrans);
+         fprintf(stdout, " %9d", job->m_numTimeOut);
          fprintf(stdout, ENDLINE);
       }
-      else if (pMsgTask->type() == MSG_TASK_RECV)
+      else if (job->type() == JOB_TYPE_RECV)
       {
          fprintf(stdout, " \t<---");
-         fprintf(stdout, "\t%9d", pMsgTask->m_numRcv);
-         fprintf(stdout, "%9d", pMsgTask->m_numRcvRetrans);
-         fprintf(stdout, "                  %9d", pMsgTask->m_numUnexp);
+         fprintf(stdout, "\t%9d", job->m_numRcv);
+         fprintf(stdout, "%9d", job->m_numRcvRetrans);
+         fprintf(stdout, "                  %9d", job->m_numUnexp);
          fprintf(stdout, ENDLINE);
       }
       else

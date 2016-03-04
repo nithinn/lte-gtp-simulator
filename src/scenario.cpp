@@ -35,7 +35,7 @@ using namespace pugi;
 #include "scenario.hpp"
 
 class Scenario* Scenario::m_pMainScn = NULL;  
-EXTERN VOID parseXmlScenario(const S8*, MsgVec*) throw (ErrCodeEn);
+EXTERN VOID parseXmlScenario(const S8*, JobSequence*) throw (ErrCodeEn);
 
 Scenario* Scenario::getInstance()
 {
@@ -63,7 +63,7 @@ Scenario::Scenario()
 
 Scenario::~Scenario()
 {
-   for (MsgVecItr itr = m_msgVec.begin(); itr != m_msgVec.end(); itr++)
+   for (JobSeqItr itr = m_jobSeq.begin(); itr != m_jobSeq.end(); itr++)
    {
       delete *itr;
    }
@@ -83,7 +83,7 @@ VOID Scenario::init(const S8 *pScnFile) throw (ErrCodeEn)
 {
    try
    {
-      parseXmlScenario(pScnFile, &m_msgVec);  
+      parseXmlScenario(pScnFile, &m_jobSeq);  
    }
    catch (ErrCodeEn &e)
    {
@@ -91,8 +91,8 @@ VOID Scenario::init(const S8 *pScnFile) throw (ErrCodeEn)
       throw e;
    }
 
-   MsgTask *pFirstTask = m_msgVec[0];
-   if (pFirstTask->type() == MSG_TASK_SEND)
+   Job *firstJob = m_jobSeq[0];
+   if (firstJob->type() == JOB_TYPE_SEND)
    {
       m_scnType = SCN_TYPE_INITIATING;
    }

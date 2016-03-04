@@ -141,16 +141,5 @@ VOID Stats::decStats(GtpStat_t statsType)
    --s_gsimStats[statsType];
 }
 
-/**
- * @brief
- *    Initializes singleto instance of Stats object with message types
- *    involved in a scenario
- *
- * @param pMsg
- *    Pointer to a vector containing Message objects
- */
-VOID Stats::init(MsgVec *pMsgVec)
-{
-}
 
 

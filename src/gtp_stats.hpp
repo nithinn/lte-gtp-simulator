@@ -64,7 +64,7 @@ class Stats
    /**
     * Initializes with message types involved in a scenario
     */
-   VOID init(MsgVec *pMsgVec);
+   VOID init(JobSequence *pMsgVec);
 
    /**
     * Interface to get singleton Instance

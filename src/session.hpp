@@ -89,21 +89,21 @@ typedef struct
    U32            taskIndx;
 } LastRcvdReq;
 
-typedef struct _procedure_t_
+typedef struct _transaction_t_
 {
    GtpSeqNumber_t    seqNumber;
    GtpMsgType_t      reqType;
    GtpMsgType_t      rspType;
    TransConnId       connId;
    UdpData_t         *sentMsg;
-   MsgTask           *procTask;
+   Job           *procTask;
 
-   _procedure_t_()
+   _transaction_t_()
    {
       sentMsg = NULL;
       procTask = NULL;
    }
-} Procedure_t;
+} Transaction_t;
 
 class UeSession: public Task
 {
@@ -146,11 +146,11 @@ class UeSession: public Task
       Scenario          *m_pScn;
 
       U32               m_currTaskIndx;
-      MsgTask           *m_currTask;
+      Job               *m_currTask;
       GtpSeqNumber_t    m_currSeqNum;
       TransConnId       m_currConnId;
       GtpMsgType_t      m_currReqType;
-      Procedure_t       m_prevProc;
+      Transaction_t     m_prevTrans;
       Time_t            m_deadCallWait;
 
       BOOL              isExpectedRsp(GtpMsg *rspMsg);
@@ -173,7 +173,7 @@ class UeSession: public Task
       RETVAL            handleOutRspMsg(GtpMsg *gtpMsg);
       RETVAL            handleOutReqMsg(GtpMsg *gtpMsg);
       RETVAL            handleOutReqTimeout();
-      MsgTaskType_t     nextTaskType();
+      JobType_t     nextTaskType();
       RETVAL            handleDeadCall(VOID *arg);
 };
 

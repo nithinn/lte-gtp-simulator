@@ -37,7 +37,9 @@ class Scenario
       VOID           shutdown();
       GtpIfType_t    ifType();
 
-      MsgVec         m_msgVec;
+      JobSequence    m_jobSeq;
+      ProcSequence   procSeq;
+
    private:
       Scenario();
 

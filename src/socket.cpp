@@ -173,7 +173,7 @@ PRIVATE RETVAL sendMsgV6(GSimSocket *pSock, IPEndPoint *pDst, Buffer *data)
 }
 
 
-PUBLIC VOID socketPoll(S32  wait)
+PUBLIC VOID socketPoll(S32 wait)
 {
    S32 rs; /* Number of times to execute recv().
             * For TCP with 1 socket per call: no. of events returned by poll
@@ -466,6 +466,12 @@ GSimSocket::GSimSocket(SockType_t sockType, IPEndPoint ep)
       {
          LOG_FATAL("socket system call, [%s]", strerror(errno));
          throw ERR_SYS_SOCKET_CREATE;
+      }
+
+      if (fcntl(m_fd, F_SETFL, O_NONBLOCK) < 0)
+      {
+         LOG_FATAL("socket system call, [%s]", strerror(errno));
+         throw ERR_SYS_SOCK_CNTRL;
       }
 
       m_type = sockType;

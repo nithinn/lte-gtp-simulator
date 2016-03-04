@@ -17,28 +17,32 @@
 #ifndef _SCENARIO_MSG_HPP_
 #define _SCENARIO_MSG_HPP_
 
-class MsgTask;
-typedef std::vector<MsgTask* >   MsgVec;
-typedef MsgVec::iterator         MsgVecItr;
+class Job;
+class Procedure;
+
+typedef std::vector<Job*>        JobSequence;
+typedef JobSequence::iterator    JobSeqItr;
+typedef std::vector<Procedure*>  ProcSequence;
+typedef ProcSequence::iterator   ProcSeqItr;
 
 typedef enum
 {
-   MSG_TASK_INV,
-   MSG_TASK_SEND,
-   MSG_TASK_RECV,
-   MSG_TASK_WAIT,
-   MSG_TASK_MAX
-} MsgTaskType_t;
+   JOB_TYPE_INV,
+   JOB_TYPE_SEND,
+   JOB_TYPE_RECV,
+   JOB_TYPE_WAIT,
+   JOB_TYPE_MAX
+} JobType_t;
 
-class MsgTask
+class Job
 {
    public:
-      MsgTask();
-      ~MsgTask();
-      MsgTask(GtpMsg*, MsgTaskType_t);
+      Job();
+      ~Job();
+      Job(GtpMsg*, JobType_t);
 
       GtpMsg*        getGtpMsg();
-      inline MsgTaskType_t type() { return m_type; }
+      inline JobType_t type() { return m_type; }
       inline Time_t wait() { return m_wait; }
 
       Counter        m_numSnd;
@@ -51,8 +55,19 @@ class MsgTask
 
    private:
       GtpMsg         *m_pGtpMsg;
-      MsgTaskType_t  m_type;
+      JobType_t      m_type;
       Time_t         m_wait;
+};
+
+class Procedure
+{
+   public:
+      Procedure();
+      ~Procedure();
+      VOID addJob(GtpMsg *msg, JobType_t jobType);
+
+   private:
+      JobSequence      jobSeq;
 };
 
 #endif /* _SCENARIO_MSG_HPP_ */

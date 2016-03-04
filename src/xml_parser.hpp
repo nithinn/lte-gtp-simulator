@@ -24,9 +24,9 @@ class XmlParser
    private:
       xml_document   m_xmlDoc;
 
-      MsgTask* procSend(xml_node *node);      
-      MsgTask* procRecv(xml_node *node);      
-      MsgTask* procWait(xml_node *node);      
+      Job* procSend(xml_node *node);      
+      Job* procRecv(xml_node *node);      
+      Job* procWait(xml_node *node);      
       RETVAL procIe(xml_node *node, GtpIeLst *pIeLst);
       RETVAL procStore(xml_node *node);      
       RETVAL procValidate(xml_node *node);      
@@ -34,13 +34,13 @@ class XmlParser
       RETVAL procGroupedIe(GtpIe *pIe, xml_node *pXmlIe);
 
    public:
-      MsgVec* parseXmlDoc();
+      JobSequence* parseXmlDoc();
       XmlParser(const S8* pXmlFile) throw (ErrCodeEn);
 
       ~XmlParser();
 };
 
 
-EXTERN VOID parseXmlScenario(const S8*, MsgVec*) throw (ErrCodeEn);
+EXTERN VOID parseXmlScenario(const S8*, JobSequence*) throw (ErrCodeEn);
 
 #endif

@@ -28,13 +28,13 @@
 #include "gtp_msg.hpp"
 #include "message.hpp"
 
-MsgTask::MsgTask()
+Job::Job()
 {
-   m_type    = MSG_TASK_INV;
+   m_type    = JOB_TYPE_INV;
    m_pGtpMsg = NULL;
 }
 
-MsgTask::MsgTask(GtpMsg *pGtpMsg, MsgTaskType_t taskType)
+Job::Job(GtpMsg *pGtpMsg, JobType_t taskType)
 {
    m_type          = taskType;
    m_pGtpMsg       = pGtpMsg;
@@ -48,7 +48,7 @@ MsgTask::MsgTask(GtpMsg *pGtpMsg, MsgTaskType_t taskType)
    STRCPY(m_msgName, gtpGetMsgName(pGtpMsg->type()));
 }
 
-MsgTask::~MsgTask()
+Job::~Job()
 {
    if (m_pGtpMsg)
    {
@@ -63,8 +63,13 @@ MsgTask::~MsgTask()
  * @return
  *    Pointer to GTP Message
  */
-GtpMsg* MsgTask::getGtpMsg()
+GtpMsg* Job::getGtpMsg()
 {
    return m_pGtpMsg;
 }
 
+VOID Procedure::addJob(GtpMsg *msg, JobType_t jobType)
+{
+   Job *job = new Job(msg, jobType);
+   jobSeq.push_back(job);
+}

@@ -47,13 +47,13 @@ static U32           g_sessionId = 0;
 do                                                             \
 {                                                              \
    ((_ueSsn)->m_currTaskIndx++);                               \
-   (_ueSsn)->m_currTask = m_pScn->m_msgVec[m_currTaskIndx];   \
+   (_ueSsn)->m_currTask = m_pScn->m_jobSeq[m_currTaskIndx];   \
 } while(0)  
 
 #define UE_SSN_FINISH_REQ_TASK   UE_SSN_FINISH_TASK
 #define UE_SSN_FINISH_RSP_TASK   UE_SSN_FINISH_TASK
 
-#define IS_SCN_COMPLETED() (m_currTaskIndx == m_pScn->m_msgVec.size())
+#define IS_SCN_COMPLETED() (m_currTaskIndx == m_pScn->m_jobSeq.size())
 
 /**
  * @brief
@@ -72,7 +72,7 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_peerEp.ipAddr = Config::getInstance()->getRemoteIpAddr();
    m_peerEp.port = Config::getInstance()->getRemoteGtpcPort();
    m_currTaskIndx = 0;
-   m_currTask = m_pScn->m_msgVec[m_currTaskIndx];
+   m_currTask = m_pScn->m_jobSeq[m_currTaskIndx];
    m_currSeqNum = 0;
    m_bitmask = 0;
    m_imsiKey = imsi;
@@ -99,8 +99,8 @@ UeSession::~UeSession()
    if (NULL != m_pSentNwData)
       delete m_pSentNwData;
 
-   if (NULL != m_prevProc.sentMsg)
-      delete m_prevProc.sentMsg;
+   if (NULL != m_prevTrans.sentMsg)
+      delete m_prevTrans.sentMsg;
 
    for (GtpcPdnLstItr pPdn = m_pdnLst.begin(); pPdn != m_pdnLst.end(); pPdn++)
    {
@@ -152,13 +152,13 @@ RETVAL UeSession::run(VOID *arg)
       }
       else
       {
-         MsgTaskType_t taskType = m_currTask->type();
-         if (taskType == MSG_TASK_SEND)
+         JobType_t taskType = m_currTask->type();
+         if (taskType == JOB_TYPE_SEND)
          {
             LOG_TRACE("Processing Send() Task");
             ret = handleSend();
          }
-         else if (taskType == MSG_TASK_WAIT)
+         else if (taskType == JOB_TYPE_WAIT)
          {
             LOG_TRACE("Processing Wait() Task");
             ret = handleWait();
@@ -377,9 +377,9 @@ RETVAL UeSession::handleOutRspMsg(GtpMsg *gtpMsg)
    sendMsg(pNwData->connId, &pNwData->peerEp, buf);
    m_currTask->m_numSnd++;
 
-   delete m_prevProc.sentMsg;
-   m_prevProc.sentMsg = pNwData;
-   m_prevProc.rspType = gtpMsg->type();
+   delete m_prevTrans.sentMsg;
+   m_prevTrans.sentMsg = pNwData;
+   m_prevTrans.rspType = gtpMsg->type();
 
    UE_SSN_FINISH_TASK(this);
 
@@ -422,13 +422,13 @@ RETVAL UeSession::handleRecv(UdpData_t *data)
    LOG_EXITFN(ret);
 }
 
-MsgTaskType_t UeSession::nextTaskType()
+JobType_t UeSession::nextTaskType()
 {
-   MsgTaskType_t  taskType = MSG_TASK_INV;
+   JobType_t  taskType = JOB_TYPE_INV;
 
-   if (m_currTaskIndx + 1 < m_pScn->m_msgVec.size())
+   if (m_currTaskIndx + 1 < m_pScn->m_jobSeq.size())
    {
-      taskType = m_pScn->m_msgVec[m_currTaskIndx + 1]->type();
+      taskType = m_pScn->m_jobSeq[m_currTaskIndx + 1]->type();
    }
 
    return taskType;
@@ -444,11 +444,11 @@ RETVAL UeSession::handleIncReqMsg(GtpMsg *rcvdReq, UdpData_t *rcvdData)
    }
    else if (isPrevProcReq(rcvdReq))
    {
-      m_prevProc.procTask->m_numRcvRetrans++;
+      m_prevTrans.procTask->m_numRcvRetrans++;
 
       /* resend the request response */
-      Buffer *buf = new Buffer(m_prevProc.sentMsg->buf);
-      sendMsg(m_prevProc.sentMsg->connId, &m_prevProc.sentMsg->peerEp, buf);
+      Buffer *buf = new Buffer(m_prevTrans.sentMsg->buf);
+      sendMsg(m_prevTrans.sentMsg->connId, &m_prevTrans.sentMsg->peerEp, buf);
       LOG_EXITFN(ROK);
    }
    else
@@ -479,10 +479,10 @@ RETVAL UeSession::handleIncReqMsg(GtpMsg *rcvdReq, UdpData_t *rcvdData)
    updatePeerSeqNumber(&rcvdData->peerEp, m_currSeqNum);
    decAndStoreGtpcIncMsg(pdn, rcvdReq, &rcvdData->peerEp);
 
-   m_prevProc.connId = m_currConnId;
-   m_prevProc.seqNumber = m_currSeqNum;
-   m_prevProc.reqType = m_currReqType;
-   m_prevProc.procTask = m_currTask;
+   m_prevTrans.connId = m_currConnId;
+   m_prevTrans.seqNumber = m_currSeqNum;
+   m_prevTrans.reqType = m_currReqType;
+   m_prevTrans.procTask = m_currTask;
 
    /* finish the recv task and send the response immediately */
    UE_SSN_FINISH_TASK(this);
@@ -497,7 +497,7 @@ BOOL UeSession::isExpectedRsp(GtpMsg *rspMsg)
 
    BOOL expected = FALSE;
 
-   MsgTask *task = m_pScn->m_msgVec[m_currTaskIndx + 1];
+   Job *task = m_pScn->m_jobSeq[m_currTaskIndx + 1];
    GtpMsg *expectedRspMsg = task->getGtpMsg();
 
    if ((expectedRspMsg->type() == rspMsg->type()) && \
@@ -532,8 +532,8 @@ BOOL UeSession::isPrevProcRsp(GtpMsg *rspMsg)
    BOOL prevProcRsp = FALSE;
 
    if ((m_currTaskIndx > 0) && \
-       (m_prevProc.rspType == rspMsg->type()) && \
-       (m_prevProc.seqNumber == rspMsg->seqNumber()))
+       (m_prevTrans.rspType == rspMsg->type()) && \
+       (m_prevTrans.seqNumber == rspMsg->seqNumber()))
    {
       prevProcRsp = TRUE;
    }
@@ -548,8 +548,8 @@ BOOL UeSession::isPrevProcReq(GtpMsg *reqMsg)
    BOOL prevProcReq = FALSE;
 
    if ((m_currTaskIndx > 0) && \
-       (m_prevProc.reqType == reqMsg->type()) && \
-       (m_prevProc.seqNumber == reqMsg->seqNumber()))
+       (m_prevTrans.reqType == reqMsg->type()) && \
+       (m_prevTrans.seqNumber == reqMsg->seqNumber()))
    {
       prevProcReq = TRUE;
    }
@@ -565,11 +565,11 @@ PUBLIC RETVAL UeSession::handleIncRspMsg(GtpMsg *rspMsg, UdpData_t *rcvdData)
    {
       LOG_DEBUG("Expected response message received");
 
-      m_prevProc.connId = rcvdData->connId;
-      m_prevProc.seqNumber = m_currSeqNum;
-      m_prevProc.reqType = m_currReqType;
-      m_prevProc.rspType = rspMsg->type();
-      m_prevProc.procTask = m_currTask;
+      m_prevTrans.connId = rcvdData->connId;
+      m_prevTrans.seqNumber = m_currSeqNum;
+      m_prevTrans.reqType = m_currReqType;
+      m_prevTrans.rspType = rspMsg->type();
+      m_prevTrans.procTask = m_currTask;
       UE_SSN_FINISH_REQ_TASK(this);
 
       m_currTask->m_numRcv++;
@@ -584,7 +584,7 @@ PUBLIC RETVAL UeSession::handleIncRspMsg(GtpMsg *rspMsg, UdpData_t *rcvdData)
    {
       /* may be a retransmitted response for previous procedure */
       LOG_DEBUG("Response Message for previous procedure received");
-      m_prevProc.procTask->m_numRcvRetrans++;
+      m_prevTrans.procTask->m_numRcvRetrans++;
    }
    else
    {
@@ -851,9 +851,9 @@ RETVAL UeSession::handleDeadCall(VOID *arg)
       {
          if (isPrevProcReq(&gtpMsg))
          {
-            m_prevProc.procTask->m_numRcvRetrans++;
-            Buffer *buf = new Buffer(m_prevProc.sentMsg->buf);
-            sendMsg(m_prevProc.sentMsg->connId, &m_prevProc.sentMsg->peerEp,\
+            m_prevTrans.procTask->m_numRcvRetrans++;
+            Buffer *buf = new Buffer(m_prevTrans.sentMsg->buf);
+            sendMsg(m_prevTrans.sentMsg->connId, &m_prevTrans.sentMsg->peerEp,\
                   buf);
          }
       }
@@ -861,7 +861,7 @@ RETVAL UeSession::handleDeadCall(VOID *arg)
       {
          if (isPrevProcRsp(&gtpMsg))
          {
-            m_prevProc.procTask->m_numRcvRetrans++;
+            m_prevTrans.procTask->m_numRcvRetrans++;
          }
       }
 
