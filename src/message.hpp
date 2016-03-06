@@ -62,12 +62,12 @@ class Job
 class Procedure
 {
    public:
-      Procedure();
       ~Procedure();
-      VOID addJob(GtpMsg *msg, JobType_t jobType);
+      VOID addJob(Job *job);
+      const JobSequence *getJobSequence();
 
    private:
-      JobSequence      jobSeq;
+      JobSequence      m_jobSeq;
 };
 
 #endif /* _SCENARIO_MSG_HPP_ */

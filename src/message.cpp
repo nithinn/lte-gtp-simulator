@@ -68,8 +68,12 @@ GtpMsg* Job::getGtpMsg()
    return m_pGtpMsg;
 }
 
-VOID Procedure::addJob(GtpMsg *msg, JobType_t jobType)
+VOID Procedure::addJob(Job *job)
 {
-   Job *job = new Job(msg, jobType);
-   jobSeq.push_back(job);
+   m_jobSeq.push_back(job);
+}
+
+const JobSequence *Procedure::getJobSequence()
+{
+   return &m_jobSeq;
 }

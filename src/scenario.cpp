@@ -100,8 +100,95 @@ VOID Scenario::init(const S8 *pScnFile) throw (ErrCodeEn)
    {
       m_scnType = SCN_TYPE_WAITING;
    }
+
+   createProcedure(&m_jobSeq);
 }
 
+VOID Scenario::createProcedure(JobSequence *jobSeq)
+{
+   LOG_ENTERFN();
+
+   Procedure         *proc        = NULL;
+   BOOL              completeProc = TRUE;
+   GtpMsgCategory_t  initMsg      = GTP_MSG_CAT_INV;
+
+   for (JobSeqItr itr = jobSeq->begin(); itr != jobSeq->end(); itr++) 
+   {
+      Job *job = *itr;
+
+      if (TRUE == completeProc)
+      {
+         /* wait job between two procedures, or may be the first procedure */
+         if (job->type() == JOB_TYPE_WAIT)
+         {
+            proc = new Procedure;
+            proc->addJob(job);
+            m_procSeq.push_back(proc);
+         }
+         else
+         {
+            completeProc = FALSE;
+            proc = new Procedure;
+            m_procSeq.push_back(proc);
+
+            /* beginning of the procedure */
+            proc->addJob(job);
+
+            /* based on the first messagae find whether the next messages
+             * have a complete procedure or not
+             */
+            GtpMsg *gtpMsg = job->getGtpMsg();
+            initMsg = gtpGetMsgCategory(gtpMsg->type());
+         }
+      }
+      else
+      {
+         /* a wait is within a procedure, just append it into the procedure
+          * job sequence
+          */
+         if (job->type() == JOB_TYPE_WAIT)
+         {
+            proc->addJob(job);
+         }
+         else
+         {
+            GtpMsg *gtpMsg = job->getGtpMsg();
+            GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg->type());
+
+            if (initMsg == GTP_MSG_CAT_REQ && GTP_MSG_CAT_RSP == msgCat)
+            {
+               completeProc = TRUE;
+               proc->addJob(job);
+               m_procSeq.push_back(proc);
+            }
+            else if (initMsg == GTP_MSG_CAT_CMD && GTP_MSG_CAT_RSP == msgCat)
+            {
+               completeProc = TRUE;
+               proc->addJob(job);
+               m_procSeq.push_back(proc);
+            }
+            else if (initMsg == GTP_MSG_CAT_TRIG_REQ && \
+                  GTP_MSG_CAT_RSP == msgCat)
+            {
+               completeProc = TRUE;
+               proc->addJob(job);
+               m_procSeq.push_back(proc);
+            }
+            else if (initMsg == GTP_MSG_CAT_CMD && \
+                  GTP_MSG_CAT_TRIG_REQ == msgCat)
+            {
+               /* a command message is matched with a triggered request message
+                * so wait for the response message for the triggered request
+                * message
+                */
+               initMsg = GTP_MSG_CAT_TRIG_REQ;
+            }
+         }
+      }
+   }
+
+   LOG_EXITVOID();
+}
 
 /**
  * @brief

@@ -38,14 +38,16 @@ class Scenario
       GtpIfType_t    ifType();
 
       JobSequence    m_jobSeq;
-      ProcSequence   procSeq;
+      ProcSequence   m_procSeq;
 
    private:
       Scenario();
+      VOID createProcedure(JobSequence *jobSeq);
 
       static class Scenario   *m_pMainScn;
       U32            m_lastRunTime;
       U32            m_scnRunIntvl;
+
       ScenarioType_t m_scnType;
       GtpIfType_t    m_ifType;
 };
