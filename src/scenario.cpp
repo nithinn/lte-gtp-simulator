@@ -104,19 +104,31 @@ VOID Scenario::init(const S8 *pScnFile) throw (ErrCodeEn)
    createProcedure(&m_jobSeq);
 }
 
+/**
+ * @brief Converts job sequence into set of procedures. A procedure is 
+ *    identified by a Request-Response, or Command-Failure, or Command-
+ *    Triggered Request-Response.
+ *
+ *    A wait job can within a procedure, or in between procedure. If a 
+ *    wait job is at the beginning of the scennario or in between two
+ *    procedures it is considered as a different scenario. Otherwise
+ *    the wait job is considered part of the gtpc procedure.
+ *
+ * @param jobSeq
+ */
 VOID Scenario::createProcedure(JobSequence *jobSeq)
 {
    LOG_ENTERFN();
 
    Procedure         *proc        = NULL;
-   BOOL              completeProc = TRUE;
+   BOOL              fullProc = TRUE;
    GtpMsgCategory_t  initMsg      = GTP_MSG_CAT_INV;
 
    for (JobSeqItr itr = jobSeq->begin(); itr != jobSeq->end(); itr++) 
    {
       Job *job = *itr;
 
-      if (TRUE == completeProc)
+      if (TRUE == fullProc)
       {
          /* wait job between two procedures, or may be the first procedure */
          if (job->type() == JOB_TYPE_WAIT)
@@ -127,7 +139,7 @@ VOID Scenario::createProcedure(JobSequence *jobSeq)
          }
          else
          {
-            completeProc = FALSE;
+            fullProc = FALSE;
             proc = new Procedure;
             m_procSeq.push_back(proc);
 
@@ -157,22 +169,19 @@ VOID Scenario::createProcedure(JobSequence *jobSeq)
 
             if (initMsg == GTP_MSG_CAT_REQ && GTP_MSG_CAT_RSP == msgCat)
             {
-               completeProc = TRUE;
+               fullProc = TRUE;
                proc->addJob(job);
-               m_procSeq.push_back(proc);
             }
             else if (initMsg == GTP_MSG_CAT_CMD && GTP_MSG_CAT_RSP == msgCat)
             {
-               completeProc = TRUE;
+               fullProc = TRUE;
                proc->addJob(job);
-               m_procSeq.push_back(proc);
             }
             else if (initMsg == GTP_MSG_CAT_TRIG_REQ && \
                   GTP_MSG_CAT_RSP == msgCat)
             {
-               completeProc = TRUE;
+               fullProc = TRUE;
                proc->addJob(job);
-               m_procSeq.push_back(proc);
             }
             else if (initMsg == GTP_MSG_CAT_CMD && \
                   GTP_MSG_CAT_TRIG_REQ == msgCat)
