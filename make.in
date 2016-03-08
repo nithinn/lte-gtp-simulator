@@ -20,7 +20,7 @@ WARNIG_FLAGS= -Wall -Wextra -Wextra -Wformat-nonliteral -Wcast-align \
 DEBUG_FLAG= -g3
 
 CFLAGS= $(DEBUG_FLAG) $(WARNIG_FLAGS)
-LFLAGS=
+LFLAGS= -lrt
 
 CC= g++
 
