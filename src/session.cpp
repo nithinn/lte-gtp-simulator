@@ -73,10 +73,8 @@ UeSession::UeSession(Scenario *pScn, GtpImsiKey imsi)
    m_peerEp.port = Config::getInstance()->getRemoteGtpcPort();
    m_currTaskIndx = 0;
    m_currTask = m_pScn->m_jobSeq[m_currTaskIndx];
-   m_currSeqNum = 0;
    m_bitmask = 0;
    m_imsiKey = imsi;
-   m_pSentNwData = NULL;
    m_deadCallWait = Config::getInstance()->getDeadCallWait();
    m_bearerVec.reserve(GTP_MAX_BEARERS);
    for (U32 i = 0; i < GTP_MAX_BEARERS; i++)
@@ -96,11 +94,11 @@ UeSession::~UeSession()
 {
    s_ueSessionMap.erase(m_imsiKey);
 
-   if (NULL != m_pSentNwData)
-      delete m_pSentNwData;
+   if (NULL != m_currUeProc.sentMsg)
+      delete m_currUeProc.sentMsg;
 
-   if (NULL != m_prevTrans.sentMsg)
-      delete m_prevTrans.sentMsg;
+   if (NULL != m_prevUeProc.sentMsg)
+      delete m_prevUeProc.sentMsg;
 
    for (GtpcPdnLstItr pPdn = m_pdnLst.begin(); pPdn != m_pdnLst.end(); pPdn++)
    {
@@ -164,28 +162,6 @@ RETVAL UeSession::run(VOID *arg)
             ret = handleWait();
          }
       }
-
-      if (IS_SCN_COMPLETED())
-      {
-         /* finished processing all messages in the scenario, delete task */
-         LOG_DEBUG("Scenario end for UE, IMSI [%x%x%x%x%x%x%x%x]",\
-               m_imsiKey.val[0], m_imsiKey.val[1], m_imsiKey.val[2],\
-               m_imsiKey.val[3], m_imsiKey.val[4], m_imsiKey.val[5],\
-               m_imsiKey.val[6], m_imsiKey.val[7]);
-
-         Stats::incStats(GSIM_STAT_NUM_SESSIONS_SUCC);
-         Stats::decStats(GSIM_STAT_NUM_SESSIONS);
-
-         /* the scenario for this UE session is complete, wait for deal-call
-          * timer expiry to cleanup the sessions. This is required to handle
-          * any delayed or retransmitted response or request messages
-          */
-         GSIM_SET_MASK(m_bitmask, GSIM_UE_SSN_SCN_COMPLETE);
-         m_wakeTime = m_lastRunTime + m_deadCallWait;
-         pause();
-
-         LOG_EXITFN(ROK);
-      }
    }
 
    LOG_EXITFN(ret);
@@ -205,8 +181,8 @@ RETVAL UeSession::handleSend()
       {
          m_currTask->m_numTimeOut++;
          Stats::incStats(GSIM_STAT_NUM_SESSIONS_FAIL);
-         delete m_pSentNwData;
-         m_pSentNwData = NULL;
+         delete m_currUeProc.sentMsg;
+         m_currUeProc.sentMsg = NULL;
 
          /* request retry exceeded n3-requests. terminate the 
           * UE session Task
@@ -288,7 +264,7 @@ RETVAL UeSession::handleOutReqMsg(GtpMsg *gtpMsg)
    createBearers(pPdn, gtpMsg, 0);
 
    LOG_DEBUG("Encoding OUT Message");
-   m_currSeqNum = generateSeqNum(&m_peerEp, GTP_MSG_CAT_REQ);
+   m_currUeProc.seqNumber = generateSeqNum(&m_peerEp, GTP_MSG_CAT_REQ);
    m_currReqType = gtpMsg->type();
    UdpData_t *pNwData = new UdpData_t;
    encGtpcOutMsg(pPdn, gtpMsg, &pNwData->buf, &m_peerEp);
@@ -302,7 +278,7 @@ RETVAL UeSession::handleOutReqMsg(GtpMsg *gtpMsg)
    sendMsg(pNwData->connId, &pNwData->peerEp, buf);
    m_currTask->m_numSnd++;
 
-   m_pSentNwData = pNwData;
+   m_currUeProc.sentMsg = pNwData;
    GSIM_SET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
 
    // update when the task thas to wakeup next time
@@ -329,8 +305,8 @@ RETVAL UeSession::handleOutReqTimeout()
     */
    if (m_retryCnt >= m_n3req)
    {
-      delete m_pSentNwData;
-      m_pSentNwData = NULL;
+      delete m_currUeProc.sentMsg;
+      m_currUeProc.sentMsg = NULL;
       LOG_DEBUG("Maximum Retries reached");
       ret = ERR_MAX_RETRY_EXCEEDED;
    }
@@ -340,8 +316,8 @@ RETVAL UeSession::handleOutReqTimeout()
        * after retransmission timeout expiry
        */
       LOG_DEBUG("Retransmissing GTP Message");
-      Buffer *buf = new Buffer(m_pSentNwData->buf);
-      sendMsg(m_pSentNwData->connId, &m_pSentNwData->peerEp, buf);
+      Buffer *buf = new Buffer(m_currUeProc.sentMsg->buf);
+      sendMsg(m_currUeProc.sentMsg->connId, &m_currUeProc.sentMsg->peerEp, buf);
 
       m_currTask->m_numSndRetrans++;
       m_retryCnt++;
@@ -369,7 +345,7 @@ RETVAL UeSession::handleOutRspMsg(GtpMsg *gtpMsg)
    /* send the response/triggered message over the same socket
     * over which the request/command is received
     */
-   pNwData->connId = m_currConnId;
+   pNwData->connId = m_currUeProc.connId;
    pNwData->peerEp = pPdn->pCTun->m_peerEp;
 
    LOG_DEBUG("Sending GTPC Message [%s]", gtpGetMsgName(msgType));
@@ -377,11 +353,16 @@ RETVAL UeSession::handleOutRspMsg(GtpMsg *gtpMsg)
    sendMsg(pNwData->connId, &pNwData->peerEp, buf);
    m_currTask->m_numSnd++;
 
-   delete m_prevTrans.sentMsg;
-   m_prevTrans.sentMsg = pNwData;
-   m_prevTrans.rspType = gtpMsg->type();
+   delete m_prevUeProc.sentMsg;
+   m_prevUeProc.sentMsg = pNwData;
+   m_prevUeProc.rspType = gtpMsg->type();
 
    UE_SSN_FINISH_TASK(this);
+
+   if (IS_SCN_COMPLETED())
+   {
+      handleCompletedTask();
+   }
 
    LOG_EXITFN(ret);
 }
@@ -444,11 +425,11 @@ RETVAL UeSession::handleIncReqMsg(GtpMsg *rcvdReq, UdpData_t *rcvdData)
    }
    else if (isPrevProcReq(rcvdReq))
    {
-      m_prevTrans.procTask->m_numRcvRetrans++;
+      m_prevUeProc.procTask->m_numRcvRetrans++;
 
       /* resend the request response */
-      Buffer *buf = new Buffer(m_prevTrans.sentMsg->buf);
-      sendMsg(m_prevTrans.sentMsg->connId, &m_prevTrans.sentMsg->peerEp, buf);
+      Buffer *buf = new Buffer(m_prevUeProc.sentMsg->buf);
+      sendMsg(m_prevUeProc.sentMsg->connId, &m_prevUeProc.sentMsg->peerEp, buf);
       LOG_EXITFN(ROK);
    }
    else
@@ -472,17 +453,17 @@ RETVAL UeSession::handleIncReqMsg(GtpMsg *rcvdReq, UdpData_t *rcvdData)
       pdn = m_pCurrPdn;
    }
 
-   m_currConnId = rcvdData->connId;
-   m_currSeqNum = rcvdReq->seqNumber();
+   m_currUeProc.connId = rcvdData->connId;
+   m_currUeProc.seqNumber = rcvdReq->seqNumber();
    m_currReqType = rcvdReq->type();
 
-   updatePeerSeqNumber(&rcvdData->peerEp, m_currSeqNum);
+   updatePeerSeqNumber(&rcvdData->peerEp, m_currUeProc.seqNumber);
    decAndStoreGtpcIncMsg(pdn, rcvdReq, &rcvdData->peerEp);
 
-   m_prevTrans.connId = m_currConnId;
-   m_prevTrans.seqNumber = m_currSeqNum;
-   m_prevTrans.reqType = m_currReqType;
-   m_prevTrans.procTask = m_currTask;
+   m_prevUeProc.connId = m_currUeProc.connId;
+   m_prevUeProc.seqNumber = m_currUeProc.seqNumber;
+   m_prevUeProc.reqType = rcvdReq->type();
+   m_prevUeProc.procTask = m_currTask;
 
    /* finish the recv task and send the response immediately */
    UE_SSN_FINISH_TASK(this);
@@ -501,7 +482,7 @@ BOOL UeSession::isExpectedRsp(GtpMsg *rspMsg)
    GtpMsg *expectedRspMsg = task->getGtpMsg();
 
    if ((expectedRspMsg->type() == rspMsg->type()) && \
-       (m_currSeqNum == rspMsg->seqNumber()))
+       (m_currUeProc.seqNumber == rspMsg->seqNumber()))
    {
       expected = TRUE;
    }
@@ -517,7 +498,7 @@ BOOL UeSession::isExpectedReq(GtpMsg *reqMsg)
 
    GtpMsg *expectedReqMsg = m_currTask->getGtpMsg();
    if ((expectedReqMsg->type() == reqMsg->type()) && \
-       (m_currSeqNum < reqMsg->seqNumber()))
+       (m_currUeProc.seqNumber < reqMsg->seqNumber()))
    {
       expected = TRUE;
    }
@@ -532,8 +513,8 @@ BOOL UeSession::isPrevProcRsp(GtpMsg *rspMsg)
    BOOL prevProcRsp = FALSE;
 
    if ((m_currTaskIndx > 0) && \
-       (m_prevTrans.rspType == rspMsg->type()) && \
-       (m_prevTrans.seqNumber == rspMsg->seqNumber()))
+       (m_prevUeProc.rspType == rspMsg->type()) && \
+       (m_prevUeProc.seqNumber == rspMsg->seqNumber()))
    {
       prevProcRsp = TRUE;
    }
@@ -548,8 +529,8 @@ BOOL UeSession::isPrevProcReq(GtpMsg *reqMsg)
    BOOL prevProcReq = FALSE;
 
    if ((m_currTaskIndx > 0) && \
-       (m_prevTrans.reqType == reqMsg->type()) && \
-       (m_prevTrans.seqNumber == reqMsg->seqNumber()))
+       (m_prevUeProc.reqType == reqMsg->type()) && \
+       (m_prevUeProc.seqNumber == reqMsg->seqNumber()))
    {
       prevProcReq = TRUE;
    }
@@ -565,26 +546,31 @@ PUBLIC RETVAL UeSession::handleIncRspMsg(GtpMsg *rspMsg, UdpData_t *rcvdData)
    {
       LOG_DEBUG("Expected response message received");
 
-      m_prevTrans.connId = rcvdData->connId;
-      m_prevTrans.seqNumber = m_currSeqNum;
-      m_prevTrans.reqType = m_currReqType;
-      m_prevTrans.rspType = rspMsg->type();
-      m_prevTrans.procTask = m_currTask;
+      m_prevUeProc.connId = rcvdData->connId;
+      m_prevUeProc.seqNumber = m_currUeProc.seqNumber;
+      m_prevUeProc.reqType = m_currReqType;
+      m_prevUeProc.rspType = rspMsg->type();
+      m_prevUeProc.procTask = m_currTask;
       UE_SSN_FINISH_REQ_TASK(this);
 
       m_currTask->m_numRcv++;
       decAndStoreGtpcIncMsg(m_pCurrPdn, rspMsg, &rcvdData->peerEp);
       GSIM_UNSET_MASK(this->m_bitmask, GSIM_UE_SSN_WAITING_FOR_RSP);
 
-      delete m_pSentNwData;
-      m_pSentNwData = NULL;
+      delete m_currUeProc.sentMsg;
+      m_currUeProc.sentMsg = NULL;
       UE_SSN_FINISH_RSP_TASK(this);
+
+      if (IS_SCN_COMPLETED())
+      {
+         handleCompletedTask();
+      }
    }
    else if (isPrevProcRsp(rspMsg))
    {
       /* may be a retransmitted response for previous procedure */
       LOG_DEBUG("Response Message for previous procedure received");
-      m_prevTrans.procTask->m_numRcvRetrans++;
+      m_prevUeProc.procTask->m_numRcvRetrans++;
    }
    else
    {
@@ -779,7 +765,7 @@ VOID UeSession::encGtpcOutMsg(GtpcPdn *pPdn, GtpMsg *pGtpMsg,\
    /* Modify the header parameters dynamically */
    GtpMsgHdr msgHdr;
    msgHdr.teid = pPdn->pCTun->m_remTeid;
-   msgHdr.seqN = m_currSeqNum;
+   msgHdr.seqN = m_currUeProc.seqNumber;
    GSIM_SET_MASK(msgHdr.pres, GTP_MSG_HDR_TEID_PRES);
    GSIM_SET_MASK(msgHdr.pres, GTP_MSG_HDR_SEQ_PRES);
    pGtpMsg->setMsgHdr(&msgHdr);
@@ -851,17 +837,17 @@ RETVAL UeSession::handleDeadCall(VOID *arg)
       {
          if (isPrevProcReq(&gtpMsg))
          {
-            m_prevTrans.procTask->m_numRcvRetrans++;
-            Buffer *buf = new Buffer(m_prevTrans.sentMsg->buf);
-            sendMsg(m_prevTrans.sentMsg->connId, &m_prevTrans.sentMsg->peerEp,\
-                  buf);
+            m_prevUeProc.procTask->m_numRcvRetrans++;
+            Buffer *buf = new Buffer(m_prevUeProc.sentMsg->buf);
+            sendMsg(m_prevUeProc.sentMsg->connId,\
+                  &m_prevUeProc.sentMsg->peerEp, buf);
          }
       }
       else if (GTP_MSG_CAT_RSP == msgCat)
       {
          if (isPrevProcRsp(&gtpMsg))
          {
-            m_prevTrans.procTask->m_numRcvRetrans++;
+            m_prevUeProc.procTask->m_numRcvRetrans++;
          }
       }
 
@@ -973,4 +959,26 @@ GtpcTun* UeSession::createCTun(GtpcPdn *pPdn)
    LOG_EXITFN(pCTun);
 }
 
+VOID UeSession::handleCompletedTask()
+{
+   LOG_ENTERFN();
 
+   /* finished processing all messages in the scenario, delete task */
+   LOG_DEBUG("Scenario end for UE, IMSI [%x%x%x%x%x%x%x%x]",\
+         m_imsiKey.val[0], m_imsiKey.val[1], m_imsiKey.val[2],\
+         m_imsiKey.val[3], m_imsiKey.val[4], m_imsiKey.val[5],\
+         m_imsiKey.val[6], m_imsiKey.val[7]);
+
+   Stats::incStats(GSIM_STAT_NUM_SESSIONS_SUCC);
+   Stats::decStats(GSIM_STAT_NUM_SESSIONS);
+
+   /* the scenario for this UE session is complete, wait for deal-call
+    * timer expiry to cleanup the sessions. This is required to handle
+    * any delayed or retransmitted response or request messages
+    */
+   GSIM_SET_MASK(m_bitmask, GSIM_UE_SSN_SCN_COMPLETE);
+   m_wakeTime = m_lastRunTime + m_deadCallWait;
+   pause();
+
+   LOG_EXITVOID();
+}
