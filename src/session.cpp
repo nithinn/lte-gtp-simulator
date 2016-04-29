@@ -17,8 +17,6 @@
 #include <list>
 #include <vector>
 #include <map>
-#include <stdlib.h>
-#include <assert.h>
 
 #include "types.hpp"
 #include "error.hpp"
@@ -682,7 +680,8 @@ VOID UeSession::createBearers
 
    if (pGtpMsg->type() == GTPC_MSG_CS_REQ)
    {
-      U32 bearerCnt = pGtpMsg->getIeCount(GTP_IE_BEARER_CNTXT, instance);
+      //U32 bearerCnt = pGtpMsg->getIeCount(GTP_IE_BEARER_CNTXT, instance);
+      U32 bearerCnt = pGtpMsg->getBearersToCreate();
       for (U32 i = 1; i <= bearerCnt; i++)
       {
          GtpIe *pIe = pGtpMsg->getIe(GTP_IE_BEARER_CNTXT, instance, i);

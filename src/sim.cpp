@@ -16,7 +16,6 @@
 
 #include <iostream>
 #include <vector>
-#include <cstdlib>
 
 using std::vector;
 
@@ -155,7 +154,6 @@ VOID Simulator::startScheduler()
          // it will be paused state which will move the task from running
          // task list to paused task list.
          itr++;
-
          if (ROK != t->run())
          {
             t->abort();

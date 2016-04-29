@@ -15,11 +15,9 @@
  */  
 
 // Utility functions for gtp
-
 #include <stdlib.h>
 #include <list>
 #include <arpa/inet.h>
-#include <assert.h>
 
 #include "types.hpp"
 #include "logger.hpp"
@@ -1049,8 +1047,6 @@ PUBLIC U8* getImsiBufPtr(Buffer *pGtpcBuf)
 PUBLIC VOID gtpUtlEncPlmnId(GtpPlmnId_t *pPlmnId, U8* pBuf)
 {
    LOG_ENTERFN();
-
-   ASSERT(NULL != pBuf);
 
    pBuf[0] = (pPlmnId->mcc[1] << 4) | pPlmnId->mcc[0];    
 

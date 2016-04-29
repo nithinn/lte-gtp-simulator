@@ -40,13 +40,18 @@ class GtpMsg
       VOID              setImsi(GtpImsiKey*);
       GtpTeid_t         getTeid();
       GtpMsgCategory_t  category();
+      U32               getBearersToCreate() {return m_bearersToCreate;}
 
    private:
       GtpMsgHdr      m_msgHdr;
       U8             m_gtpMsgBuf[GTP_MSG_BUF_LEN];
       GtpIeLst       m_ieLst;
+      U8             m_bearersToCreate;
+      U8             m_bearersToDelete;
+      U8             m_bearersToModify;
       U32            encodeHdr(U8 *pBuf);
       VOID           decodeHdr(U8 *pBuf);
+      VOID           updateBearerCount(GtpInstance_t bearerCntxtInst);
 };
 
 #endif /* _GTP_MSG_HPP_ */

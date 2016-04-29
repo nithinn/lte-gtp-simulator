@@ -88,6 +88,10 @@ RETVAL GtpMsg::encode(GtpIeLst  *pIeLst)
    for (GtpIeLstItr ie = pIeLst->begin(); ie != pIeLst->end(); ie++)
    {
       m_ieLst.push_back(*ie);
+      if (GTP_IE_BEARER_CNTXT == (*ie)->type())
+      {
+         updateBearerCount((*ie)->instance());
+      }
    }
 
    LOG_EXITFN(ret);
@@ -207,6 +211,10 @@ RETVAL GtpMsg::decode()
 
       GTP_GET_IE_TYPE(pMsgBuf, ieType);
       GTP_GET_IE_INSTANCE(pMsgBuf, ieInst);
+      if (GTP_IE_BEARER_CNTXT == ieType)
+      {
+         updateBearerCount(ieInst);
+      }
 
       GtpIe *pIe = GtpIe::createGtpIe(ieType, ieInst);
       U32 ieLen = pIe->decode(pMsgBuf);
@@ -311,7 +319,6 @@ U32 GtpMsg::getIeCount(GtpIeType_t ieType, GtpInstance_t inst)
    LOG_EXITFN(cnt);
 }
 
-
 GtpIe* GtpMsg::getIe(GtpIeType_t  ieType, GtpInstance_t  inst, U32 occurance)
 {
    LOG_ENTERFN();
@@ -401,4 +408,12 @@ GtpTeid_t GtpMsg::getTeid()
 GtpMsgCategory_t GtpMsg::category()
 {
    return gtpGetMsgCategory(m_msgHdr.msgType);
+}
+
+VOID GtpMsg::updateBearerCount(GtpInstance_t inst)
+{
+   if ((GTPC_MSG_CS_REQ == m_msgHdr.msgType) && (0 == inst))
+   {
+      m_bearersToCreate++;
+   }
 }
