@@ -36,11 +36,7 @@ class TrafficTask: public Task
       TrafficTask();
       ~TrafficTask() {}
       RETVAL run(VOID *arg = NULL);  
-
-      inline Time_t wake()
-      {
-         return m_lastRunTime + m_ratePeriod;
-      }
+      inline Time_t wake() {return m_wakeTime;}
 
    private:
       U32               m_rate;
@@ -48,6 +44,7 @@ class TrafficTask: public Task
       Time_t            m_lastRunTime;
       Counter           m_maxSessions;
       GtpImsiGenerator  m_imsiGen;
+      Time_t            m_wakeTime;
 };
 
 /* task for sending periodic echo request messages to the peer */

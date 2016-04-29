@@ -34,7 +34,7 @@
 #include "gtp_ie.hpp"
 #include "gtp_msg.hpp"
 #include "keyboard.hpp"
-#include "message.hpp"
+#include "procedure.hpp"
 #include "scenario.hpp"
 #include "gtp_stats.hpp"
 #include "display.hpp"
@@ -119,8 +119,7 @@ VOID Display::init()
    STRCPY(m_remIpAddrStr, (Config::getInstance()->\
          getRemIpAddrStr()).c_str());
 
-   m_jobSeq = &(Scenario::getInstance()->m_jobSeq);
-   m_jobSeqLen = m_jobSeq->size();
+   m_procSeq = &(Scenario::getInstance()->m_procSeq);
 
    /* Map exit handlers to curses reset procedure */
    memset(&action_quit, 0, sizeof(action_quit));
@@ -141,6 +140,43 @@ RETVAL Display::run(VOID *arg)
    pause();
 
    LOG_EXITFN(ROK);
+}
+
+VOID Display::printJob(Job *job)
+{
+   switch (job->type())
+   {
+      case JOB_TYPE_SEND:
+      {
+         fprintf(stdout, "%s  ", job->m_msgName);
+         fprintf(stdout, "\t--->");
+         fprintf(stdout, " \t%9d", job->m_numSnd);
+         fprintf(stdout, "%9d", job->m_numSndRetrans);
+         fprintf(stdout, " %9d", job->m_numTimeOut);
+         fprintf(stdout, ENDLINE);
+         break;
+      }
+      case JOB_TYPE_RECV:
+      {
+         fprintf(stdout, "%s  ", job->m_msgName);
+         fprintf(stdout, " \t<---");
+         fprintf(stdout, "\t%9d", job->m_numRcv);
+         fprintf(stdout, "%9d", job->m_numRcvRetrans);
+         fprintf(stdout, "                  %9d", job->m_numUnexp);
+         fprintf(stdout, ENDLINE);
+         break;
+      }
+      case JOB_TYPE_WAIT:
+      {
+         fprintf(stdout, "[Wait %5d]\r\n", (S32)job->wait());
+         fprintf(stdout, ENDLINE);
+         break;
+      }
+      default:
+      {
+         break;
+      }
+   }
 }
 
 VOID Display::disp()
@@ -166,7 +202,9 @@ VOID Display::disp()
    Counter ssnCreated = getStats(GSIM_STAT_NUM_SESSIONS_CREATED);
    Counter ssnSucc = getStats(GSIM_STAT_NUM_SESSIONS_SUCC);
    Counter ssnFail = getStats(GSIM_STAT_NUM_SESSIONS_FAIL);
-   fprintf(stdout, "Total-Sessions: %u   \r\n", ssnCreated);
+   Counter deadCalls = getStats(GSIM_STAT_NUM_DEADCALLS);
+   fprintf(stdout, "Total-Sessions: %u\t\tDead Calls: %u\r\n", ssnCreated,\
+         deadCalls);
    fprintf(stdout, "Session-Completed: %u   \r\n", ssnSucc);
    fprintf(stdout, "Session-Aborted: %u   \r\n", ssnFail);
 
@@ -174,31 +212,34 @@ VOID Display::disp()
    fprintf(stdout,"                                 "\
            "Messages  Retrans   Timeout   Unexpected-Msg\r\n");
 
-   for (U32 i = 0; i < m_jobSeqLen; i++)
+   for (U32 i = 0; i < m_procSeq->size(); i++)
    {
-      Job *job = (*m_jobSeq)[i];
-      fprintf(stdout, "%s  ", job->m_msgName);
-
-      if (job->type() == JOB_TYPE_SEND)
+      Procedure *proc = m_procSeq->at(i);
+      
+      switch (proc->type())
       {
-         fprintf(stdout, "\t--->");
-         fprintf(stdout, " \t%9d", job->m_numSnd);
-         fprintf(stdout, "%9d", job->m_numSndRetrans);
-         fprintf(stdout, " %9d", job->m_numTimeOut);
-         fprintf(stdout, ENDLINE);
-      }
-      else if (job->type() == JOB_TYPE_RECV)
-      {
-         fprintf(stdout, " \t<---");
-         fprintf(stdout, "\t%9d", job->m_numRcv);
-         fprintf(stdout, "%9d", job->m_numRcvRetrans);
-         fprintf(stdout, "                  %9d", job->m_numUnexp);
-         fprintf(stdout, ENDLINE);
-      }
-      else
-      {
-         fprintf(stdout, "[Wait %5d]\r\n", 0);
-         fprintf(stdout, ENDLINE);
+         case PROC_TYPE_WAIT:
+         {
+            printJob(proc->m_wait);
+            break;
+         }
+         case PROC_TYPE_REQ_RSP:
+         {
+            printJob(proc->m_initial);
+            printJob(proc->m_trigMsg);
+            break;
+         }
+         case PROC_TYPE_REQ_TRIG_REP:
+         {
+            printJob(proc->m_initial);
+            printJob(proc->m_trigMsg);
+            printJob(proc->m_trigReply);
+            break;
+         }
+         default:
+         {
+            break;
+         }
       }
    }
 

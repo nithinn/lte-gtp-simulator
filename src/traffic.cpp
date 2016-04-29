@@ -31,7 +31,7 @@
 #include "gtp_util.hpp"
 #include "gtp_ie.hpp"
 #include "gtp_msg.hpp"
-#include "message.hpp"
+#include "procedure.hpp"
 #include "gtp_stats.hpp"
 #include "tunnel.hpp"
 #include "session.hpp"
@@ -85,6 +85,7 @@ RETVAL TrafficTask::run(VOID *arg)
    }
    else
    {
+      m_wakeTime = m_lastRunTime + m_ratePeriod;
       pause();
    }
 
@@ -129,6 +130,10 @@ PUBLIC VOID procGtpcMsg(UdpData_t *data)
             LOG_ERROR("GTPC Message received with unknown TEID [%d]", teid);
             delete data;
          }
+         else
+         {
+            ueSsn->resumeTask();
+         }
       }
       else
       {
@@ -139,7 +144,10 @@ PUBLIC VOID procGtpcMsg(UdpData_t *data)
 
    if (NULL != ueSsn)
    {
-      ueSsn->run(data);
+      if (ROK != ueSsn->run(data))
+      {
+         ueSsn->abort();
+      }
    }
 
    LOG_EXITVOID();

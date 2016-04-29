@@ -29,7 +29,7 @@ using namespace pugi;
 #include "gtp_if.hpp"
 #include "gtp_ie.hpp"
 #include "gtp_msg.hpp"
-#include "message.hpp"
+#include "procedure.hpp"
 #include "task.hpp"
 #include "sim_cfg.hpp"
 #include "scenario.hpp"
@@ -63,9 +63,10 @@ Scenario::Scenario()
 
 Scenario::~Scenario()
 {
-   for (JobSeqItr itr = m_jobSeq.begin(); itr != m_jobSeq.end(); itr++)
+   for (U32 i = 0; i < m_procSeq.size(); i++)
    {
-      delete *itr;
+      Procedure *proc = m_procSeq[i];
+      delete proc;
    }
 }
 
@@ -81,9 +82,11 @@ Scenario::~Scenario()
  */
 VOID Scenario::init(const S8 *pScnFile) throw (ErrCodeEn)
 {
+   JobSequence jobSeq;
+   
    try
    {
-      parseXmlScenario(pScnFile, &m_jobSeq);  
+      parseXmlScenario(pScnFile, &jobSeq);  
    }
    catch (ErrCodeEn &e)
    {
@@ -91,7 +94,7 @@ VOID Scenario::init(const S8 *pScnFile) throw (ErrCodeEn)
       throw e;
    }
 
-   Job *firstJob = m_jobSeq[0];
+   Job *firstJob = jobSeq[0];
    if (firstJob->type() == JOB_TYPE_SEND)
    {
       m_scnType = SCN_TYPE_INITIATING;
@@ -101,7 +104,7 @@ VOID Scenario::init(const S8 *pScnFile) throw (ErrCodeEn)
       m_scnType = SCN_TYPE_WAITING;
    }
 
-   createProcedure(&m_jobSeq);
+   createProcedure(&jobSeq);
 }
 
 /**
@@ -120,9 +123,8 @@ VOID Scenario::createProcedure(JobSequence *jobSeq)
 {
    LOG_ENTERFN();
 
-   Procedure         *proc        = NULL;
+   Procedure         *proc = NULL;
    BOOL              fullProc = TRUE;
-   GtpMsgCategory_t  initMsg      = GTP_MSG_CAT_INV;
 
    for (JobSeqItr itr = jobSeq->begin(); itr != jobSeq->end(); itr++) 
    {
@@ -130,7 +132,9 @@ VOID Scenario::createProcedure(JobSequence *jobSeq)
 
       if (TRUE == fullProc)
       {
-         /* wait job between two procedures, or may be the first procedure */
+         /* wait job between two procedures, or may be the first in a
+          * scenario
+          */
          if (job->type() == JOB_TYPE_WAIT)
          {
             proc = new Procedure;
@@ -144,55 +148,12 @@ VOID Scenario::createProcedure(JobSequence *jobSeq)
             m_procSeq.push_back(proc);
 
             /* beginning of the procedure */
-            proc->addJob(job);
-
-            /* based on the first messagae find whether the next messages
-             * have a complete procedure or not
-             */
-            GtpMsg *gtpMsg = job->getGtpMsg();
-            initMsg = gtpGetMsgCategory(gtpMsg->type());
+            fullProc = proc->addJob(job);
          }
       }
       else
       {
-         /* a wait is within a procedure, just append it into the procedure
-          * job sequence
-          */
-         if (job->type() == JOB_TYPE_WAIT)
-         {
-            proc->addJob(job);
-         }
-         else
-         {
-            GtpMsg *gtpMsg = job->getGtpMsg();
-            GtpMsgCategory_t msgCat = gtpGetMsgCategory(gtpMsg->type());
-
-            if (initMsg == GTP_MSG_CAT_REQ && GTP_MSG_CAT_RSP == msgCat)
-            {
-               fullProc = TRUE;
-               proc->addJob(job);
-            }
-            else if (initMsg == GTP_MSG_CAT_CMD && GTP_MSG_CAT_RSP == msgCat)
-            {
-               fullProc = TRUE;
-               proc->addJob(job);
-            }
-            else if (initMsg == GTP_MSG_CAT_TRIG_REQ && \
-                  GTP_MSG_CAT_RSP == msgCat)
-            {
-               fullProc = TRUE;
-               proc->addJob(job);
-            }
-            else if (initMsg == GTP_MSG_CAT_CMD && \
-                  GTP_MSG_CAT_TRIG_REQ == msgCat)
-            {
-               /* a command message is matched with a triggered request message
-                * so wait for the response message for the triggered request
-                * message
-                */
-               initMsg = GTP_MSG_CAT_TRIG_REQ;
-            }
-         }
+         fullProc = proc->addJob(job);
       }
    }
 
@@ -225,4 +186,21 @@ VOID Scenario::shutdown()
 GtpIfType_t Scenario::ifType()
 {
    return m_ifType;
+}
+
+BOOL Scenario::isScenarioEnd(ProcedureItr current)
+{
+   ProcedureItr it = current;
+   return (++it == m_procSeq.end());
+}
+
+ProcedureItr Scenario::getNextProcedure(ProcedureItr current)
+{
+   ProcedureItr it = current;
+   return ++it;
+}
+
+ProcedureItr Scenario::getFirstProcedure()
+{
+   return m_procSeq.begin();
 }

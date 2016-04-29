@@ -41,8 +41,8 @@ class Display: virtual public Task
       S8                m_remIpAddrStr[IPV6_ADDR_MAX_LEN];
       Stats             *m_pStats;
       S8                m_timeStr[GSIM_TIME_STR_MAX_LEN];
-      JobSequence       *m_jobSeq;
-      U32               m_jobSeqLen;
+      ProcSequence      *m_procSeq;
+      VOID              printJob(Job*);
 };
 
 #endif

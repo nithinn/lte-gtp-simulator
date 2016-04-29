@@ -58,21 +58,19 @@ class Task
 
       virtual VOID stop();
 
+      /* Wake this up a paused Task */
+      VOID resumeTask();
    protected:
       TaskId_t        m_id;
 
       /* Put us to sleep (we must be running). */
       VOID pause();
 
-      /* Wake this up, if we are not already awake. */
-      VOID resumeTask();
+      VOID setRunning();
 
       /* When should this Task wake up? */
       virtual Time_t wake() = 0;
 
-      BOOL isRunning() {return m_taskState == TASK_STATE_RUNNING;}
-
-      VOID addToRunQueue();
    private:
 
       VOID              recalcWheel();

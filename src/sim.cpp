@@ -30,7 +30,7 @@ using std::vector;
 #include "gtp_if.hpp"
 #include "gtp_ie.hpp"
 #include "gtp_msg.hpp"
-#include "message.hpp"
+#include "procedure.hpp"
 #include "gtp_stats.hpp"
 #include "sim_cfg.hpp"
 #include "transport.hpp"
@@ -47,22 +47,22 @@ class Simulator*  Simulator::pSim = NULL;
 
 Simulator* Simulator::getInstance()
 {
-    if (NULL == pSim)
-    {
-        try
-        {
-            pSim = new Simulator();
-            return pSim;
-        }
-        catch (S32 e)
-        {
-            return (Simulator *)NULL;
-        }
-    }
-    else
-    {
-        return pSim;
-    }
+   if (NULL == pSim)
+   {
+      try
+      {
+         pSim = new Simulator();
+         return pSim;
+      }
+      catch (S32 e)
+      {
+         return (Simulator *)NULL;
+      }
+   }
+   else
+   {
+      return pSim;
+   }
 }
 
 // Constructor

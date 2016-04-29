@@ -14,6 +14,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <list>
 
 #include "types.hpp"
@@ -24,7 +25,7 @@
 static TaskId_t   s_taskId = 0;
 TaskList          g_runningTasks;
 TaskList          g_allTasks;
-TimeWheel         pausedTasks;
+TimeWheel         g_pausedTasks;
 
 Task::Task()
 {
@@ -42,7 +43,7 @@ VOID Task::stop()
    }
    else if (TASK_STATE_PAUSED == m_taskState)
    {
-      pausedTasks.removeTask(this);
+      g_pausedTasks.removeTask(this);
    }
 
    m_taskState = TASK_STATE_STOPPED;
@@ -57,16 +58,13 @@ VOID Task::abort()
 
 VOID Task::pause()
 {
-   if (TASK_STATE_RUNNING == m_taskState)
+   ASSERT(TASK_STATE_RUNNING == m_taskState);
+
+   if(TASK_STATE_RUNNING == m_taskState)
    {
       g_runningTasks.erase(m_runningTaskItr);
+      g_pausedTasks.addTask(this);
       m_taskState = TASK_STATE_PAUSED;
-      pausedTasks.addTask(this);
-   }
-   else if (TASK_STATE_STOPPED == m_taskState)
-   {
-      m_taskState = TASK_STATE_PAUSED;
-      pausedTasks.addTask(this);
    }
 }
 
@@ -74,14 +72,12 @@ VOID Task::resumeTask()
 {
    if (TASK_STATE_PAUSED == m_taskState)
    {
-      pausedTasks.removeTask(this);
-      m_runningTaskItr = g_runningTasks.insert(g_runningTasks.end(), this);
-   }
-   else if (TASK_STATE_STOPPED == m_taskState)
-   {
-      m_runningTaskItr = g_runningTasks.insert(g_runningTasks.end(), this);
+      g_pausedTasks.removeTask(this);
    }
 
+   ASSERT(m_taskState != TASK_STATE_RUNNING);
+
+   m_runningTaskItr = g_runningTasks.insert(g_runningTasks.end(), this);
    m_taskState = TASK_STATE_RUNNING;
 }
 
@@ -90,8 +86,10 @@ TaskList* TaskMgr::getRunningTasks()
    return &g_runningTasks;
 }
 
-VOID Task::addToRunQueue()
+VOID Task::setRunning()
 {
+   ASSERT(m_taskState != TASK_STATE_RUNNING);
+
    m_runningTaskItr = g_runningTasks.insert(g_runningTasks.end(), this);
    m_taskState = TASK_STATE_RUNNING;
 }
@@ -103,23 +101,7 @@ TaskList* TaskMgr::getAllTasks()
 
 VOID TaskMgr::resumePausedTasks()
 {
-#if 0
-   Time_t currTime = getMilliSeconds();
-   TaskList *pPausedTasks = getPausedTasks();
-   TaskListItr itr = pPausedTasks->begin();
-
-   while (itr != pPausedTasks->end())
-   {
-      Task *t = *itr;
-      itr++;
-
-      if (t->wake() <= currTime)
-      {
-         t->resumeTask();
-      }
-   }
-#endif
-   pausedTasks.resumePausedTasks();
+   g_pausedTasks.resumePausedTasks();
 }
 
 VOID TaskMgr::deleteAllTasks()
@@ -137,5 +119,5 @@ VOID TaskMgr::deleteAllTasks()
 
 VOID Task::recalcWheel()
 {
-   pausedTasks.addTask(this);
+   g_pausedTasks.addTask(this);
 }

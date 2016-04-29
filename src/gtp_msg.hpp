@@ -27,18 +27,19 @@ class GtpMsg
       GtpMsg(Buffer*);
       ~GtpMsg();
 
-      RETVAL         encode(GtpIeLst *pIeLst);
-      RETVAL         encode(U8 *pBuf, U32 *pLen);
-      RETVAL         decode();
-      GtpMsgType_t   type() {return m_msgHdr.msgType;}
-      VOID           setMsgHdr(const GtpMsgHdr* pHdr);
-      RETVAL         setSenderFteid(GtpTeid_t teid, const IpAddr *pIp);
-      GtpIe*         getIe(GtpIeType_t, GtpInstance_t, U32);
-      U32            getIeCount(GtpIeType_t ieType, GtpInstance_t inst);
-      U8*            getIeBufPtr(GtpIeType_t, GtpInstance_t, U32);
-      GtpSeqNumber_t seqNumber() {return m_msgHdr.seqN;}
-      VOID           setImsi(GtpImsiKey*);
-      GtpTeid_t      getTeid();
+      RETVAL            encode(GtpIeLst *pIeLst);
+      RETVAL            encode(U8 *pBuf, U32 *pLen);
+      RETVAL            decode();
+      GtpMsgType_t      type() {return m_msgHdr.msgType;}
+      VOID              setMsgHdr(const GtpMsgHdr* pHdr);
+      RETVAL            setSenderFteid(GtpTeid_t teid, const IpAddr *pIp);
+      GtpIe*            getIe(GtpIeType_t, GtpInstance_t, U32);
+      U32               getIeCount(GtpIeType_t ieType, GtpInstance_t inst);
+      U8*               getIeBufPtr(GtpIeType_t, GtpInstance_t, U32);
+      GtpSeqNumber_t    seqNumber() {return m_msgHdr.seqN;}
+      VOID              setImsi(GtpImsiKey*);
+      GtpTeid_t         getTeid();
+      GtpMsgCategory_t  category();
 
    private:
       GtpMsgHdr      m_msgHdr;

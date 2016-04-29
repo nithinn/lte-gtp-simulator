@@ -35,7 +35,7 @@ using namespace pugi;
 #include "gtp_if.hpp"
 #include "gtp_ie.hpp"
 #include "gtp_msg.hpp"
-#include "message.hpp"
+#include "procedure.hpp"
 #include "task.hpp"
 #include "scenario.hpp"
 #include "gtp_stats.hpp"

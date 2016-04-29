@@ -37,8 +37,11 @@ class Scenario
       VOID           shutdown();
       GtpIfType_t    ifType();
 
-      JobSequence    m_jobSeq;
       ProcSequence   m_procSeq;
+
+      ProcedureItr   getFirstProcedure();
+      ProcedureItr   getNextProcedure(ProcedureItr current);
+      BOOL           isScenarioEnd(ProcedureItr current);
 
    private:
       Scenario();

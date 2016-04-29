@@ -299,6 +299,7 @@ U32 GtpMsg::getIeCount(GtpIeType_t ieType, GtpInstance_t inst)
    LOG_ENTERFN();
 
    U32      cnt = 0;
+
    for (GtpIeLstItr ie = m_ieLst.begin(); ie != m_ieLst.end(); ie++)
    {
       if ((*ie)->type() == ieType && (*ie)->instance() == inst)
@@ -309,6 +310,7 @@ U32 GtpMsg::getIeCount(GtpIeType_t ieType, GtpInstance_t inst)
 
    LOG_EXITFN(cnt);
 }
+
 
 GtpIe* GtpMsg::getIe(GtpIeType_t  ieType, GtpInstance_t  inst, U32 occurance)
 {
@@ -394,4 +396,9 @@ VOID GtpMsg::setImsi(GtpImsiKey *pImsiKey)
 GtpTeid_t GtpMsg::getTeid()
 {
    return m_msgHdr.teid;
+}
+
+GtpMsgCategory_t GtpMsg::category()
+{
+   return gtpGetMsgCategory(m_msgHdr.msgType);
 }

@@ -30,7 +30,7 @@ using namespace pugi;
 #include "gtp_if.hpp"
 #include "gtp_ie.hpp"
 #include "gtp_msg.hpp"
-#include "message.hpp"
+#include "procedure.hpp"
 #include "xml_parser.hpp"
 
 /**

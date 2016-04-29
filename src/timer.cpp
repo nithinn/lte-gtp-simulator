@@ -163,7 +163,7 @@ S32 TimeWheel::resumePausedTasks()
             it != wheelOne[slot1].end();
             it++)
       {
-         (*it)->addToRunQueue();
+         (*it)->setRunning();
          count--;
       }
 
@@ -186,7 +186,7 @@ VOID TimeWheel::addTask(Task *task)
    /* if wakeup time is less than wheelbase add the task into runnable list */
    if (wake < wheelBase)
    {
-      task->resumeTask();
+      task->setRunning();
       return;
    }
 
