@@ -17,7 +17,7 @@ $ make
 
 3. Simulator Options
 -------------------------------------------------------------------------------
-run the command 'sim --help'
+run the command 'gsim --help'
 
 
 4. Running the Simulator
