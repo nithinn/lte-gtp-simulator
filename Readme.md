@@ -4,10 +4,15 @@
 LTE GTP Simulator is a 3gpp LTE GTPv2-C signaling simulator and gtp load generator. Any LTE GTP signaling scenario can easily be represented in XML and the simulator plays out the scenario. The simulator provides command line options to control the scenario execution. A scenario file, written in xml is a sequence of GTPC messages that is exchanged between between two LTE core network nodes. Each message, its informational elements etc are represented in XML. The scenario is then simulated by the GTP Simulator for a single UE or for multiple UEs in the form of load generator.
 
 
-2. Building LTE GTP Simulator
+2. Build
 -------------------------------------------------------------------------------
-run the 'make' command after downloading the source code from the base
-directory
+To build:
+
+...
+$ git clone https://github.com/nithinn/LTE-GTP-Simulator.git
+$ cd LTE-GTP-Simulator
+$ make
+...
 
 
 3. Simulator Options
