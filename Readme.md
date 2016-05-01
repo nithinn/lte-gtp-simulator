@@ -7,7 +7,6 @@ LTE GTP Simulator is a 3gpp LTE GTPv2-C signaling simulator and gtp load generat
 2. Build
 -------------------------------------------------------------------------------
 To build:
-
 ```
 $ git clone https://github.com/nithinn/LTE-GTP-Simulator.git
 $ cd LTE-GTP-Simulator
@@ -17,7 +16,11 @@ $ make
 
 3. Simulator Options
 -------------------------------------------------------------------------------
-run the command 'gsim --help'
+To list all command line options:
+```
+$ gsim --help
+```
+Or visit the [Wiki](https://github.com/nithinn/LTE-GTP-Simulator/wiki) Page.
 
 
 4. Running the Simulator
