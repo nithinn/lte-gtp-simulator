@@ -22,6 +22,6 @@ gsim [options] scenarion_file.xml
 
 5. Full Documentation
 -------------------------------------------------------------------------------
-Want to know more? Visit the *[Wiki](https://github.com/nithinn/LTE-GTP-Simulator/wiki) Page.
+Want to know more? Visit the [Wiki](https://github.com/nithinn/LTE-GTP-Simulator/wiki) Page.
 
 ===============================================================================
