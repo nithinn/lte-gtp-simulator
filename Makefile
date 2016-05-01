@@ -39,7 +39,7 @@ SRC=\
 	$(SRC_PATH)/gtp_ie.cpp \
 	$(SRC_PATH)/gtp_msg.cpp \
 	$(SRC_PATH)/gtp_util.cpp \
-	$(SRC_PATH)/message.cpp \
+	$(SRC_PATH)/procedure.cpp \
 	$(SRC_PATH)/scenario.cpp \
 	$(SRC_PATH)/pugixml.cpp \
 	$(SRC_PATH)/xml_parser.cpp \
