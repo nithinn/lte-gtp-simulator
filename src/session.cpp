@@ -652,7 +652,7 @@ GtpcPdn* UeSession::createPdn()
       LOG_DEBUG("Creating GTP-C Tunnel");
       pPdn->pCTun = createCTun(pPdn);
    }
-   catch (exception &e)
+   catch (std::exception &e)
    {
       LOG_FATAL("Memory allocation GtpcPdn");
       throw ERR_PDN_CREATION;
