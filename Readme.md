@@ -27,6 +27,13 @@ Or visit the [Wiki](https://github.com/nithinn/LTE-GTP-Simulator/wiki) Page.
 -------------------------------------------------------------------------------
 gsim [options] scenarion_file.xml
 
+The below example show S11 interface simulation between MME and SGW. The scenario simulates GTPv2-C signalling during a basic attach procedure.
+
+MME:
+gsim --node=mme --session-rate=100 --local-port=2123 --disp-timer=1000 --local-ip=10.0.2.15 --log-level=3 --remote-ip=10.0.3.15 --remote-port=2123 --t3-timer=3000 --log-file=mmelog.txt --n3-requests=3 --rate-period=1000 --num-sessions=5000 scenario/mme.xml
+
+SGW:
+gsim --node=sgw --local-port=2123 --disp-timer=1000 --local-ip=10.0.3.15 --log-file=sgwlog.txt scenario/sgw.xml
 
 5. Full Documentation
 -------------------------------------------------------------------------------
