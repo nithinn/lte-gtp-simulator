@@ -37,6 +37,7 @@ using namespace std;
 typedef enum
 {
     OPT_INV,
+    OPT_HELP,
     OPT_NODE,
     OPT_NUM_CALLS,
     OPT_CALL_RATE,

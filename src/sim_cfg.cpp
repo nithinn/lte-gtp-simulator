@@ -23,6 +23,7 @@
 #include "logger.hpp"
 #include "error.hpp"
 #include "macros.hpp"
+#include "help.hpp"
 #include "gtp_types.hpp"
 #include "sim_cfg.hpp"
 
@@ -32,6 +33,7 @@ static S8 DFLT_IMSI[] = "112233445566778";
 CmdLineParam gCfgOptioTable[OPT_MAX] = 
 {
     {OPT_INV,           "", ""},
+    {OPT_HELP,          "help", ""},
     {OPT_NODE,          "node", ""},
     {OPT_NUM_CALLS,     "num-sessions", ""},
     {OPT_CALL_RATE,     "session-rate", ""},
@@ -375,6 +377,12 @@ VOID Config::setParameter(CmdLineParam *pParam) throw (ErrCodeEn)
    {
       switch (pParam->type)
       {
+         case OPT_HELP:
+         {
+            displayHelp();
+            break;
+         }
+
          case OPT_NUM_CALLS:
          {
             this->setNoOfCalls((U32)atoi(pParam->value.c_str()));
@@ -569,7 +577,6 @@ VOID Config::setConfig(S32 numArgs, S8** cmdLineArgs) throw (ErrCodeEn)
       }
       catch (ErrCodeEn errCode)
       {
-         LOG_FATAL("Parsing Command Line options failed");
          throw ERR_INV_CMD_LINE_PARAM;
       }
    }

@@ -20,13 +20,39 @@
 #include "logger.hpp"
 #include "help.hpp"
 
+const char *gHelpStr[15] = {
+   "--node: Type of the LTE Core network node to be simulated",
+   "--num-sessions: Maximum number of user (IMSI) sessions to be created",
+   "--session-rate: Number of UE sessions created per second (rate period)",
+   "--rate-period: Default is one second. This options allows user to "\
+      "change the rate period",
+   "--local-ip: Local IP Address at which the GTP simulator will listen "\
+      "for GTPv2-C messages from peer entity",
+   "--remote-ip: Remote peer IP Address, GTP simulator sends all "\
+      "initiating messages to this IP address",
+   "--local-port: Local GTPv2-C listening port. Default value is 2123.",
+   "--remote-port: Remote peer UDP port number",
+   "--t3-timer: GTP retransmission timer (T3 Timer)",
+   "--n3-requests: GTP retransmission counter, number of times a GTP "\
+      "message be retransmitted",
+   "--disp-timer: Interval in seconds the session statistics display "\
+      "screen be refreshed",
+   "--disp-target: Scenario statistics display to be directed to a file "\
+      "or screen, default value is screen",
+   "--error-file: File name where the error logs has to be written",
+   "--log-file: File name where the debug logs has to be written",
+   "--log-level: Logging level for debugging purposes, default value = 1"};
+
 PUBLIC VOID displayHelp()
 {
    std::cout << std::endl;
    std::cout << "Usage: gsim [options] <scenario_file>";
    std::cout << std::endl;
    std::cout << std::endl;
-   std::cout << "--help:" << "     ";
-   std::cout << "Display all sim options:";
-   std::cout << std::endl;
+
+   for (int i = 0; i < 15; i++)
+   {
+      std::cout << gHelpStr[i] << std::endl;
+      std::cout << std::endl;
+   }
 }
