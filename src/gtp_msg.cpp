@@ -38,10 +38,17 @@ GtpMsg::GtpMsg(GtpMsgType_t msgType)
 {
    MEMSET(m_gtpMsgBuf, 0, GTP_MSG_BUF_LEN);
    m_msgHdr.msgType = msgType;
+   m_bearersToCreate = 0;
+   m_bearersToDelete = 0;
+   m_bearersToModify = 0;
 }
 
 GtpMsg::GtpMsg(Buffer *pBuf)
 {
+   m_bearersToCreate = 0;
+   m_bearersToDelete = 0;
+   m_bearersToModify = 0;
+
    decodeHdr(pBuf->pVal);
 
    if (pBuf->len <= GTP_MSG_BUF_LEN)
