@@ -427,14 +427,6 @@ GSimSocket::GSimSocket(SockType_t sockType)
 {
    if (SOCK_TYPE_STDIN == sockType)
    {
-      S32 ret = (fileno(stdin), F_SETFL,\
-            (fcntl(fileno(stdin), F_GETFL) | O_NONBLOCK));
-      if (ret < 0)
-      {
-         LOG_ERROR("fcntl() failure, [%s]", strerror(errno))
-         throw ERR_SYS_FCNTL;
-      }
-
       m_fd = fileno(stdin);
       m_type = sockType;
       m_pollFdIndex = s_pollFdCnt++;

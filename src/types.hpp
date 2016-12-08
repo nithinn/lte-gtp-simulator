@@ -137,12 +137,12 @@ struct UdpData_t
    IPEndPoint     peerEp; 
 };
 
-#define BUFFER_CPY(_buf, _src, _sz)                     \
-do                                                      \
-{                                                       \
-   (_buf)->len = _sz;                                   \
-   (_buf)->pVal = new U8 [_sz];                         \
-   memcpy((VOID *)(_buf)->pVal, (VOID *)(_src), _sz);   \
+#define BUFFER_CPY(_buf, _src, _sz)                         \
+do                                                          \
+{                                                           \
+   (_buf)->len = _sz;                                       \
+   (_buf)->pVal = new U8 [_sz];                             \
+   memcpy((VOID *)(_buf)->pVal, (const VOID *)(_src), _sz); \
 } while (0)
 
 #define GSIM_SIZE_32             32
