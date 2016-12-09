@@ -172,15 +172,11 @@ RETVAL GtpMsg::encode(U8 *pBuf, U32 *pLen)
     * So reserve the length of message header in the message buffer by
     * 12 bytes or 8 bytes (if teid not present
     */
-   *pLen = 0;
+   *pLen = GTPC_HDR_SEQN_LEN + GTPC_HDR_SPARE_LEN;
    if (GSIM_CHK_MASK(m_msgHdr.pres, GTP_MSG_T_BIT_PRES))
    {
       pTmpBuf += GTP_MSG_HDR_LEN;
-   }
-   else
-   {
-      /* TEID not present */
-      pTmpBuf += GTP_MSG_HDR_LEN_WITHOUT_TEID;
+      *pLen += GTP_TEID_LEN;
    }
 
    /* encode all the IEs */
@@ -209,8 +205,9 @@ RETVAL GtpMsg::decode()
 {
    LOG_ENTERFN();
 
-   GtpLength_t len = m_msgHdr.len;
-   U8          *pMsgBuf = m_gtpMsgBuf;
+   U8 *pMsgBuf = m_gtpMsgBuf;
+   GtpLength_t len = m_msgHdr.len - (GTP_TEID_LEN + GTPC_HDR_SEQN_LEN + \
+         GTPC_HDR_SPARE_LEN);
    while (len > 0)
    {
       GtpIeType_t    ieType = GTP_IE_RESERVED;
@@ -238,7 +235,6 @@ U32 GtpMsg::encodeHdr(U8 *pBuf)
 {
    LOG_ENTERFN();
 
-   U32   len = 0;
    U8    *pTmpBuf = pBuf;
 
    /* 1 byte of (3 bits ver, P and T bits, and 3 bits spare */  
@@ -253,34 +249,29 @@ U32 GtpMsg::encodeHdr(U8 *pBuf)
       pTmpBuf[0] |= (1 << 3);
    }
    pTmpBuf += 1;
-   len += 1;                                                                           
+
    /* 1 byte of msg type */
    GTP_ENC_MSG_TYPE(pTmpBuf, m_msgHdr.msgType);  
-   pTmpBuf += 1;
-   len += 1;                                                                           
+   pTmpBuf += GTPC_MSG_TYPE_LEN;
+
    /* 2 bytes of msg length */
    GTP_ENC_LEN(pTmpBuf, m_msgHdr.len); 
-   pTmpBuf += 2;
-   len += 2;
+   pTmpBuf += GTPC_MSG_LENGTH_LEN;
 
    /* 4 bytes of teid */
    if (GSIM_CHK_MASK(m_msgHdr.pres, GTP_MSG_T_BIT_PRES))
    {
       GTP_ENC_TEID(pTmpBuf, m_msgHdr.teid);
-      pTmpBuf += 4;
-      len += 4;/* 4 bytes of teid */                                         
+      pTmpBuf += GTP_TEID_LEN;
    }
                                                                            
    /* 3 bytes of sequence number */
    GTP_ENC_SEQN(pTmpBuf, m_msgHdr.seqN);
-   pTmpBuf += 3;
-   len += 3; /* 3 bytes of seq number */                                  
+   pTmpBuf += GTPC_HDR_SEQN_LEN;
                                                                            
    /* spare byte */                                                        
-   pTmpBuf += 1;                                                              
-   len += 1; /* 1 byte spare */                                           
-
-   LOG_EXITFN(len);
+   pTmpBuf += GTPC_HDR_SPARE_LEN;                                                              
+   LOG_EXITFN(GTPC_HDR_MAND_LEN);
 }
 
 VOID GtpMsg::decodeHdr(U8 *pBuf)

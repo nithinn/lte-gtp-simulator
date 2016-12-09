@@ -17,10 +17,15 @@
 #ifndef _GTP_TYPES_HPP
 #define _GTP_TYPES_HPP
 
-#define GTP_MSG_HDR_LEN                   12  
+#define GTPC_HDR_MAND_LEN                 4
+#define GTP_MSG_HDR_LEN                   12
 #define GTP_MSG_HDR_LEN_WITHOUT_TEID      8
 #define GTP_TEID_LEN                      4  
+#define GTPC_MSG_TYPE_LEN                 1
+#define GTPC_MSG_LENGTH_LEN               2
 #define GTP_IE_HDR_LEN                    4  
+#define GTPC_HDR_SEQN_LEN                 3
+#define GTPC_HDR_SPARE_LEN                1
 #define GTP_T3_TIMER                      5     /* in seconds  */
 #define GTP_N3_REQ                        3     /* max no.of retransmissions */
 #define SND_MSG_WAIT_TIMER                0     /* time to wait before 
