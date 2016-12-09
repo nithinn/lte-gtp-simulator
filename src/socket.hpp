@@ -61,7 +61,6 @@ class GSimSocket
       IPEndPoint        m_ep;
       RETVAL            recvMsgV6(UdpData_t **msg);
       RETVAL            recvMsgV4(UdpData_t **msg);
-      U32               getFullGtpMsgLen(U8* pBuf, U32 len);
 };
 
 #endif

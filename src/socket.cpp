@@ -321,48 +321,6 @@ PRIVATE RETVAL handleGtpcSock(GSimSocket *pSock)
 }
 
 /**
- * @brief returns the length of the GTP message buffer
- *        which includes the GTP Header + Body
- *
- * @param pBuf buffer containing the GTP message
- * @param len  total length of the buffer
- *
- * @return
- *    length of the GTP message buffer
- *    0 if full GTP message is not present
- */
-U32 GSimSocket::getFullGtpMsgLen(U8* pBuf, U32 len)
-{
-   LOG_ENTERFN();
-
-   U32 msgLen = 0;
-
-   /* read atlease 4 bytes to figure out the gtp msg length */
-   if (len >= 4)
-   {
-      /* get the GTP message length */
-      GTP_MSG_GET_LEN(pBuf, msgLen);
-      if (GTP_CHK_T_BIT_PRESENT(pBuf))
-      {
-         msgLen += GTP_MSG_HDR_LEN;
-      }
-      else
-      {
-         msgLen += GTP_MSG_HDR_LEN_WITHOUT_TEID;
-      }
-
-      /* full gtp message is not in buffer pointed by pBuf, so return 0 */
-      if (msgLen > len)
-      {
-         msgLen = 0;
-      }
-   }
-
-   LOG_EXITFN(msgLen);
-}
-
-
-/**
  * @brief
  *    Hanldes GTP-U socket, reads GTP-U Process control messages
  *
