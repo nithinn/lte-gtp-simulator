@@ -83,10 +83,6 @@ VOID Simulator::run(VOID *arg)
    m_pScn = Scenario::getInstance();
    m_pScn->init(Config::getInstance()->getScnFile());
 
-   // Initialing the Display task to display session statistics on terminal
-   Display *pDisp = Display::getInstance();
-   pDisp->init();
-
    /* Creates UDP sockets for listing of gtp messages */
    LOG_DEBUG("Initializing Transport connections");
    if (ROK != initTransport())
@@ -98,6 +94,10 @@ VOID Simulator::run(VOID *arg)
    // Initialing the Keyboard to process user inputs
    Keyboard *pKb = Keyboard::getInstance();
    pKb->init();
+
+   // Initialing the Display task to display session statistics on terminal
+   Display *pDisp = Display::getInstance();
+   pDisp->init();
 
    if (SCN_TYPE_INITIATING == m_pScn->getScnType())
    {

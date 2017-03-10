@@ -77,7 +77,7 @@ do                                                                      \
    return;                                                              \
 } while (0)
 #else
-#define LOG_EXITVOID()
+#define LOG_EXITVOID() return
 #endif
 
 #define LOG_TRACE_MSG(_n, _b, _l, _d, _ip, _port)                    \

@@ -362,9 +362,11 @@ PUBLIC RETVAL initTransport()
    locSenderEp.port = pCfg->getLocalGtpcPort() + 1;
    locSenderEp.ipAddr = *pCfg->getLocalIpAddr();
    s_pSender = new GSimSocket(SOCK_TYPE_GTPC, locSenderEp);
-   if (ROK != s_pSender->bindSocket())
+   ret = s_pSender->bindSocket();
+   if (ROK != ret)
    {
       LOG_FATAL("Binding to GTP local sending Socket");
+      LOG_EXITFN(ret);
    }
 
    /* This is the default GTPC socket, where the simlator listens
@@ -373,12 +375,14 @@ PUBLIC RETVAL initTransport()
    locListnerEp.port = pCfg->getLocalGtpcPort();
    locListnerEp.ipAddr = *pCfg->getLocalIpAddr();
    s_pListener = new GSimSocket(SOCK_TYPE_GTPC, locListnerEp);
-   if (ROK != s_pListener->bindSocket())
+   ret = s_pListener->bindSocket();
+   if (ROK != ret)
    {
       LOG_FATAL("Binding to GTP Listener Socket");
+      LOG_EXITFN(ret);
    }
 
-   LOG_EXITFN(ret);
+   LOG_EXITFN(ROK);
 }
 
 GSimSocket::GSimSocket(SockType_t sockType)
