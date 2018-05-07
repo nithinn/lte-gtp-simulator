@@ -3,7 +3,7 @@
 
 <scenario name="UE Attach Procedure, SGW S5/s8 interface">
   <recv request="csreq">
-   <ie type="cause" instance="0">
+   <!--ie type="cause" instance="0">
      <param type="value" value="1"> </param>
      <param type="bce" value="0"> </param>
      <param type="cs" value="0"> </param>
@@ -11,7 +11,7 @@
      <param type="offending_ie_type" value="10"> </param>
      <param type="offending_ie_length" value="10"> </param>
      <param type="offending_ie_instance" value="0"> </param>
-   </ie>
+   </ie-->
   </recv>
 
   <send response="csrsp">
