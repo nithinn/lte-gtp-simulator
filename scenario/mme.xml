@@ -50,30 +50,6 @@
   </send>
 
   <recv response="csrsp">
-    <store type="teid" variable="TEID"> </store> 
-    <store type="seqnum" variable="SEQNUM"> </store> 
-    <validate>
-       <ie type="cause" intance="0" value="1"> </ie>
-    </validate>
-    <validate>
-       <ie type="cause" intance="0" value="1"> </ie>
-    </validate>
-    <validate>
-       <ie type="bcontext" intance="0" count="1">
-          <ie type="ebi" instance="0" value="5"> </ie>
-       </ie>
-       <ie type="pdncontext" instance="0" count="1">
-          <ie type="bcontext" instance="0" count="1">
-             <ie type="ebi" instance="0" value="5"> </ie>
-          </ie>
-       </ie>
-    </validate>
-    <store>
-       <ie type="bcontext" intance="0" count="1">
-         <ie type="ebi" instance="0" variable="EBI"> </ie>
-         <ie type="fteid" instance="0" variable="FTEID"> </ie>
-       </ie>
-    </store>
   </recv>
 
   <send request="mbreq">
