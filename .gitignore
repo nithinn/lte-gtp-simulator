@@ -32,11 +32,9 @@
 *.app
 
 # Log files
-*.txt
+*log.txt
 core
 
 # Temp files
 *.swp
 tags
-
-
