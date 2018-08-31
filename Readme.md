@@ -10,7 +10,9 @@ To build:
 ```
 $ git clone https://github.com/nithinn/LTE-GTP-Simulator.git
 $ cd LTE-GTP-Simulator
-$ make
+$ mkdir build
+$ cd build
+$ cmake ..
 ```
 
 
