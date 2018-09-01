@@ -12,7 +12,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */  
+ */
 
 #include <curses.h>
 #include <signal.h>
@@ -39,229 +39,251 @@
 #include "gtp_stats.hpp"
 #include "display.hpp"
 
-#define COUT            std::cout
-#define CIN             std::cin
-#define ENDL            std::endl
-#define CLEAR_SCREEN()  printf("\033[2J")
-#define ENDLINE         "\r\n"
-#define PRINT_SEPERATOR() \
-{\
-   fprintf(stdout, "+------------------------+----------------------------+-----------------------+\r\n");\
-}
+#define COUT std::cout
+#define CIN std::cin
+#define ENDL std::endl
+#define CLEAR_SCREEN() printf("\033[2J")
+#define ENDLINE "\r\n"
+#define PRINT_SEPERATOR()                                                      \
+    {                                                                          \
+        fprintf(stdout,                                                        \
+            "+------------------------+----------------------------+---------" \
+            "--------------+\r\n");                                            \
+    }
 
-#define PRINT_END_SEPERATOR_PAUSE() \
-{\
-   fprintf(stdout, "+--Adjust-Rate [+|-|*|/]--+-----Pause-Traffic [p]-----+-------Quit [q]--------+\r\n");\
-}
+#define PRINT_END_SEPERATOR_PAUSE()                          \
+    {                                                        \
+        fprintf(stdout,                                      \
+            "+--Adjust-Rate [+|-|*|/]--+-----Pause-Traffic " \
+            "[p]-----+-------Quit [q]--------+\r\n");        \
+    }
 
-#define PRINT_END_SEPERATOR_RESUME() \
-{\
-   fprintf(stdout, "+---Adjust-Rate [+/-]----+----Resume-Traffic [p]------+-------Quit [q]--------+\r\n");\
-}
+#define PRINT_END_SEPERATOR_RESUME()                        \
+    {                                                       \
+        fprintf(stdout,                                     \
+            "+---Adjust-Rate [+/-]----+----Resume-Traffic " \
+            "[p]------+-------Quit [q]--------+\r\n");      \
+    }
 
-#define PRINT_BLANK_LINE() \
-{\
-   fprintf(stdout, "\r\n");\
-}
+#define PRINT_BLANK_LINE()       \
+    {                            \
+        fprintf(stdout, "\r\n"); \
+    }
 
 class Display *Display::m_pDisp = NULL;
 PRIVATE VOID screen_exit();
 
-Display* Display::getInstance()
+Display *Display::getInstance()
 {
-   try
-   {
-      if (NULL == m_pDisp)
-      {
-         m_pDisp = new Display;
-      }
-   }
-   catch (std::exception &e)
-   {
-      LOG_FATAL("Memory allocation failure, Display");
-      throw ERR_DISPLAY_INIT;
-   }
+    try
+    {
+        if (NULL == m_pDisp)
+        {
+            m_pDisp = new Display;
+        }
+    }
+    catch (std::exception &e)
+    {
+        LOG_FATAL("Memory allocation failure, Display");
+        throw ERR_DISPLAY_INIT;
+    }
 
-   return m_pDisp;
+    return m_pDisp;
 }
 
 Display::~Display()
 {
-   screen_exit();
+    screen_exit();
 }
 
 PRIVATE VOID screen_exit()
 {
-   /* Some signals may be delivered twice during exit() execution,
-    * and we must prevent all this from beeing done twice */
-   static BOOL alreadyExited = FALSE;
-   if (alreadyExited)
-   {
-      return;
-   }
+    /* Some signals may be delivered twice during exit() execution,
+     * and we must prevent all this from beeing done twice */
+    static BOOL alreadyExited = FALSE;
+    if (alreadyExited)
+    {
+        return;
+    }
 
-   alreadyExited = TRUE;
-   endwin();
+    alreadyExited = TRUE;
+    endwin();
 }
 
 VOID Display::init()
 {
-   struct sigaction action_quit;
+    struct sigaction action_quit;
 
-   initscr();
-   noecho();
+    initscr();
+    noecho();
 
-   m_dispIntvl = Config::getInstance()->getDisplayRefreshTimer();
-   m_pStats = Stats::getInstance();
-   getTimeStr(m_timeStr);
-   m_startTime = getMilliSeconds() / 1000;
-   m_remPort = Config::getInstance()->getRemoteGtpcPort(); 
-   STRCPY(m_remIpAddrStr, (Config::getInstance()->\
-         getRemIpAddrStr()).c_str());
+    m_dispIntvl = Config::getInstance()->getDisplayRefreshTimer();
+    m_pStats    = Stats::getInstance();
+    getTimeStr(m_timeStr);
+    m_startTime  = getMilliSeconds() / 1000;
+    m_localPort  = Config::getInstance()->getLocalGtpcPort();
+    m_remPort    = Config::getInstance()->getRemoteGtpcPort();
+    m_nodeTypStr = Config::getInstance()->getNodeTypeStr();
+    STRCPY(m_remIpAddrStr, (Config::getInstance()->getRemIpAddrStr()).c_str());
+    STRCPY(
+        m_localIpAddrStr, (Config::getInstance()->getLocalIpAddrStr()).c_str());
 
-   m_procSeq = &(Scenario::getInstance()->m_procSeq);
+    m_procSeq = &(Scenario::getInstance()->m_procSeq);
 
-   /* Map exit handlers to curses reset procedure */
-   memset(&action_quit, 0, sizeof(action_quit));
-   (*(void **)(&(action_quit.sa_handler))) = (VOID *)screen_exit;
-   sigaction(SIGTERM, &action_quit, NULL);
-   sigaction(SIGINT, &action_quit, NULL);
-   sigaction(SIGKILL, &action_quit, NULL);  
+    /* Map exit handlers to curses reset procedure */
+    memset(&action_quit, 0, sizeof(action_quit));
+    (*(void **)(&(action_quit.sa_handler))) = (VOID *)screen_exit;
+    sigaction(SIGTERM, &action_quit, NULL);
+    sigaction(SIGINT, &action_quit, NULL);
+    sigaction(SIGKILL, &action_quit, NULL);
 
-   CLEAR_SCREEN();
+    CLEAR_SCREEN();
 }
 
 RETVAL Display::run(VOID *arg)
 {
-   LOG_ENTERFN();
+    LOG_ENTERFN();
 
-   m_lastRunTime = getMilliSeconds();
-   disp();
-   pause();
+    m_lastRunTime = getMilliSeconds();
+    disp();
+    pause();
 
-   LOG_EXITFN(ROK);
+    LOG_EXITFN(ROK);
 }
 
 VOID Display::printJob(Job *job)
 {
-   switch (job->type())
-   {
-      case JOB_TYPE_SEND:
-      {
-         fprintf(stdout, "%s  ", job->m_msgName);
-         fprintf(stdout, "\t--->");
-         fprintf(stdout, " \t%9d", job->m_numSnd);
-         fprintf(stdout, "%9d", job->m_numSndRetrans);
-         fprintf(stdout, " %9d", job->m_numTimeOut);
-         fprintf(stdout, ENDLINE);
-         break;
-      }
-      case JOB_TYPE_RECV:
-      {
-         fprintf(stdout, "%s  ", job->m_msgName);
-         fprintf(stdout, " \t<---");
-         fprintf(stdout, "\t%9d", job->m_numRcv);
-         fprintf(stdout, "%9d", job->m_numRcvRetrans);
-         fprintf(stdout, "                  %9d", job->m_numUnexp);
-         fprintf(stdout, ENDLINE);
-         break;
-      }
-      case JOB_TYPE_WAIT:
-      {
-         fprintf(stdout, "[Wait %5d]\r\n", (S32)job->wait());
-         fprintf(stdout, ENDLINE);
-         break;
-      }
-      default:
-      {
-         break;
-      }
-   }
+    switch (job->type())
+    {
+    case JOB_TYPE_SEND:
+    {
+        fprintf(stdout, "%s  ", job->m_msgName);
+        fprintf(stdout, "\t--->");
+        fprintf(stdout, " \t%9d", job->m_numSnd);
+        fprintf(stdout, "%9d", job->m_numSndRetrans);
+        fprintf(stdout, " %9d", job->m_numTimeOut);
+        fprintf(stdout, ENDLINE);
+        break;
+    }
+    case JOB_TYPE_RECV:
+    {
+        fprintf(stdout, "%s  ", job->m_msgName);
+        fprintf(stdout, " \t<---");
+        fprintf(stdout, "\t%9d", job->m_numRcv);
+        fprintf(stdout, "%9d", job->m_numRcvRetrans);
+        fprintf(stdout, "                  %9d", job->m_numUnexp);
+        fprintf(stdout, ENDLINE);
+        break;
+    }
+    case JOB_TYPE_WAIT:
+    {
+        fprintf(stdout, "[Wait %5d]\r\n", (S32)job->wait());
+        fprintf(stdout, ENDLINE);
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
 }
 
 VOID Display::disp()
 {
-   static BOOL firTime = TRUE;
+    static BOOL firTime = TRUE;
 
-   CLEAR_SCREEN();
+    CLEAR_SCREEN();
 
-   if (firTime)
-   {
-      firTime = FALSE;
-      fprintf(stdout,
-            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"\
+    if (firTime)
+    {
+        firTime = FALSE;
+        fprintf(stdout,
+            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
             "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-   }
+    }
 
-   PRINT_SEPERATOR();
-   fprintf(stdout, "Start: %s  ", m_timeStr);
-   Time_t runTime = (getMilliSeconds() / 1000) - m_startTime;
-   fprintf(stdout, "Run-Time: %us   ", (U32)runTime);
-   fprintf(stdout, "Remote-Host: %s:%d \r\n", m_remIpAddrStr, m_remPort);
+    PRINT_SEPERATOR();
+    fprintf(stdout, "Start: %s  ", m_timeStr);
+    Time_t runTime = (getMilliSeconds() / 1000) - m_startTime;
+    fprintf(stdout, "Run-Time: %us   ", (U32)runTime);
+    fprintf(stdout, "\t\t    Node: %s   \r\n", m_nodeTypStr.c_str());
+    fprintf(stdout, "Local-Host: %s:%d ", m_localIpAddrStr, m_localPort);
+    if (STRLEN(m_remIpAddrStr) > 0)
+    {
+        fprintf(stdout, "\t\t\t  Remote-Host: %s:%d \r\n", m_remIpAddrStr,
+            m_remPort);
+    }
+    else
+    {
+        fprintf(stdout, "\r\n");
+    }
 
-   Counter ssnCreated = getStats(GSIM_STAT_NUM_SESSIONS_CREATED);
-   Counter ssnSucc = getStats(GSIM_STAT_NUM_SESSIONS_SUCC);
-   Counter ssnFail = getStats(GSIM_STAT_NUM_SESSIONS_FAIL);
-   Counter deadCalls = getStats(GSIM_STAT_NUM_DEADCALLS);
-   fprintf(stdout, "Total-Sessions: %u\t\tDead Calls: %u\r\n", ssnCreated,\
-         deadCalls);
-   fprintf(stdout, "Session-Completed: %u   \r\n", ssnSucc);
-   fprintf(stdout, "Session-Aborted: %u   \r\n", ssnFail);
+    PRINT_SEPERATOR();
 
-   PRINT_SEPERATOR();
-   fprintf(stdout,"                                 "\
-           "Messages  Retrans   Timeout   Unexpected-Msg\r\n");
+    Counter ssnCreated = getStats(GSIM_STAT_NUM_SESSIONS_CREATED);
+    Counter ssnSucc    = getStats(GSIM_STAT_NUM_SESSIONS_SUCC);
+    Counter ssnFail    = getStats(GSIM_STAT_NUM_SESSIONS_FAIL);
+    Counter deadCalls  = getStats(GSIM_STAT_NUM_DEADCALLS);
+    fprintf(stdout, "Total-Sessions:    %u\r\n", ssnCreated);
+    fprintf(stdout, "Session-Completed: %u\r\n", ssnSucc);
+    fprintf(stdout, "Session-Aborted:   %u\r\n", ssnFail);
+    fprintf(stdout, "Dead-Calls:        %u\r\n", deadCalls);
 
-   for (U32 i = 0; i < m_procSeq->size(); i++)
-   {
-      Procedure *proc = m_procSeq->at(i);
-      
-      switch (proc->type())
-      {
-         case PROC_TYPE_WAIT:
-         {
+    PRINT_SEPERATOR();
+    fprintf(stdout,
+        "                                 "
+        "Messages  Retrans   Timeout   Unexpected-Msg\r\n");
+
+    for (U32 i = 0; i < m_procSeq->size(); i++)
+    {
+        Procedure *proc = m_procSeq->at(i);
+
+        switch (proc->type())
+        {
+        case PROC_TYPE_WAIT:
+        {
             printJob(proc->m_wait);
             break;
-         }
-         case PROC_TYPE_REQ_RSP:
-         {
+        }
+        case PROC_TYPE_REQ_RSP:
+        {
             printJob(proc->m_initial);
             printJob(proc->m_trigMsg);
             break;
-         }
-         case PROC_TYPE_REQ_TRIG_REP:
-         {
+        }
+        case PROC_TYPE_REQ_TRIG_REP:
+        {
             printJob(proc->m_initial);
             printJob(proc->m_trigMsg);
             printJob(proc->m_trigReply);
             break;
-         }
-         default:
-         {
+        }
+        default:
+        {
             break;
-         }
-      }
-   }
+        }
+        }
+    }
 
-   PRINT_BLANK_LINE();
-   if (KB_KEY_PAUSE_TRAFFIC == Keyboard::key)
-   {
-      PRINT_END_SEPERATOR_RESUME();
-   }
-   else
-   {
-      PRINT_END_SEPERATOR_PAUSE();
-   }
+    PRINT_BLANK_LINE();
+    if (KB_KEY_PAUSE_TRAFFIC == Keyboard::key)
+    {
+        PRINT_END_SEPERATOR_RESUME();
+    }
+    else
+    {
+        PRINT_END_SEPERATOR_PAUSE();
+    }
 
-   fflush(stdout);
+    fflush(stdout);
 }
 
 Counter Display::getStats(GtpStat_t type)
 {
-   return m_pStats->getStats(type);
+    return m_pStats->getStats(type);
 }
 
 VOID Display::displayStats()
 {
-   Display::getInstance()->disp();
+    Display::getInstance()->disp();
 }

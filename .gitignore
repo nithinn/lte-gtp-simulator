@@ -38,3 +38,4 @@ core
 # Temp files
 *.swp
 tags
+build

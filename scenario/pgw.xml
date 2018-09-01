@@ -42,5 +42,15 @@
       </ie>
    </ie>
   </send>
+
+  <!-- Receive delete session request from SGW -->
+  <recv request="dsreq">
+  </recv>
+
+  <send response="dsrsp">
+     <ie type="cause" instance="0">
+        <param type="cause_value" value="16"> </param>
+     </ie>
+  </send>
 </scenario>
 
