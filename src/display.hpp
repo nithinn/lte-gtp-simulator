@@ -39,10 +39,13 @@ class Display: virtual public Task
       Time_t            m_startTime;
       U16               m_remPort;
       S8                m_remIpAddrStr[IPV6_ADDR_MAX_LEN];
+      U16               m_localPort;
+      S8                m_localIpAddrStr[IPV6_ADDR_MAX_LEN];
       Stats             *m_pStats;
       S8                m_timeStr[GSIM_TIME_STR_MAX_LEN];
       ProcSequence      *m_procSeq;
       VOID              printJob(Job*);
+      std::string       m_nodeTypStr;
 };
 
 #endif
