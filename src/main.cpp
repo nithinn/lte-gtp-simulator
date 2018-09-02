@@ -24,7 +24,6 @@
 #include "task.hpp"
 #include "sim.hpp"
 
-#include <spdlog/spdlog.h>
 #include <cxxopts.hpp>
 
 #include <list>
