@@ -27,7 +27,7 @@ Or visit the [Wiki](https://github.com/nithinn/LTE-GTP-Simulator/wiki) Page.
 
 4. Running the Simulator
 -------------------------------------------------------------------------------
-gsim --node=<node-type> --scenario=<scenario-file> [options...] 
+gsim --node=node_type --scenario=scenario_file [options...] 
 
 The below example show S11 interface simulation between MME and SGW. The scenario simulates GTPv2-C signalling of a basic attach procedure.
 
@@ -41,6 +41,7 @@ The below example show S11 interface simulation between MME and SGW. The scenari
 ```
 ./build/gsim --node=sgw --scenario=scenario/sgw_s11.xml
 ```
+
 
 The below example show S5 interface simulation between SGW and PGW. The scenario simulates GTPv2-C signalling of a basic attach procedure.
 
