@@ -14,6 +14,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */  
 
+#include <list>
+
 #ifndef _GTP_TYPES_HPP
 #define _GTP_TYPES_HPP
 

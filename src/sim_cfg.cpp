@@ -95,7 +95,6 @@ Config::Config()
     m_maxSessions                        = 0;
     locGtpcPort                          = DFLT_GTPC_PORT;
     remGtpcPort                          = DFLT_GTPC_PORT;
-    locGtpcSndPort                       = DFLT_GTPC_SEND_PORT;
     t3Timer                              = DFLT_T3_TIMER;
     n3Req                                = DFLT_N3_REQUESTS;
     dispTimer                            = DFLT_DISP_REFRESH_TIMER;
@@ -128,6 +127,121 @@ Config::~Config()
 {
 }
 
+/**
+ * @brief
+ *    GNU Style command line options parsing
+ *
+ * @param numArgs
+ * @param cmdLineArgs
+ *
+ */
+VOID Config::setConfig(cxxopts::ParseResult options)
+{
+    if (options.count("node"))
+    {
+        auto value = options["node"].as<std::string>();
+        setNodeType(value);
+    }
+    else
+    {
+        throw GsimError("Mandatory argument 'node' is missing");
+    }
+
+    if (options.count("scenario"))
+    {
+        auto value = options["scenario"].as<std::string>();
+        setScenarioFile(value);
+    }
+    else
+    {
+        throw GsimError("Mandatory argument 'scenario' is missing");
+    }
+
+    if (options.count("local-ip"))
+    {
+        auto value = options["local-ip"].as<std::string>();
+        setLocalIpAddr(value);
+    }
+
+    if (options.count("local-port"))
+    {
+        auto value = options["local-port"].as<std::uint16_t>();
+        setLocalGtpcPort(value);
+    }
+
+    if (options.count("remote-ip"))
+    {
+        auto value = options["remote-ip"].as<std::string>();
+        setRemoteIpAddr(value);
+    }
+
+    if (options.count("remote-port"))
+    {
+        auto value = options["remote-port"].as<std::uint16_t>();
+        setRemoteGtpcPort(value);
+    }
+
+    if (options.count("num-sessions"))
+    {
+        auto value = options["num-sessions"].as<std::uint32_t>();
+        setNoOfCalls(value);
+    }
+
+    if (options.count("session-rate"))
+    {
+        auto value = options["session-rate"].as<std::uint32_t>();
+        setCallRate(value);
+    }
+
+    if (options.count("rate-period"))
+    {
+        auto value = options["rate-period"].as<std::uint32_t>();
+        setRatePeriod(value);
+    }
+
+    if (options.count("t3-timer"))
+    {
+        auto value = options["t3-timer"].as<std::uint32_t>();
+        setT3TimerSeconds(value);
+    }
+
+    if (options.count("n3-requests"))
+    {
+        auto value = options["n3-requests"].as<std::uint32_t>();
+        setN3Requests(value);
+    }
+
+    if (options.count("disp-timer"))
+    {
+        auto value = options["disp-timer"].as<std::uint32_t>();
+        setDisplayRefreshTimer(value);
+    }
+
+    if (options.count("disp-target"))
+    {
+        auto value = options["disp-target"].as<std::uint32_t>();
+        setDisplayTarget((DisplayTargetEn)value);
+    }
+
+    if (options.count("error-file"))
+    {
+        auto value = options["error-file"].as<std::string>();
+        setErrorFile(value);
+    }
+
+    if (options.count("log-file"))
+    {
+        auto value = options["log-file"].as<std::string>();
+        setLogFile(value);
+    }
+
+    if (options.count("log-level"))
+    {
+        auto value = options["log-level"].as<std::string>();
+        setLogLevel(value);
+    }
+}
+
 VOID Config::setNoOfCalls(U32 n)
 {
     pCfg->m_maxSessions = n;
@@ -150,8 +264,7 @@ VOID Config::setLocalIpAddr(string ip) throw(ErrCodeEn)
     ret = saveIp(ip, &(pCfg->locIpAddr));
     if (RFAILED == ret)
     {
-        LOG_FATAL("Invalid Local IP Address")
-        throw ERR_INV_CMD_LINE_PARAM;
+        throw GsimError("Invalid Local IP Address");
     }
 }
 
@@ -163,8 +276,7 @@ VOID Config::setRemoteIpAddr(string ip) throw(ErrCodeEn)
     ret            = saveIp(ip, &(pCfg->remIpAddr));
     if (RFAILED == ret)
     {
-        LOG_FATAL("Invalid Remote IP Address")
-        throw ERR_INV_CMD_LINE_PARAM;
+        throw GsimError("Invalid Remote IP Address");
     }
 }
 
@@ -182,8 +294,7 @@ VOID Config::setLocalGtpcPort(U16 port)
 {
     if (0 == port)
     {
-        LOG_FATAL("Invalid Local Gtpc Port");
-        LOG_INFO("Local Gtpc Port is Default GTPC Port 2123");
+        throw GsimError("Invalid Local Gtpc Port");
     }
     else
     {
@@ -191,26 +302,11 @@ VOID Config::setLocalGtpcPort(U16 port)
     }
 }
 
-VOID Config::setLocalGtpcSendPort(U16 port)
-{
-    if (0 == port)
-    {
-        LOG_FATAL("Invalid Local Gtpc Send Port");
-        LOG_INFO(
-            "Local Gtpc Send Port is Default GTPC send "
-            "Port 2124");
-    }
-    else
-    {
-        pCfg->locGtpcSndPort = port;
-    }
-}
-
 VOID Config::setRemoteGtpcPort(U16 port)
 {
     if (0 == port)
     {
-        LOG_FATAL("Invalid Remote Gtpc Port");
+        throw GsimError("Invalid Remote Gtpc Port");
         LOG_INFO("Remote Gtpc Port is Default GTPC Port 2123");
     }
     else
@@ -223,7 +319,7 @@ VOID Config::setT3TimerSeconds(U32 val)
 {
     if (0 == val)
     {
-        LOG_FATAL("Invalid T3 Timer value");
+        throw GsimError("Invalid T3 Timer value");
         LOG_INFO("T3 Timer is default value of 3 seconds");
     }
     else
@@ -281,7 +377,7 @@ VOID Config::setDisplayTarget(DisplayTargetEn target)
     }
     else
     {
-        LOG_FATAL("Invalid Display Target");
+        throw GsimError("Invalid Display Target");
         LOG_INFO("Display is set to default target: SCREEN");
     }
 }
@@ -290,8 +386,7 @@ VOID Config::setErrorFile(string filename) throw(ErrCodeEn)
 {
     if (filename.size() == 0)
     {
-        LOG_FATAL("Invalid Error file");
-        throw ERR_INV_CMD_LINE_PARAM;
+        throw GsimError("Invalid Error file");
     }
     else
     {
@@ -299,20 +394,9 @@ VOID Config::setErrorFile(string filename) throw(ErrCodeEn)
     }
 }
 
-VOID Config::setScenarioFile(S8 *filename) throw(ErrCodeEn)
+VOID Config::setScenarioFile(std::string filename) throw(ErrCodeEn)
 {
-    if (NULL == filename || STRLEN(filename) == 0)
-    {
-        LOG_FATAL("Invalid Scenario file");
-        throw ERR_INV_CMD_LINE_PARAM;
-    }
-
-    if (0 == STRNCMP(filename, "--", 2))
-    {
-        throw ERR_INV_CMD_LINE_PARAM;
-    }
-
-    pCfg->scnFile.assign(filename);
+    pCfg->scnFile.assign(filename.c_str());
 }
 
 VOID Config::setLogFile(string filename) throw(ErrCodeEn)
@@ -327,8 +411,7 @@ VOID Config::setDisplayTargetFile(string filename) throw(ErrCodeEn)
 {
     if (filename.size() == 0)
     {
-        LOG_FATAL("Invalid Display target file");
-        throw ERR_INV_CMD_LINE_PARAM;
+        throw GsimError("Invalid Display target file");
     }
     else
     {
@@ -338,8 +421,7 @@ VOID Config::setDisplayTargetFile(string filename) throw(ErrCodeEn)
         }
         else
         {
-            LOG_FATAL("Dispay Target is not matching");
-            throw ERR_INV_CMD_LINE_PARAM;
+            throw GsimError("Dispay Target is not matching");
         }
     }
 }
@@ -355,7 +437,7 @@ RETVAL Config::saveIp(string &ipStr, IpAddr *pIp)
             inet_pton(AF_INET6, ipStr.c_str(), (VOID *)(pIp->u.ipv6Addr.addr));
         if (0 == ret)
         {
-            LOG_FATAL("Invalid IPv6 Address");
+            throw GsimError("Invalid IPv6 Address");
             ret = RFAILED;
         }
         else
@@ -371,7 +453,7 @@ RETVAL Config::saveIp(string &ipStr, IpAddr *pIp)
             inet_pton(AF_INET, ipStr.c_str(), (VOID *)&(pIp->u.ipv4Addr.addr));
         if (0 == ret)
         {
-            LOG_FATAL("Invalid IPv4 Address");
+            throw GsimError("Invalid IPv4 Address");
             ret = RFAILED;
         }
         else
@@ -383,156 +465,6 @@ RETVAL Config::saveIp(string &ipStr, IpAddr *pIp)
     }
 
     return ret;
-}
-
-VOID Config::setParameter(CmdLineParam *pParam) throw(ErrCodeEn)
-{
-    try
-    {
-        switch (pParam->type)
-        {
-        case OPT_HELP:
-        {
-            displayHelp();
-            break;
-        }
-
-        case OPT_NUM_CALLS:
-        {
-            this->setNoOfCalls((U32)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_CALL_RATE:
-        {
-            this->setCallRate((U32)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_RATE_PERIOD:
-        {
-            this->setRatePeriod((U32)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_LOC_IP_ADDR:
-        {
-            this->setLocalIpAddr(pParam->value);
-            break;
-        }
-
-        case OPT_REM_IP_ADDR:
-        {
-            this->setRemoteIpAddr(pParam->value);
-            break;
-        }
-
-        case OPT_LOC_PORT:
-        {
-            this->setLocalGtpcPort((U16)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_REM_PORT:
-        {
-            this->setRemoteGtpcPort((U16)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_T3_TIMER:
-        {
-            this->setT3TimerSeconds((U32)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_N3_REQ:
-        {
-            this->setN3Requests((U32)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_DISP_TIMER:
-        {
-            this->setDisplayRefreshTimer((U32)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_DISP_OPT:
-        {
-            this->setDisplayTarget(
-                (DisplayTargetEn)atoi(pParam->value.c_str()));
-            break;
-        }
-
-        case OPT_ERR_FILE:
-        {
-            this->setErrorFile(pParam->value);
-            break;
-        }
-
-        case OPT_LOG_FILE:
-        {
-            this->setLogFile(pParam->value);
-            break;
-        }
-
-        case OPT_NODE:
-        {
-            this->setNodeType(pParam->value);
-            break;
-        }
-
-        case OPT_LOG_LEVEL:
-        {
-            this->setLogLevel(pParam->value);
-            break;
-        }
-
-        case OPT_TRACE_MSG:
-        {
-            this->setTraceMsg(TRUE);
-        }
-
-        default:
-        {
-            LOG_FATAL(
-                "Unhandled Command Line Option "
-                "type [%d]",
-                pParam->type);
-            throw ERR_INV_CMD_LINE_PARAM;
-            break;
-        }
-        }
-    }
-    catch (ErrCodeEn err)
-    {
-        throw err;
-    }
-}
-
-VOID Config::getArgDetails(string &arg, CmdLineParam *pParam) throw(ErrCodeEn)
-{
-    S32    eqPos  = 0; /* index of = */
-    string tmpArg = arg;
-
-    if (0 != arg.compare(0, 2, "--"))
-    {
-        throw ERR_INV_CMD_LINE_PARAM;
-    }
-
-    arg.erase(0, 2); // skipping -- before the cmd line option
-
-    /* get opt=value part */
-    eqPos          = arg.find("=");
-    pParam->option = arg.substr(0, eqPos);
-    pParam->type   = getOptType(pParam->option);
-    if (OPT_INV == pParam->type)
-    {
-        LOG_FATAL("Invalid Command Line option [--%s]", pParam->option.c_str());
-        throw ERR_INV_CMD_LINE_PARAM;
-    }
-
-    pParam->value = arg.substr(eqPos + 1);
 }
 
 CmdLineOptEn Config::getOptType(const string &opt)
@@ -548,53 +480,6 @@ CmdLineOptEn Config::getOptType(const string &opt)
     return OPT_INV;
 }
 
-/**
- * @brief
- *    GNU Style command line options parsing
- *
- * @param numArgs
- * @param cmdLineArgs
- *
- * @throw ErrCodeEn
- */
-VOID Config::setConfig(S32 numArgs, S8 **cmdLineArgs) throw(ErrCodeEn)
-{
-    CmdLineParam arg;
-    S32          argCnt = 1;
-    string       argStr;
-
-    if (numArgs < 2)
-    {
-        throw ERR_INV_CMD_LINE_PARAM;
-    }
-    else
-    {
-        try
-        {
-            while (argCnt < numArgs)
-            {
-                if (argCnt == (numArgs - 1))
-                {
-                    /* the last argument should be scenario file */
-                    setScenarioFile(cmdLineArgs[argCnt]);
-                }
-                else
-                {
-                    argStr = cmdLineArgs[argCnt];
-
-                    getArgDetails(argStr, &arg);
-                    setParameter(&arg);
-                }
-
-                argCnt++;
-            }
-        }
-        catch (ErrCodeEn errCode)
-        {
-            throw ERR_INV_CMD_LINE_PARAM;
-        }
-    }
-}
 
 IpAddr Config::getRemoteIpAddr()
 {
@@ -609,11 +494,6 @@ const IpAddr *Config::getLocalIpAddr()
 U16 Config::getRemoteGtpcPort()
 {
     return remGtpcPort;
-}
-
-U16 Config::getLocalGtpcSendPort()
-{
-    return locGtpcSndPort;
 }
 
 U16 Config::getLocalGtpcPort()
@@ -750,7 +630,6 @@ void Config::setNodeType(std::string node)
     else
     {
         LOG_ERROR("Invalid node type parameter");
-        throw ERR_INV_CMD_LINE_PARAM;
     }
 }
 

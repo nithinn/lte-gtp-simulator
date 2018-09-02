@@ -20,11 +20,12 @@
 #include <iostream>
 #include <string>
 
+#include <cxxopts.hpp>
+
 using namespace std;
 
 #define DFLT_LOCAL_IP_ADDR "127.0.0.1"
 #define DFLT_GTPC_PORT 2123
-#define DFLT_GTPC_SEND_PORT 0
 #define DFLT_T3_TIMER 3000 // milli seconds
 #define DFLT_N3_REQUESTS 3
 #define DFLT_DISP_REFRESH_TIMER 2000  // milli seconds
@@ -93,7 +94,7 @@ public:
     VOID setDisplayRefreshTimer(U32 n);
     VOID setDisplayTarget(DisplayTargetEn target);
     VOID setErrorFile(string filename) throw(ErrCodeEn);
-    VOID setScenarioFile(S8 *filename) throw(ErrCodeEn);
+    VOID setScenarioFile(std::string filename) throw(ErrCodeEn);
     VOID setLogFile(string filename) throw(ErrCodeEn);
     VOID setDisplayTargetFile(string filename) throw(ErrCodeEn);
     VOID setCallRate(U32 n);
@@ -116,7 +117,7 @@ public:
     const S8 *    getScnFile();
     U32           getCallRate();
     U32           getLogLevel();
-    VOID          setConfig(S32 numArgs, S8 **cmdLineArgs) throw(ErrCodeEn);
+    VOID          setConfig(cxxopts::ParseResult options);
     Time_t        getSessionRatePeriod();
     EpcNodeType_t getNodeType();
     U8            getIfType();
@@ -143,7 +144,6 @@ private:
     IpAddr          locIpAddr;
     IpAddr          remIpAddr;
     U16             locGtpcPort;
-    U16             locGtpcSndPort;
     U16             remGtpcPort;
     U32             t3Timer;
     U32             n3Req;
