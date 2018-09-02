@@ -38,29 +38,6 @@
 static Config *pCfg        = NULL;
 static S8      DFLT_IMSI[] = "112233445566778";
 
-// clang-format off
-CmdLineParam gCfgOptioTable[OPT_MAX] = {
-    {OPT_INV, "", ""},
-    {OPT_HELP, "help", ""},
-    {OPT_NODE, "node", ""},
-    {OPT_NUM_CALLS, "num-sessions", ""},
-    {OPT_CALL_RATE, "session-rate", ""},
-    {OPT_RATE_PERIOD, "rate-period", ""},
-    {OPT_LOC_IP_ADDR, "local-ip", ""},
-    {OPT_REM_IP_ADDR, "remote-ip", ""},
-    {OPT_LOC_PORT, "local-port", ""},
-    {OPT_REM_PORT, "remote-port", ""},
-    {OPT_T3_TIMER, "t3-timer", ""},
-    {OPT_N3_REQ, "n3-requests", ""},
-    {OPT_DISP_TIMER, "disp-timer", ""},
-    {OPT_DISP_OPT, "disp-target", ""},
-    {OPT_ERR_FILE, "error-file", ""},
-    {OPT_LOG_FILE, "log-file", ""},
-    {OPT_LOG_LEVEL, "log-level", ""},
-    {OPT_TRACE_MSG, "trace-msg", ""}
-};
-// clang-format on
-
 // returns the Config class singleton instance ptr
 Config *Config::getInstance()
 {
@@ -132,7 +109,6 @@ Config::~Config()
  *    GNU Style command line options parsing
  *
  * @param numArgs
- * @param cmdLineArgs
  *
  */
 VOID Config::setConfig(cxxopts::ParseResult options)
@@ -466,20 +442,6 @@ RETVAL Config::saveIp(string &ipStr, IpAddr *pIp)
 
     return ret;
 }
-
-CmdLineOptEn Config::getOptType(const string &opt)
-{
-    for (U32 i = 0; i < OPT_MAX; i++)
-    {
-        if (0 == gCfgOptioTable[i].option.compare(opt))
-        {
-            return gCfgOptioTable[i].type;
-        }
-    }
-
-    return OPT_INV;
-}
-
 
 IpAddr Config::getRemoteIpAddr()
 {

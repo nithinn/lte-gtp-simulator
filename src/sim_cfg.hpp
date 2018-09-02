@@ -37,36 +37,6 @@ using namespace std;
 #define DFLT_DEAD_CALL_WAIT 20000 // milli seconds
 
 typedef enum {
-    OPT_INV,
-    OPT_HELP,
-    OPT_NODE,
-    OPT_NUM_CALLS,
-    OPT_CALL_RATE,
-    OPT_RATE_PERIOD,
-    OPT_LOC_IP_ADDR,
-    OPT_REM_IP_ADDR,
-    OPT_LOC_PORT,
-    OPT_REM_PORT,
-    OPT_T3_TIMER,
-    OPT_N3_REQ,
-    OPT_DISP_TIMER,
-    OPT_DISP_OPT,
-    OPT_ERR_FILE,
-    OPT_LOG_FILE,
-    OPT_LOG_LEVEL,
-    OPT_TRACE_MSG,
-    OPT_MAX
-} CmdLineOptEn;
-
-typedef struct
-{
-    CmdLineOptEn type;
-    string       option;
-    string       value;
-
-} CmdLineParam;
-
-typedef enum {
     DISP_TARGET_NONE,
     DISP_TARGET_SCREEN,
     DISP_TARGET_FILE,
@@ -136,9 +106,6 @@ public:
 private:
     Config();
     RETVAL       saveIp(string &ipStr, IpAddr *pIp);
-    VOID         setParameter(CmdLineParam *pParam) throw(ErrCodeEn);
-    CmdLineOptEn getOptType(const string &opt);
-    VOID getArgDetails(string &argStr, CmdLineParam *arg) throw(ErrCodeEn);
 
     U32             m_ssnRate; // no.of calls per sec
     IpAddr          locIpAddr;
