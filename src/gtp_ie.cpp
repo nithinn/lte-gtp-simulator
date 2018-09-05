@@ -978,15 +978,15 @@ RETVAL GtpPdnType::buildIe(const S8 *pVal)
       return RFAILED;
    }
 
-   if (STRCASECMP(pVal, "ipv4"))
+   if (!STRCASECMP(pVal, "ipv4"))
    {
       m_val = (U8)GTP_PDN_TYPE_IPV4;
    }
-   else if (STRCASECMP(pVal, "ipv6"))
+   else if (!STRCASECMP(pVal, "ipv6"))
    {
       m_val = (U8)GTP_PDN_TYPE_IPV6;
    }
-   else if (STRCASECMP(pVal, "ipv4v6"))
+   else if (!STRCASECMP(pVal, "ipv4v6"))
    {
       m_val = (U8)GTP_PDN_TYPE_IPV4V6;
    }
@@ -1019,15 +1019,15 @@ RETVAL GtpPaa::buildIe(IeParamLst *pBufLst)
 
       if (STRCASECMP(pXmlBuf->paramName, "pdn_type") == 0)
       {
-         if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv4"))
+         if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv4") == 0)
          {
             GTP_ENC_PDN_TYPE(m_val, GTP_PDN_TYPE_IPV4);
          }
-         else if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv6"))
+         else if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv6") == 0)
          {
             GTP_ENC_PDN_TYPE(m_val, GTP_PDN_TYPE_IPV6);
          }
-         else if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv4v6"))
+         else if (STRCASECMP((const S8 *)pXmlBuf->buf.pVal, "ipv4v6") == 0)
          {
             GTP_ENC_PDN_TYPE(m_val, GTP_PDN_TYPE_IPV4V6);
          }
