@@ -12,7 +12,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */  
+ */
 
 #include <iostream>
 #include <vector>
@@ -41,135 +41,144 @@ using std::vector;
 #include "gtp_peer.hpp"
 #include "sim.hpp"
 
-EXTERN VOID cleanupUeSessions();
-class Simulator*  Simulator::pSim = NULL;
+EXTERN VOID      cleanupUeSessions();
+class Simulator *Simulator::pSim = NULL;
 
-Simulator* Simulator::getInstance()
+Simulator *Simulator::getInstance()
 {
-   if (NULL == pSim)
-   {
-      try
-      {
-         pSim = new Simulator();
-         return pSim;
-      }
-      catch (S32 e)
-      {
-         return (Simulator *)NULL;
-      }
-   }
-   else
-   {
-      return pSim;
-   }
+    if (NULL == pSim)
+    {
+        try
+        {
+            pSim = new Simulator();
+            return pSim;
+        }
+        catch (S32 e)
+        {
+            return (Simulator *)NULL;
+        }
+    }
+    else
+    {
+        return pSim;
+    }
 }
 
 // Constructor
 Simulator::Simulator()
 {
-   m_pScn = NULL;
+    m_pScn = NULL;
 }
 
-// destructor 
+// destructor
 Simulator::~Simulator()
 {
-   delete m_pScn;
+    delete m_pScn;
 }
 
 VOID Simulator::run(VOID *arg)
 {
-   LOG_ENTERFN();
+    LOG_ENTERFN();
 
-   m_pScn = Scenario::getInstance();
-   m_pScn->init(Config::getInstance()->getScnFile());
+    m_pScn = Scenario::getInstance();
+    m_pScn->init(Config::getInstance()->getScnFile());
 
-   /* Creates UDP sockets for listing of gtp messages */
-   LOG_DEBUG("Initializing Transport connections");
-   if (ROK != initTransport())
-   {
-      LOG_FATAL("Initializing Transport connections");
-      LOG_EXITVOID();
-   }
+    /* Creates UDP sockets for listing of gtp messages */
+    LOG_DEBUG("Initializing Transport connections");
+    if (ROK != initTransport())
+    {
+        LOG_FATAL("Initializing Transport connections");
+        LOG_EXITVOID();
+    }
 
-   // Initialing the Keyboard to process user inputs
-   Keyboard *pKb = Keyboard::getInstance();
-   pKb->init();
+    // Initialing the Keyboard to process user inputs
+    Keyboard *pKb = Keyboard::getInstance();
+    pKb->init();
 
-   // Initialing the Display task to display session statistics on terminal
-   Display *pDisp = Display::getInstance();
-   pDisp->init();
+    // Initialing the Display task to display session statistics on terminal
+    Display *pDisp = Display::getInstance();
+    pDisp->init();
 
-   if (SCN_TYPE_INITIATING == m_pScn->getScnType())
-   {
-      TrafficTask *pTTask = new TrafficTask;
-      if (pTTask == NULL)
-      {
-         LOG_ERROR("Traffic Task Init");
-      }
+    if (SCN_TYPE_INITIATING == m_pScn->getScnType())
+    {
+        TrafficTask *pTTask = new TrafficTask;
+        if (pTTask == NULL)
+        {
+            LOG_ERROR("Traffic Task Init");
+        }
 
-      /* peer information is maintianed to managing sequence numbers
-       * and ordering of message
-       */
-      IPEndPoint peer;
-      peer.ipAddr = Config::getInstance()->getRemoteIpAddr();
-      peer.port = Config::getInstance()->getRemoteGtpcPort();
-      addPeerData(peer);
-   }
+        /* peer information is maintianed to managing sequence numbers
+         * and ordering of message
+         */
+        IPEndPoint peer;
+        peer.ipAddr = Config::getInstance()->getRemoteIpAddr();
+        peer.port   = Config::getInstance()->getRemoteGtpcPort();
+        addPeerData(peer);
+    }
 
-   LOG_DEBUG("Generating Signalling traffic");
-   startScheduler();
+    LOG_DEBUG("Generating Signalling traffic");
+    startScheduler();
 
-   pKb->abort();
-   TaskMgr::deleteAllTasks();
-   deletePeerTable();
+    pKb->abort();
+    TaskMgr::deleteAllTasks();
+    deletePeerTable();
 
-   LOG_EXITVOID();
+    LOG_EXITVOID();
 }
 
 VOID Simulator::startScheduler()
 {
-   LOG_ENTERFN();
+    bool updateDisplayOnce = true;
 
-   for (;;)
-   {
-      getMilliSeconds();
-      if (KB_KEY_SIM_QUIT == Keyboard::key)
-      {
-         LOG_INFO("Exiting Simulator");
-         break;
-      }
+    LOG_ENTERFN();
 
-      if (Keyboard::key != KB_KEY_PAUSE_TRAFFIC)
-      {
-         TaskMgr::resumePausedTasks();
-      }
+    for (;;)
+    {
+        getMilliSeconds();
+        if (KB_KEY_SIM_QUIT == Keyboard::key)
+        {
+            LOG_INFO("Exiting Simulator");
+            break;
+        }
 
-      TaskList *pRunningTasks = TaskMgr::getRunningTasks();
-      TaskListItr itr = pRunningTasks->begin();
-      while (itr != pRunningTasks->end())
-      {
-         Task *t = *itr;
+        if (Keyboard::key == KB_KEY_PAUSE_TRAFFIC)
+        {
+            /* Refresh the display once, if the task was sleeping when it was
+             * paused then display will update
+             */
+            if (updateDisplayOnce)
+            {
+                Display::displayStats();
+                updateDisplayOnce = false;
+            }
+        }
+        else
+        {
+            updateDisplayOnce = true;
+            TaskMgr::resumePausedTasks();
+        }
 
-         // increment the iterator here, because after the task is run
-         // it will be paused state which will move the task from running
-         // task list to paused task list.
-         itr++;
-         if (ROK != t->run())
-         {
-            t->abort();
-         }
-      }
+        TaskList *  pRunningTasks = TaskMgr::getRunningTasks();
+        TaskListItr itr           = pRunningTasks->begin();
+        while (itr != pRunningTasks->end())
+        {
+            Task *t = *itr;
 
-      getMilliSeconds();
+            // increment the iterator here, because after the task is run
+            // it will be paused state which will move the task from running
+            // task list to paused task list.
+            itr++;
+            if (ROK != t->run())
+            {
+                t->abort();
+            }
+        }
 
-      // read the sockets for keyboard events and gtp messages
-      socketPoll(1);
-   }
- 
-   LOG_EXITVOID();
+        getMilliSeconds();
+
+        // read the sockets for keyboard events and gtp messages
+        socketPoll(1);
+    }
+
+    LOG_EXITVOID();
 }
-
-
-
-
-
