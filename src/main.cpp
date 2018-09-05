@@ -109,9 +109,14 @@ int main(int argc, char **argv)
         LOG_INFO("Starting simulator");
         Simulator *pGtpSim = Simulator::getInstance();
         pGtpSim->run();
+        LOG_INFO("Stopping simulator");
+
+        std::cout << std::endl;
+        std::cout << "Log File: " << pCfg->getLogFile();
+        std::cout << std::endl;
+
         delete pGtpSim;
         delete pCfg;
-        LOG_INFO("Stopping simulator");
     }
     catch (ErrCodeEn e)
     {
