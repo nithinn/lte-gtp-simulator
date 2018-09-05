@@ -62,7 +62,7 @@
     {                                                       \
         fprintf(stdout,                                     \
             "+---Adjust-Rate [+/-]----+----Resume-Traffic " \
-            "[p]------+-------Quit [q]--------+\r\n");      \
+            "[c]------+-------Quit [q]--------+\r\n");      \
     }
 
 #define PRINT_BLANK_LINE()       \
