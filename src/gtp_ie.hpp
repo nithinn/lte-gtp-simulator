@@ -913,7 +913,7 @@ class GtpStnSr : public GtpIe
 
 class GtpIpAddress : public GtpIe
 {
-#define GTP_IP_ADDRESS_MAX_BUF_LEN    1
+#define GTP_IP_ADDRESS_MAX_BUF_LEN    128
    private:
       U8             m_val[GTP_IP_ADDRESS_MAX_BUF_LEN];
 
@@ -987,7 +987,7 @@ class GtpEpsBearerTft : public GtpIe
 
 class GtpTad : public GtpIe
 {
-#define GTP_TAD_MAX_BUF_LEN    1
+#define GTP_TAD_MAX_BUF_LEN    128
    private:
       U8             m_val[GTP_TAD_MAX_BUF_LEN];
 
@@ -1024,7 +1024,7 @@ class GtpTad : public GtpIe
 
 class GtpTmsi : public GtpIe
 {
-#define GTP_TMSI_MAX_BUF_LEN    1
+#define GTP_TMSI_MAX_BUF_LEN    32
    private:
       U8             m_val[GTP_TMSI_MAX_BUF_LEN];
 
@@ -1061,7 +1061,7 @@ class GtpTmsi : public GtpIe
 
 class GtpGlobalCnId : public GtpIe
 {
-#define GTP_GLOBAL_CN_ID_MAX_BUF_LEN    1
+#define GTP_GLOBAL_CN_ID_MAX_BUF_LEN    32
    private:
       U8             m_val[GTP_GLOBAL_CN_ID_MAX_BUF_LEN];
 
@@ -1098,7 +1098,7 @@ class GtpGlobalCnId : public GtpIe
 
 class GtpS103Pdf : public GtpIe
 {
-#define GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN   1
+#define GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN   128
    private:
       U8             m_val[GTP_S103_PDN_DATA_FWD_INFO_MAX_BUF_LEN];
 
@@ -1137,7 +1137,7 @@ class GtpS103Pdf : public GtpIe
 
 class GtpS1uDf : public GtpIe
 {
-#define GTP_S1U_DATA_FWD_INFO_MAX_BUF_LEN    1
+#define GTP_S1U_DATA_FWD_INFO_MAX_BUF_LEN    128
    private:
       U8             m_val[GTP_S1U_DATA_FWD_INFO_MAX_BUF_LEN];
 
@@ -2596,7 +2596,7 @@ class GtpNodeType : public GtpIe
 
 class GtpFqCsid : public GtpIe
 {
-#define GTP_FQ_CSID_MAX_BUF_LEN    1
+#define GTP_FQ_CSID_MAX_BUF_LEN    128
    private:
       U8             m_val[GTP_FQ_CSID_MAX_BUF_LEN];
 
@@ -3233,7 +3233,7 @@ class GtpTmgi : public GtpIe
 
 class GtpAdditionalMmCntxtForSrvcc : public GtpIe
 {
-#define GTP_ADDITIONAL_MM_CNTXT_FOR_SRVCC_MAX_BUF_LEN    1
+#define GTP_ADDITIONAL_MM_CNTXT_FOR_SRVCC_MAX_BUF_LEN    256
    private:
       U8             m_val[GTP_ADDITIONAL_MM_CNTXT_FOR_SRVCC_MAX_BUF_LEN];
 
@@ -3272,7 +3272,7 @@ class GtpAdditionalMmCntxtForSrvcc : public GtpIe
 
 class GtpAdditionalFlagsForSrvcc : public GtpIe
 {
-#define GTP_ADDITIONAL_FLAGS_FOR_SRVCC_MAX_BUF_LEN    1
+#define GTP_ADDITIONAL_FLAGS_FOR_SRVCC_MAX_BUF_LEN    256
    private:
       U8             m_val[GTP_ADDITIONAL_FLAGS_FOR_SRVCC_MAX_BUF_LEN];
 
