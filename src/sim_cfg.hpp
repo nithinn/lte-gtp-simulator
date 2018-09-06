@@ -54,8 +54,8 @@ public:
     // these routines are made public, for setting configuration
     // property from a GUI
     VOID setNoOfCalls(U32 n);
-    VOID setLocalIpAddr(string ip) throw(ErrCodeEn);
-    VOID setRemoteIpAddr(string ip) throw(ErrCodeEn);
+    VOID setLocalIpAddr(string ip);
+    VOID setRemoteIpAddr(string ip);
     VOID setLocalGtpcPort(U16 port);
     VOID setLocalGtpcSendPort(U16 port);
     VOID setRemoteGtpcPort(U16 port);
@@ -66,7 +66,7 @@ public:
     VOID setErrorFile(string filename) throw(ErrCodeEn);
     VOID setScenarioFile(std::string filename) throw(ErrCodeEn);
     VOID setLogFile(string filename) throw(ErrCodeEn);
-    VOID setDisplayTargetFile(string filename) throw(ErrCodeEn);
+    VOID setDisplayTargetFile(string filename);
     VOID setCallRate(U32 n);
     VOID setRatePeriod(U32 n);
     VOID setLogLevel(string logLvl);

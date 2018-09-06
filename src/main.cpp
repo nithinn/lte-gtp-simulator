@@ -50,8 +50,8 @@ int main(int argc, char **argv)
               cxxopts::value<std::uint32_t>());
         options.add_options()
             ("local-ip", "Local IP Address at which the GTP simulator "\
-             "will listen for GTPv2-C messages from peer entity");
-             cxxopts::value<std::string>(),
+             "will listen for GTPv2-C messages from peer entity",
+             cxxopts::value<std::string>());
         options.add_options()
             ("remote-ip", "Remote peer IP Address, GTP simulator sends all "\
              "initiating messages to this IP address",

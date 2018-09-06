@@ -233,7 +233,7 @@ VOID Config::setRatePeriod(U32 n)
     pCfg->m_ssnRatePeriod = n;
 }
 
-VOID Config::setLocalIpAddr(string ip) throw(ErrCodeEn)
+VOID Config::setLocalIpAddr(string ip)
 {
     RETVAL ret = ROK;
 
@@ -242,18 +242,21 @@ VOID Config::setLocalIpAddr(string ip) throw(ErrCodeEn)
     {
         throw GsimError("Invalid Local IP Address");
     }
+
+    m_localIpAddrStr = ip;
 }
 
-VOID Config::setRemoteIpAddr(string ip) throw(ErrCodeEn)
+VOID Config::setRemoteIpAddr(string ip)
 {
     RETVAL ret = ROK;
 
-    m_remIpAddrStr = ip;
-    ret            = saveIp(ip, &(pCfg->remIpAddr));
+    ret = saveIp(ip, &(pCfg->remIpAddr));
     if (RFAILED == ret)
     {
         throw GsimError("Invalid Remote IP Address");
     }
+
+    m_remIpAddrStr = ip;
 }
 
 string Config::getRemIpAddrStr()
@@ -383,7 +386,7 @@ VOID Config::setLogFile(string filename) throw(ErrCodeEn)
     }
 }
 
-VOID Config::setDisplayTargetFile(string filename) throw(ErrCodeEn)
+VOID Config::setDisplayTargetFile(string filename)
 {
     if (filename.size() == 0)
     {
@@ -572,22 +575,22 @@ void Config::setNodeType(std::string node)
     if (!STRCASECMP(node.c_str(), "MME"))
     {
         m_nodeTypStr = "MME";
-        m_nodeType = EPC_NODE_MME;
+        m_nodeType   = EPC_NODE_MME;
     }
     else if (!STRCASECMP(node.c_str(), "SGW"))
     {
         m_nodeTypStr = "SGW";
-        m_nodeType = EPC_NODE_SGW;
+        m_nodeType   = EPC_NODE_SGW;
     }
     else if (!STRCASECMP(node.c_str(), "PGW"))
     {
         m_nodeTypStr = "PGW";
-        m_nodeType = EPC_NODE_PGW;
+        m_nodeType   = EPC_NODE_PGW;
     }
     else if (!STRCASECMP(node.c_str(), "SGSN"))
     {
         m_nodeTypStr = "SGSN";
-        m_nodeType = EPC_NODE_SGSN;
+        m_nodeType   = EPC_NODE_SGSN;
     }
     else
     {
