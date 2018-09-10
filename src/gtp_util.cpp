@@ -369,7 +369,7 @@ S8 g_gtpIeName[GTP_IE_MAX][GTP_IE_NAME_LEN] = \
    "reserved",
    "imsi",
    "cause",
-   "recovery"
+   "recovery",
    "reserved",
    "reserved",
    "reserved",
@@ -418,7 +418,6 @@ S8 g_gtpIeName[GTP_IE_MAX][GTP_IE_NAME_LEN] = \
    "reserved",
    "reserved",
    "stn_sr",
-   "reserved",
    "reserved",
    "reserved",
    "reserved",
@@ -738,10 +737,6 @@ GtpIeType_t gtpGetIeType(const S8   *pIeName)
 {
    for (U32 ieType = GTP_IE_RESERVED; ieType < GTP_IE_MAX; ieType++)
    {
-      if (ieType == GTP_IE_SERVING_NW)
-      {
-         LOG_DEBUG("N");
-      }
       if (strcasecmp(g_gtpIeName[ieType], pIeName) == 0)
       {
          return (GtpIeType_t)ieType;

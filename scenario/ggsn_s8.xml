@@ -7,10 +7,12 @@
 
   <send response="csrsp">
    <ie type="fteid" instance="0">
-     <param type="iftype" value="7"> </param>
+     <param type="iftype" value="1"> </param>
      <param type="teid" value="1"> </param>
      <param type="ipv4" value="10.0.2.16"> </param>
    </ie>
+   <ie type="paa" instance="0" value="0x0100010101"> </ie>
+   <ie type="apn_restriction" instance="0" value="0x01"> </ie>
    <ie type="fqcsid" instance="0" value="0x010a0000010000"> </ie>
    <ie type="bcontext" instance="0" count="1">
       <ie type="ebi" instance="0" value="5"> </ie>
@@ -24,6 +26,7 @@
         <param type="ipv4" value="192.168.1.1"> </param>
       </ie>
    </ie>
+   <ie type="pco" instance="0" value="0x8080211002000010810608080808830608080404"> </ie>
   </send>
 
   <recv request="mbreq">
