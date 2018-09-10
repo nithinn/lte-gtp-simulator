@@ -18,6 +18,7 @@
 #define _ERROR_HPP_
 
 #include <exception>
+#include <string>
 
 typedef enum {
     ERR_NO,                 // no error
