@@ -74,6 +74,8 @@
   <recv response="mbrsp"> 
   </recv>
 
+  <wait>5000</wait>
+
   <send request="dsreq">
    <ie type="ebi" instance="0" value="5"> </ie>
   </send> 
