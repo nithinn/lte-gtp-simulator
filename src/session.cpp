@@ -825,8 +825,6 @@ RETVAL UeSession::handleDeadCall(VOID *arg)
             (*m_prevProcItr)->m_initial->m_numUnexp++;
         }
 
-        m_wakeTime = m_currRunTime + (m_wakeTime - m_lastRunTime);
-        pause();
         delete data;
     }
 
