@@ -69,7 +69,7 @@ public:
     VOID setDisplayTargetFile(string filename);
     VOID setCallRate(U32 n);
     VOID setRatePeriod(U32 n);
-    VOID setLogLevel(string logLvl);
+    VOID setLogLevel(std::uint32_t logLvl);
     VOID setTraceMsg(BOOL);
     VOID setTraceMsgFile(string);
 
@@ -122,7 +122,7 @@ private:
     string          dispTargetFile; // display redirected to this file
     U32             m_scnRunIntvl;
     Time_t          m_ssnRatePeriod;
-    U32             m_logLevel;
+    std::uint32_t   m_logLevel;
     EpcNodeType_t   m_nodeType;
     U8              m_ifType;
     Counter         m_maxSessions;

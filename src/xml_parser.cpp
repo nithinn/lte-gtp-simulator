@@ -231,7 +231,11 @@ Job* XmlParser::procWait(xml_node *pWait)
 {
    LOG_ENTERFN();
 
-   Job* job = NULL;
+   Job *job = NULL;
+
+   auto child = pWait->first_child();
+   Time_t wait = static_cast<Time_t>(std::stol(child.value()));
+   job = new Job(wait);
 
    LOG_EXITFN(job);
 }

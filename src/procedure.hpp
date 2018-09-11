@@ -48,6 +48,7 @@ class Job
       Job();
       ~Job();
       Job(GtpMsg*, JobType_t);
+      Job(Time_t wait);
 
       GtpMsg*        getGtpMsg();
       inline JobType_t type() { return m_type; }

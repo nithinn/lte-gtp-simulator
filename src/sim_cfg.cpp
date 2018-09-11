@@ -213,7 +213,7 @@ VOID Config::setConfig(cxxopts::ParseResult options)
 
     if (options.count("log-level"))
     {
-        auto value = options["log-level"].as<std::string>();
+        auto value = options["log-level"].as<std::uint32_t>();
         setLogLevel(value);
     }
 }
@@ -481,9 +481,9 @@ Time_t Config::getSessionRatePeriod()
     return m_ssnRatePeriod;
 }
 
-VOID Config::setLogLevel(string level)
+VOID Config::setLogLevel(std::uint32_t level)
 {
-    m_logLevel = (LogLevel_t)atoi(level.c_str());
+    m_logLevel = level;
 }
 
 U32 Config::getLogLevel()

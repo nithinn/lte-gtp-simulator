@@ -48,6 +48,12 @@ Job::Job(GtpMsg *pGtpMsg, JobType_t taskType)
    STRCPY(m_msgName, gtpGetMsgName(pGtpMsg->type()));
 }
 
+Job::Job(Time_t wait)
+{
+    m_type = JOB_TYPE_WAIT;
+    m_wait = wait;
+}
+
 Job::~Job()
 {
    if (m_pGtpMsg)
