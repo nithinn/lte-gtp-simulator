@@ -773,7 +773,7 @@ GtpMsgCategory_t gtpGetMsgCategory(GtpMsgType_t msgType)
    LOG_EXITFN(msgCat);
 }
 
-PRIVATE U8 gtpCharToHex(U8 c)
+PUBLIC U8 gtpCharToHex(U8 c)
 {
    LOG_ENTERFN();
 
