@@ -21,7 +21,7 @@
    <ie type="apn" instance="0" value="mnc.112.mcc.223.gprs"> </ie>
    <ie type="rat_type" instance="0" value="1"> </ie>
    <ie type="pdn_type" instance="0" value="ipv4"> </ie>
-   <ie type="paa" instance="0" value="0x0100010101"> </ie>
+   <ie type="paa" instance="0" value="0x0100000000"> </ie>
    <!--
    <ie type="fteid" instance="0" value="0x86000000020a000210"> </ie>
    -->
