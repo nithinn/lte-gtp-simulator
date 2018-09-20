@@ -133,6 +133,16 @@ VOID Config::setConfig(cxxopts::ParseResult options)
         throw GsimError("Mandatory argument 'scenario' is missing");
     }
 
+    if (options.count("iftype"))
+    {
+        auto value = options["iftype"].as<std::string>();
+        setIfType(value);
+    }
+    else
+    {
+        throw GsimError("Mandatory argument 'iftype' is missing");
+    }
+
     if (options.count("local-ip"))
     {
         auto value = options["local-ip"].as<std::string>();
@@ -601,4 +611,29 @@ void Config::setNodeType(std::string node)
 std::string Config::getNodeTypeStr()
 {
     return m_nodeTypStr;
+}
+
+void Config::setIfType(std::string ifType)
+{
+    if (ifType == "s11mme")
+    {
+        m_ifType = GTP_IF_S11_C_MME;
+    }
+    else if (ifType == "s11sgw")
+    {
+        m_ifType = GTP_IF_S11_C_SGW;
+    }
+    else if (ifType == "s5s8sgw")
+    {
+        m_ifType = GTP_IF_S5S8_C_SGW;
+    }
+    else if (ifType == "s5s8pgw")
+    {
+        m_ifType = GTP_IF_S5S8_C_PGW;
+    }
+    else
+    {
+        std::string log = "Invalid interface type " + ifType;
+        throw GsimError(log);
+    }
 }

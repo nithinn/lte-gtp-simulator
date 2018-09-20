@@ -39,6 +39,9 @@ int main(int argc, char **argv)
             ("node", "Type of 3gpp Node for simulation",
              cxxopts::value<std::string>());
         options.add_options()
+            ("iftype", "Type of 3gpp GTPv2 interface [s11mme, s11sgw, s5s8sgw, s5s8pgw]",
+             cxxopts::value<std::string>());
+        options.add_options()
             ("num-sessions", "Maximum number of user (IMSI) sessions to be "\
              "created", cxxopts::value<std::uint32_t>());
         options.add_options()

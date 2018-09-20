@@ -105,7 +105,8 @@ public:
 
 private:
     Config();
-    RETVAL       saveIp(string &ipStr, IpAddr *pIp);
+    RETVAL saveIp(string &ipStr, IpAddr *pIp);
+    void   setIfType(std::string ifType);
 
     U32             m_ssnRate; // no.of calls per sec
     IpAddr          locIpAddr;
