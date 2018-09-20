@@ -82,6 +82,7 @@ Config::Config()
     m_scnRunIntvl                        = 1000;
     m_logLevel                           = LOG_LVL_ERROR;
     m_ifType                             = GTP_IF_INF_INV;
+    m_ifTypeStr                          = "";
     m_nodeType                           = EPC_NODE_INV;
     m_traceMsg                           = FALSE;
     pid_t pid                            = getpid();
@@ -618,22 +619,31 @@ void Config::setIfType(std::string ifType)
     if (ifType == "s11mme")
     {
         m_ifType = GTP_IF_S11_C_MME;
+        m_ifTypeStr = "S11 MME";
     }
     else if (ifType == "s11sgw")
     {
         m_ifType = GTP_IF_S11_C_SGW;
+        m_ifTypeStr = "S11 SGW";
     }
     else if (ifType == "s5s8sgw")
     {
         m_ifType = GTP_IF_S5S8_C_SGW;
+        m_ifTypeStr = "S5/S8 SGW";
     }
     else if (ifType == "s5s8pgw")
     {
         m_ifType = GTP_IF_S5S8_C_PGW;
+        m_ifTypeStr = "S5/S8 PGW";
     }
     else
     {
         std::string log = "Invalid interface type " + ifType;
         throw GsimError(log);
     }
+}
+
+std::string Config::getIfTypeStr()
+{
+    return m_ifTypeStr;
 }

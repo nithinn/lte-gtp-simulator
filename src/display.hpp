@@ -45,7 +45,7 @@ class Display: virtual public Task
       S8                m_timeStr[GSIM_TIME_STR_MAX_LEN];
       ProcSequence      *m_procSeq;
       VOID              printJob(Job*);
-      std::string       m_nodeTypStr;
+      std::string       m_ifTypeStr;
 };
 
 #endif

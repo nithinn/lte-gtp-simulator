@@ -123,7 +123,7 @@ VOID Display::init()
     m_startTime  = getMilliSeconds() / 1000;
     m_localPort  = Config::getInstance()->getLocalGtpcPort();
     m_remPort    = Config::getInstance()->getRemoteGtpcPort();
-    m_nodeTypStr = Config::getInstance()->getNodeTypeStr();
+    m_ifTypeStr = Config::getInstance()->getIfTypeStr();
     STRCPY(m_remIpAddrStr, (Config::getInstance()->getRemIpAddrStr()).c_str());
     STRCPY(
         m_localIpAddrStr, (Config::getInstance()->getLocalIpAddrStr()).c_str());
@@ -206,7 +206,7 @@ VOID Display::disp()
     fprintf(stdout, "Start: %s  ", m_timeStr);
     Time_t runTime = (getMilliSeconds() / 1000) - m_startTime;
     fprintf(stdout, "Run-Time: %us   ", (U32)runTime);
-    fprintf(stdout, "\t\t    Node: %s   \r\n", m_nodeTypStr.c_str());
+    fprintf(stdout, "  Interface  : %s\r\n", m_ifTypeStr.c_str());
     fprintf(stdout, "Local-Host: %s:%d ", m_localIpAddrStr, m_localPort);
     if (STRLEN(m_remIpAddrStr) > 0)
     {

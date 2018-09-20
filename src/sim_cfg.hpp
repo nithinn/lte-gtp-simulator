@@ -102,6 +102,7 @@ public:
     Time_t        getDeadCallWait();
     void          setNodeType(std::string node);
     std::string   getNodeTypeStr();
+    std::string   getIfTypeStr();
 
 private:
     Config();
@@ -126,6 +127,7 @@ private:
     std::uint32_t   m_logLevel;
     EpcNodeType_t   m_nodeType;
     U8              m_ifType;
+    std::string     m_ifTypeStr;
     Counter         m_maxSessions;
     string          m_remIpAddrStr;
     string          m_localIpAddrStr;
