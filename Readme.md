@@ -10,6 +10,7 @@ $ cd lte-gtp-simulator
 $ mkdir build
 $ cd build
 $ cmake ..
+$ make
 ```
 
 ## Running the Simulator
